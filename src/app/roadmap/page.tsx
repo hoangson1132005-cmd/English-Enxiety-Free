@@ -10,6 +10,7 @@ import {
 import { AppLayout } from '@/components/layout/AppLayout';
 import { apiGetRoadmap, apiRespondSuggestion, apiStartExam, apiStartStageQuiz } from '@/lib/api';
 import { useUIStore } from '@/store/uiStore';
+import { useProgressStore } from '@/store/progressStore';
 import { cn } from '@/lib/utils';
 import type { SkillType, RoadmapItemStatus, RoadmapItemView, RoadmapView } from '@/types';
 
@@ -69,11 +70,27 @@ export default function RoadmapPage() {
   const [failed, setFailed] = useState(false);
   const [startingExam, setStartingExam] = useState(false);
 
+  const progressVersion = useProgressStore((s) => s.version);
+
   const load = useCallback(() => {
     apiGetRoadmap().then(setData).catch(() => setFailed(true));
   }, []);
 
-  useEffect(load, [load]);
+  // Tải lại khi: mở trang, vừa nộp bài ở trang khác, quay lại tab / trang (luôn lấy tiến độ mới nhất)
+  useEffect(load, [load, progressVersion]);
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState === 'visible') load();
+    };
+    document.addEventListener('visibilitychange', refresh);
+    window.addEventListener('focus', refresh);
+    window.addEventListener('pageshow', refresh);
+    return () => {
+      document.removeEventListener('visibilitychange', refresh);
+      window.removeEventListener('focus', refresh);
+      window.removeEventListener('pageshow', refresh);
+    };
+  }, [load]);
 
   const respond = async (itemId: string, action: 'accept' | 'dismiss') => {
     try {

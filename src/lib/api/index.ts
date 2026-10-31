@@ -127,7 +127,7 @@ export async function apiGetTestResult(resultId?: string): Promise<TestResult> {
 // ============================================================
 
 export async function apiGetRoadmap(): Promise<RoadmapView> {
-  const res = await fetch('/api/roadmap');
+  const res = await fetch('/api/roadmap', { cache: 'no-store' });
   if (!res.ok) throw new Error('Không lấy được lộ trình học');
   return res.json();
 }
@@ -165,7 +165,7 @@ export async function apiStartStageQuiz(phase: number): Promise<{ session_id: st
 // ============================================================
 
 export async function apiGetLesson(lessonId: string): Promise<LessonDetail> {
-  const res = await fetch(`/api/lessons/${lessonId}`);
+  const res = await fetch(`/api/lessons/${lessonId}`, { cache: 'no-store' });
   if (!res.ok) throw new Error((await res.json().catch(() => null))?.error || 'Không tìm thấy bài học');
   return res.json();
 }

@@ -11,6 +11,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { apiGetLesson, apiSubmitLesson, apiSaveLessonWords } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
+import { useProgressStore } from '@/store/progressStore';
 import { cn } from '@/lib/utils';
 import type { LessonDetail, LessonQuestion, LessonSubmitResult, SkillType } from '@/types';
 
@@ -314,6 +315,7 @@ function LessonPageContent() {
       });
       setResult(res);
       setPhase('result');
+      useProgressStore.getState().bump(); // báo cho trang Lộ trình tải lại tiến độ mới
       updateProfile({ total_xp: res.new_total_xp, streak: res.new_streak });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch {
