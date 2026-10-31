@@ -118,31 +118,19 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'AI không trích xuất được chặng học nào từ file này.' }, { status: 422 });
   }
 
-  const maxOrder = await prisma.stage.aggregate({ _max: { order: true } });
+  const maxOrder = await prisma.lesson.aggregate({ _max: { order: true } });
   let nextOrder = (maxOrder._max.order ?? 0) + 1;
-  const createdStageIds: string[] = [];
+  const createdLessonIds: string[] = [];
 
   for (const stage of parsed.stages) {
-    const createdStage = await prisma.stage.create({
-      data: {
-        order: nextOrder++,
-        title: cleanStageTitle(stage.title),
-        description: stage.description || '',
-        focusSkills: JSON.stringify(stage.focus_skills ?? []),
-        weeks: JSON.stringify(stage.weeks ?? []),
-        hasMidterm: !!stage.has_midterm,
-        hasFinal: !!stage.has_final,
-        whyThisStage: stage.why_this_stage || null,
-        isPublished: false, // admin xem lại rồi mới xuất bản
-      },
-    });
-    createdStageIds.push(createdStage.id);
+    const source = cleanStageTitle(stage.title);
 
-    for (const [idx, lesson] of stage.lessons.entries()) {
-      await prisma.lesson.create({
+    for (const lesson of stage.lessons) {
+      const created = await prisma.lesson.create({
         data: {
-          stageId: createdStage.id,
-          order: idx + 1,
+          source,
+          isPublished: false, // nháp: admin xem lại rồi mới xuất bản
+          order: nextOrder++,
           title: cleanLessonTitle(lesson.title),
           skill: lesson.skill as never,
           durationMinutes: lesson.duration_minutes || 20,
@@ -167,8 +155,9 @@ export async function POST(req: Request) {
           },
         },
       });
+      createdLessonIds.push(created.id);
     }
   }
 
-  return NextResponse.json({ stage_ids: createdStageIds }, { status: 201 });
+  return NextResponse.json({ lesson_ids: createdLessonIds }, { status: 201 });
 }

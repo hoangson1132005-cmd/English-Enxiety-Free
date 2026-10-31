@@ -19,16 +19,15 @@ async function buildView(userId: string) {
     include: {
       items: {
         orderBy: { order: 'asc' },
-        include: { lesson: { include: { stage: true } }, attempts: { select: { id: true } } },
+        include: { lesson: true, attempts: { select: { id: true } } },
       },
     },
   });
 
   const inRoadmap = new Set(roadmap.items.map((i) => i.lessonId));
   const catalog = await prisma.lesson.findMany({
-    where: { stage: { isPublished: true }, id: { notIn: [...inRoadmap] } },
-    include: { stage: true },
-    orderBy: [{ stage: { order: 'asc' } }, { order: 'asc' }],
+    where: { isPublished: true, id: { notIn: [...inRoadmap] } },
+    orderBy: { order: 'asc' },
   });
 
   const history = await prisma.userRoadmap.findMany({
@@ -53,7 +52,7 @@ async function buildView(userId: string) {
       title: i.lesson.title,
       skill: i.lesson.skill,
       level: i.lesson.level,
-      stage_title: i.lesson.stage.title,
+      lesson_group: i.lesson.source,
       duration_minutes: i.lesson.durationMinutes,
       order: i.order,
       week: i.week,
@@ -65,7 +64,7 @@ async function buildView(userId: string) {
       attempt_count: i.attempts.length,
     })),
     catalog: catalog.map((l) => ({
-      lesson_id: l.id, title: l.title, skill: l.skill, level: l.level, stage_title: l.stage.title, duration_minutes: l.durationMinutes,
+      lesson_id: l.id, title: l.title, skill: l.skill, level: l.level, lesson_group: l.source, duration_minutes: l.durationMinutes,
     })),
     history: history.map((h) => ({
       id: h.id, cycle: h.cycle, kind: h.kind, level: h.level, status: h.status, created_at: h.createdAt.toISOString(),

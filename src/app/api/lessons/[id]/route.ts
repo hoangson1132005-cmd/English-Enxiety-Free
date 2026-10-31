@@ -30,7 +30,6 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
   return NextResponse.json({
     id: lesson.id,
-    stage_id: lesson.stageId,
     order: lesson.order,
     title: lesson.title,
     skill: lesson.skill,

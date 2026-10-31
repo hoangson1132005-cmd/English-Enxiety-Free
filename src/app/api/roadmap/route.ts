@@ -14,7 +14,7 @@ export async function GET() {
   const [roadmap, user, pastRoadmaps] = await Promise.all([
     prisma.userRoadmap.findUniqueOrThrow({
       where: { id: active.id },
-      include: { items: { orderBy: { order: 'asc' }, include: { lesson: { include: { stage: true } } } } },
+      include: { items: { orderBy: { order: 'asc' }, include: { lesson: true } } },
     }),
     prisma.user.findUniqueOrThrow({ where: { id: userId } }),
     prisma.userRoadmap.findMany({ where: { userId, status: 'completed' }, orderBy: { cycle: 'asc' } }),
@@ -73,13 +73,13 @@ export async function GET() {
       unlocked = false;
     } else status = 'locked';
 
-    const key = legacy ? `stage:${i.lesson.stageId}` : `phase:${i.phase}`;
+    const key = legacy ? `src:${i.lesson.source}` : `phase:${i.phase}`;
     let group = groups.get(key);
     if (!group) {
       group = {
         stage_id: key,
         phase: legacy ? null : i.phase,
-        title: legacy ? i.lesson.stage.title : phases[i.phase - 1]?.title ?? `Chặng ${i.phase}`,
+        title: legacy ? i.lesson.source || 'Bài học' : phases[i.phase - 1]?.title ?? `Chặng ${i.phase}`,
         description: legacy ? '' : phases[i.phase - 1]?.description ?? '',
         items: [],
         quiz: null,

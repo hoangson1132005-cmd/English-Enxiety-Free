@@ -80,7 +80,7 @@ npm run dev        # http://localhost:3000
 
 **Vòng đời một chu kỳ học**
 
-1. Admin upload giáo án (Word/PDF) tại *Nội dung → Import*. AI tách thành chặng, bài, từ vựng, câu hỏi. Nội dung mới ở trạng thái **nháp**; admin xem lại rồi **xuất bản** chặng.
+1. Admin upload giáo án (Word/PDF) tại *Admin → Bài học → Tải giáo án lên*. AI tách thành bài học, từ vựng, câu hỏi. Bài mới ở trạng thái **Nháp**; admin xem lại rồi **xuất bản** (từng bài, chọn nhiều bài, hoặc “Xuất bản tất cả bài nháp”).
 2. Học viên làm **test đầu vào** → hệ thống xếp trình độ CEFR và AI **chọn + sắp xếp bài từ kho đã xuất bản** thành lộ trình riêng (xét kỹ năng yếu, mục tiêu, số phút học mỗi ngày). AI chỉ chọn bài có sẵn trong kho; nếu AI lỗi thì dùng phương án dự phòng theo giáo trình.
 3. Mỗi bài học có 3 bước: **Học** (nội dung + từ vựng) → **Luyện tập** (từng câu, giao diện theo kỹ năng nghe/đọc/viết/nói) → **Kết quả** (điểm, đáp án đúng, nhận xét rút kinh nghiệm, so sánh với lần trước). Cần **≥ 70 điểm** để qua bài và mở bài kế tiếp; làm lại không giới hạn, XP chỉ tính lần đầu qua bài.
 4. Học xong toàn bộ lộ trình → **bài kiểm tra tổng kết** (đề admin tạo cho từng level, hoặc AI tự tạo từ nội dung đã học; nếu AI lỗi thì lấy mẫu lại câu hỏi trong bài). Đạt ≥ 70: lên level + lộ trình mới. Chưa đạt: lộ trình **cải thiện** tập trung phần yếu, học xong được thi lại.
@@ -111,10 +111,9 @@ Mọi bài kiểm tra của học viên đều **bốc câu từ Ngân hàng câ
 - Nạp ngân hàng bằng cách nhập tay, hoặc tải file Word/PDF (AI tách câu và gắn cấp độ/kỹ năng/chủ đề). Trang có bộ lọc, sắp xếp, tìm kiếm, sửa/xóa hàng loạt và thống kê số lần dùng, tỷ lệ đúng của từng câu.
 - Đề test cố định do admin tạo vẫn dùng cho **test đầu vào**. Đề tổng kết do admin tạo cho một level, nếu được kích hoạt, sẽ thay thế bài cuối khóa bốc từ ngân hàng cho level đó (mặc định không kích hoạt).
 
-## 🧩 Học phần và chặng
+## 🧩 Chặng
 
-- **Học phần** (*Admin → Học phần*) là nhóm bài do admin tổ chức trong kho nội dung, dùng chung cho mọi người.
-- **Chặng** là phần của **riêng từng học viên**: AI chia lộ trình của họ thành 2–4 chặng có tên và mục tiêu riêng. Admin chỉnh ở *Người dùng → biểu tượng lộ trình* (đổi tên, thêm chặng, chuyển bài giữa các chặng). Mỗi chặng có bài kiểm tra cuối chặng.
+Kho bài học là một danh sách phẳng (mỗi bài có trạng thái Nháp / Đã xuất bản và nhãn “Nguồn” cho biết bài đến từ giáo án nào). **Chặng** thuộc riêng từng học viên: AI chia lộ trình của họ thành 2–4 chặng có tên và mục tiêu riêng; admin chỉnh ở *Người dùng → biểu tượng lộ trình* (đổi tên, thêm chặng, chuyển bài). Mỗi chặng có bài kiểm tra cuối chặng. Xuất bản bài mới sẽ **đề xuất** cho học viên đang học, không tự chèn vào lộ trình của họ.
 
 ## 🔊 Âm thanh bài nghe
 
@@ -137,7 +136,7 @@ Thư mục `sample-content/` có sẵn 8 file `.docx` để thử chức năng i
 | `DeDauVao_TongHop.docx` | *Admin → Đề test → Tải file lên*, loại đề: Đầu vào |
 | `DeTongKet_A2.docx`, `DeTongKet_B1.docx` | Như trên, sau đó vào đề chọn loại *Đề tổng kết* + level tương ứng rồi kích hoạt |
 
-Import tạo nội dung ở trạng thái **nháp**: xem lại rồi xuất bản chặng / kích hoạt đề. Định dạng file nên có tiêu đề chặng, bài, danh sách từ vựng, đoạn văn/transcript và câu hỏi kèm đáp án (xem file mẫu).
+Import tạo nội dung ở trạng thái **nháp**: xem lại rồi xuất bản bài / kích hoạt đề. Định dạng file nên có tiêu đề nhóm, bài, danh sách từ vựng, đoạn văn/transcript và câu hỏi kèm đáp án (xem file mẫu).
 
 ---
 

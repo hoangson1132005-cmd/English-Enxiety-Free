@@ -14,7 +14,7 @@ const SKILL_LABELS: Record<SkillType, string> = {
 const LEVELS: CEFRLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1'];
 
 interface LessonFull {
-  id: string; stage_id: string; stage_title: string; order: number; title: string; skill: SkillType;
+  id: string; is_published: boolean; source: string; order: number; title: string; skill: SkillType;
   duration_minutes: number; xp_reward: number; description: string; topic: string; content: string;
   level: CEFRLevel | null;
   vocab_items: { term: string; definition: string; definition_vi?: string; example?: string }[];
@@ -117,7 +117,7 @@ function AdminLessonDetailContent() {
   }
 
   return (
-    <AdminLayout title={lesson.title} description={`Học phần: ${lesson.stage_title}`}>
+    <AdminLayout title={lesson.title} description={`${lesson.is_published ? 'Đã xuất bản' : 'Nháp'}${lesson.source ? ` · Nguồn: ${lesson.source}` : ''}`}>
       <div className="space-y-6 max-w-3xl">
         <Link href="/admin/content" className="inline-flex items-center gap-1.5 text-xs text-text-secondary hover:text-primary-600">
           <ArrowLeft className="w-3.5 h-3.5" /> Về Câu hỏi & Bài học
@@ -193,6 +193,20 @@ function AdminLessonDetailContent() {
           <div className="flex items-center gap-3">
             <button type="submit" className="px-6 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-hover text-white text-sm font-semibold shadow-soft transition-all">
               Lưu bài học
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                const res = await fetch(`/api/admin/lessons/${lesson.id}`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ is_published: !lesson.is_published }),
+                });
+                if (res.ok) setLesson({ ...lesson, is_published: !lesson.is_published });
+              }}
+              className="px-6 py-2.5 rounded-xl border border-primary-300 text-primary-700 hover:bg-primary-50 text-sm font-semibold"
+            >
+              {lesson.is_published ? 'Gỡ xuất bản' : 'Xuất bản bài này'}
             </button>
             {savedAt && <span className="text-xs text-success font-medium">Đã lưu lúc {savedAt}</span>}
           </div>

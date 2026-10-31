@@ -82,37 +82,21 @@ async function main() {
   await prisma.vocabSet.deleteMany();
   await prisma.userLessonProgress.deleteMany();
   await prisma.lesson.deleteMany();
-  await prisma.stage.deleteMany();
   await prisma.testResult.deleteMany();
   await prisma.question.deleteMany();
   await prisma.testSection.deleteMany();
   await prisma.test.deleteMany();
 
-  // --- Roadmap: stages + lessons ---
-  // Ids are pinned to match the mock constants (lesson_1_2, stage_2, ...) so the
-  // still-mock-driven UI (learn/* pages) and the real DB agree on the same row.
+  // --- Bài học mẫu (id cố định theo dữ liệu mẫu). Tên chặng trong dữ liệu mẫu chỉ còn là nhãn nguồn của bài. ---
   for (const stage of mockRoadmap.stages) {
-    const createdStage = await prisma.stage.create({
-      data: {
-        id: stage.id,
-        order: stage.order,
-        title: stage.title,
-        description: stage.description,
-        focusSkills: JSON.stringify(stage.focus_skills),
-        weeks: JSON.stringify(stage.weeks),
-        hasMidterm: !!stage.has_midterm,
-        hasFinal: !!stage.has_final,
-        whyThisStage: stage.why_this_stage,
-      },
-    });
-
     for (const lesson of stage.lessons) {
       const seedContent = LESSON_CONTENT[lesson.id];
       const createdLesson = await prisma.lesson.create({
         data: {
           id: lesson.id,
-          stageId: createdStage.id,
-          order: lesson.order,
+          source: stage.title,
+          isPublished: true,
+          order: stage.order * 1000 + lesson.order,
           title: lesson.title,
           skill: lesson.skill,
           durationMinutes: lesson.duration_minutes,
@@ -202,6 +186,8 @@ async function main() {
         options: q.options ? JSON.stringify(q.options) : null,
         answer: JSON.stringify(q.answer),
         explanation: q.explanation,
+        inBank: true,
+        source: 'manual',
       },
     });
   }

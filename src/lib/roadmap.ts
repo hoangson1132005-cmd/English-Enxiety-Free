@@ -33,9 +33,8 @@ interface Candidate {
   topic: string;
   description: string;
   durationMinutes: number;
-  stageOrder: number;
   order: number;
-  stageTitle: string;
+  source: string; // nhóm/nguồn gốc của bài (chỉ để gom chặng dự phòng)
 }
 
 export interface Phase {
@@ -137,7 +136,7 @@ async function findWeakSkills(userId: string): Promise<SkillType[]> {
 
 function heuristicPlan(candidates: Candidate[], weak: SkillType[], budgetMinutes: number): AiPlan {
   // Giữ trật tự giáo trình (chặng -> bài), nhưng ưu tiên giữ lại các bài thuộc kỹ năng yếu khi phải cắt bớt.
-  const ordered = [...candidates].sort((a, b) => a.stageOrder - b.stageOrder || a.order - b.order);
+  const ordered = [...candidates].sort((a, b) => a.order - b.order);
   const priority = [...ordered].sort((a, b) => Number(weak.includes(b.skill)) - Number(weak.includes(a.skill)));
   const chosen = new Set<string>();
   let used = 0;
@@ -167,7 +166,7 @@ async function aiPlan(
   budgetMinutes: number
 ): Promise<AiPlan> {
   const list = candidates
-    .map((c) => `${c.id} | ${c.skill} | ${c.level ?? '?'} | ${c.topic} | ${c.title} | ${c.durationMinutes}p | chặng: ${c.stageTitle}`)
+    .map((c) => `${c.id} | ${c.skill} | ${c.level ?? '?'} | ${c.topic} | ${c.title} | ${c.durationMinutes}p | nguồn: ${c.source}`)
     .join('\n');
 
   const prompt = `Bạn là điều phối viên học tập tiếng Anh. Hãy xây dựng LỘ TRÌNH HỌC CÁ NHÂN từ kho bài học do giáo viên cung cấp (danh sách bên dưới). CHỈ ĐƯỢC chọn bài có trong danh sách, dùng đúng lesson_id, không tự bịa bài mới.
@@ -192,7 +191,7 @@ ${list}`;
 // Chia các bài thành chặng riêng của học viên. Ưu tiên cách AI chia; nếu AI không chia hợp lệ thì gom theo nhóm nội dung
 // trong kho, hoặc chia đều khi toàn bộ bài thuộc cùng một nhóm.
 function buildPhases(
-  ordered: { lesson_id: string; stageTitle: string }[],
+  ordered: { lesson_id: string; source: string }[],
   aiPhases: AiPlan['phases']
 ): { phases: Phase[]; phaseOfLesson: Map<string, number> } {
   const phaseOfLesson = new Map<string, number>();
@@ -208,12 +207,12 @@ function buildPhases(
 
   if (!phases.length) {
     const titles: string[] = [];
-    for (const o of ordered) if (titles[titles.length - 1] !== o.stageTitle) titles.push(o.stageTitle);
+    for (const o of ordered) if (titles[titles.length - 1] !== o.source) titles.push(o.source);
     if (new Set(titles).size >= 2) {
       phases = titles.map((t) => ({ title: t, description: '' }));
       let idx = 0;
       ordered.forEach((o, i) => {
-        if (i > 0 && ordered[i - 1].stageTitle !== o.stageTitle) idx += 1;
+        if (i > 0 && ordered[i - 1].source !== o.source) idx += 1;
         phaseOfLesson.set(o.lesson_id, idx + 1);
       });
     } else {
@@ -270,9 +269,8 @@ export async function generateRoadmap(userId: string, opts: GenerateOptions) {
   for (const id of keptIds) skipIds.add(id);
 
   const lessons = await prisma.lesson.findMany({
-    where: { stage: { isPublished: true } },
-    include: { stage: true },
-    orderBy: [{ stage: { order: 'asc' } }, { order: 'asc' }],
+    where: { isPublished: true },
+    orderBy: { order: 'asc' },
   });
 
   const target = level;
@@ -281,14 +279,14 @@ export async function generateRoadmap(userId: string, opts: GenerateOptions) {
     .map((l) => ({
       id: l.id, title: l.title, skill: l.skill as SkillType, level: l.level as CEFRLevel | null,
       topic: l.topic, description: l.description, durationMinutes: l.durationMinutes,
-      stageOrder: l.stage.order, order: l.order, stageTitle: l.stage.title,
+      order: l.order, source: l.source,
     }));
   // Kho chưa gắn level hoặc lọc quá chặt -> nới ra toàn kho.
   if (candidates.length < 5) {
     candidates = lessons.filter((l) => !skipIds.has(l.id)).map((l) => ({
       id: l.id, title: l.title, skill: l.skill as SkillType, level: l.level as CEFRLevel | null,
       topic: l.topic, description: l.description, durationMinutes: l.durationMinutes,
-      stageOrder: l.stage.order, order: l.order, stageTitle: l.stage.title,
+      order: l.order, source: l.source,
     }));
   }
 
@@ -326,7 +324,7 @@ export async function generateRoadmap(userId: string, opts: GenerateOptions) {
   const weekList = weeksFor([...kept.map(() => 0), ...newItems.map((i) => i.c.durationMinutes)], user.dailyMinutes);
 
   // Chặng riêng của học viên. Khi giữ lại các bài đã học, giữ nguyên các chặng cũ và nối chặng mới phía sau.
-  const built = buildPhases(newItems.map((i) => ({ lesson_id: i.lesson_id, stageTitle: i.c.stageTitle })), plan?.phases);
+  const built = buildPhases(newItems.map((i) => ({ lesson_id: i.lesson_id, source: i.c.source })), plan?.phases);
   let oldPhases: Phase[] = [];
   if (kept.length) {
     try {
@@ -395,7 +393,7 @@ export async function ensureActiveRoadmap(userId: string) {
   // Bài trong lộ trình bị xóa khỏi kho (cascade) có thể khiến lộ trình trống: tạo lại từ kho hiện tại.
   const coreCount = existing.items.filter((i) => i.status !== 'suggested' && i.status !== 'dismissed').length;
   if (coreCount === 0) {
-    const catalog = await prisma.lesson.count({ where: { stage: { isPublished: true } } });
+    const catalog = await prisma.lesson.count({ where: { isPublished: true } });
     if (catalog > 0) {
       return generateRoadmap(userId, { kind: (existing.kind as RoadmapKind) ?? 'initial' });
     }
@@ -409,9 +407,9 @@ export function isRoadmapDone(items: { status: string }[]) {
   return core.length > 0 && core.every((i) => i.status === 'completed');
 }
 
-// Khi admin xuất bản một chặng, đề xuất các bài mới cho học viên đang học (KHÔNG tự chèn vào lộ trình chính).
-export async function suggestStageToLearners(stageId: string) {
-  const lessons = await prisma.lesson.findMany({ where: { stageId } });
+// Khi admin xuất bản bài mới, đề xuất cho học viên đang học (KHÔNG tự chèn vào lộ trình chính).
+export async function suggestLessonsToLearners(lessonIds: string[]) {
+  const lessons = await prisma.lesson.findMany({ where: { id: { in: lessonIds }, isPublished: true } });
   if (!lessons.length) return 0;
 
   const roadmaps = await prisma.userRoadmap.findMany({

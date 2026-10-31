@@ -386,7 +386,6 @@ export interface LessonQuestion {
 
 export interface LessonDetail {
   id: string;
-  stage_id: string;
   order: number;
   title: string;
   skill: SkillType;

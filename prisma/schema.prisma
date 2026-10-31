@@ -160,25 +160,11 @@ model Question {
   @@index([inBank, skill, level])
 }
 
-model Stage {
-  id             String   @id @default(cuid())
-  order          Int
-  title          String
-  description    String
-  focusSkills    String   // JSON SkillType[]
-  weeks          String   // JSON number[]
-  hasMidterm     Boolean  @default(false)
-  hasFinal       Boolean  @default(false)
-  whyThisStage   String?
-  isPublished    Boolean  @default(true)
-  lessons        Lesson[]
-}
-
 model Lesson {
   id               String   @id @default(cuid())
-  stageId          String
-  stage            Stage    @relation(fields: [stageId], references: [id], onDelete: Cascade)
-  order            Int
+  order            Int      // thứ tự trong kho (giữ trật tự của giáo án khi AI xếp lộ trình)
+  isPublished      Boolean  @default(false) // nháp cho tới khi admin xuất bản
+  source           String   @default("") // nguồn / nhóm gốc của bài (tên chặng hoặc tài liệu đã import), chỉ để admin dễ quản lý
   title            String
   skill            SkillType
   durationMinutes  Int

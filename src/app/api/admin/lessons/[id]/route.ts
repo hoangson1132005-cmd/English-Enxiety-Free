@@ -3,15 +3,14 @@ import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/adminAuth';
 
 function serializeLessonDetail(lesson: {
-  id: string; stageId: string; order: number; title: string; skill: string;
+  id: string; order: number; title: string; skill: string; isPublished: boolean; source: string;
   durationMinutes: number; xpReward: number; description: string; topic: string; content: string; level: string | null; vocabItems: string;
-  stage: { title: string };
   questions: { id: string; question: string; skill: string; topic: string; level: string; type: string; options: string | null; answer: string; explanation: string; passage: string | null; audioUrl: string | null }[];
 }) {
   return {
     id: lesson.id,
-    stage_id: lesson.stageId,
-    stage_title: lesson.stage.title,
+    is_published: lesson.isPublished,
+    source: lesson.source,
     order: lesson.order,
     title: lesson.title,
     skill: lesson.skill,
@@ -43,7 +42,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   if (!session) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   const { id } = await params;
-  const lesson = await prisma.lesson.findUnique({ where: { id }, include: { stage: true, questions: true } });
+  const lesson = await prisma.lesson.findUnique({ where: { id }, include: { questions: true } });
   if (!lesson) return NextResponse.json({ error: 'Không tìm thấy bài học' }, { status: 404 });
 
   return NextResponse.json(serializeLessonDetail(lesson));
@@ -67,9 +66,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       ...(body.topic !== undefined ? { topic: body.topic } : {}),
       ...(body.content !== undefined ? { content: body.content } : {}),
       ...(body.level !== undefined ? { level: body.level || null } : {}),
+      ...(body.is_published !== undefined ? { isPublished: !!body.is_published } : {}),
       ...(body.vocab_items !== undefined ? { vocabItems: JSON.stringify(body.vocab_items) } : {}),
     },
-    include: { stage: true, questions: true },
+    include: { questions: true },
   });
 
   return NextResponse.json(serializeLessonDetail(lesson));

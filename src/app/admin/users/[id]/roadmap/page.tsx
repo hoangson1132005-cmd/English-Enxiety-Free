@@ -20,11 +20,11 @@ interface View {
   user: { id: string; full_name: string; email: string; current_level: string; daily_minutes: number; goal: string | null };
   roadmap: { id: string; cycle: number; kind: string; level: string; generated_by: string; rationale: string; created_at: string; phases: { title: string; description: string }[] };
   items: {
-    item_id: string; lesson_id: string; title: string; skill: SkillType; level: string | null; stage_title: string;
+    item_id: string; lesson_id: string; title: string; skill: SkillType; level: string | null; lesson_group: string;
     duration_minutes: number; order: number; week: number; phase: number; status: string; source: string; reason: string;
     best_score: number | null; attempt_count: number;
   }[];
-  catalog: { lesson_id: string; title: string; skill: SkillType; level: string | null; stage_title: string; duration_minutes: number }[];
+  catalog: { lesson_id: string; title: string; skill: SkillType; level: string | null; lesson_group: string; duration_minutes: number }[];
   history: { id: string; cycle: number; kind: string; level: string; status: string; created_at: string }[];
 }
 
@@ -180,7 +180,7 @@ function Content() {
                     <td className="px-4 py-3 text-text-muted">{idx + 1}</td>
                     <td className="px-4 py-3">
                       <div className="font-semibold text-text-primary">{i.title}</div>
-                      <div className="text-[11px] text-text-muted">{i.stage_title}{i.level ? ` • ${i.level}` : ''}{i.reason ? ` • ${i.reason}` : ''}</div>
+                      <div className="text-[11px] text-text-muted">{i.lesson_group}{i.level ? ` • ${i.level}` : ''}{i.reason ? ` • ${i.reason}` : ''}</div>
                     </td>
                     <td className="px-4 py-3 text-text-secondary">{SKILL_LABELS[i.skill]}</td>
                     <td className="px-4 py-3">
@@ -233,7 +233,7 @@ function Content() {
               <option value="">Chọn bài trong kho nội dung...</option>
               {view.catalog.map((l) => (
                 <option key={l.lesson_id} value={l.lesson_id}>
-                  [{SKILL_LABELS[l.skill]}{l.level ? ` ${l.level}` : ''}] {l.title} — {l.stage_title}
+                  [{SKILL_LABELS[l.skill]}{l.level ? ` ${l.level}` : ''}] {l.title} — {l.lesson_group}
                 </option>
               ))}
             </select>
