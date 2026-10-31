@@ -230,3 +230,47 @@ h1, h2, h3, .font-display {
   border-radius: 4px;
   font-size: 0.9em;
 }
+
+/* ===== Hoa đào rơi (trang chủ) ===== */
+.sakura-layer {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 30;
+}
+.sakura-petal {
+  position: absolute;
+  top: -30px;
+  will-change: transform, opacity;
+  animation: petal-fall var(--dur) linear var(--delay) infinite;
+}
+.sakura-petal > svg {
+  display: block;
+  animation: petal-sway var(--sway) ease-in-out var(--delay) infinite alternate;
+}
+@keyframes petal-fall {
+  0% { transform: translate3d(0, -6vh, 0) rotate(0deg); opacity: 0; }
+  8% { opacity: 0.95; }
+  90% { opacity: 0.9; }
+  100% { transform: translate3d(var(--drift), 108vh, 0) rotate(var(--spin)); opacity: 0; }
+}
+@keyframes petal-sway {
+  from { transform: translateX(-16px) rotateY(0deg) rotateX(10deg); }
+  to { transform: translateX(16px) rotateY(160deg) rotateX(-20deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sakura-layer { display: none; }
+}
+
+/* ===== Thanh tiến trình cuộn ===== */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 60;
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, #2F7F7A, #F4A7B9);
+}

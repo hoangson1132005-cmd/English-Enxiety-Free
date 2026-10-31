@@ -32,14 +32,14 @@ export async function apiRegister(data: {
   return res.json();
 }
 
-export async function apiForgotPassword(email: string): Promise<{ success: boolean }> {
+export async function apiForgotPassword(email: string): Promise<{ success: boolean; dev_reset_url?: string }> {
   const res = await fetch('/api/password/forgot', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email }),
   });
   if (!res.ok) throw new Error('Không thể gửi email');
-  return { success: true };
+  return res.json();
 }
 
 export async function apiResetPassword(token: string, password: string): Promise<{ success: boolean }> {

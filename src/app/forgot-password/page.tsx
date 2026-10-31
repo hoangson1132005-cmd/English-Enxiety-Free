@@ -19,6 +19,7 @@ type ForgotFormData = z.infer<typeof forgotSchema>;
 export default function ForgotPasswordPage() {
   const { addToast } = useUIStore();
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [devLink, setDevLink] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const {
@@ -32,7 +33,8 @@ export default function ForgotPasswordPage() {
   const onSubmit = async (data: ForgotFormData) => {
     setIsLoading(true);
     try {
-      await apiForgotPassword(data.email);
+      const res = await apiForgotPassword(data.email);
+      setDevLink(res.dev_reset_url ?? null);
       setIsSubmitted(true);
       addToast({
         title: 'Đã gửi hướng dẫn',
@@ -79,6 +81,13 @@ export default function ForgotPasswordPage() {
               <p className="text-xs text-text-secondary dark:text-gray-300 leading-relaxed">
                 Chúng tôi đã gửi đường dẫn đặt lại mật khẩu. Nếu không thấy trong hộp thư đến, hãy kiểm tra thư mục Spam/Junk.
               </p>
+              {devLink && (
+                <div className="p-3 rounded-2xl bg-warning-light/50 border border-warning/40 text-left text-xs space-y-1.5">
+                  <p className="font-semibold text-warning-dark">Chế độ phát triển: máy chủ chưa cấu hình gửi email (SMTP).</p>
+                  <p className="text-text-secondary">Dùng liên kết này để đặt lại mật khẩu (chỉ hiện khi chưa lên production):</p>
+                  <a href={devLink} className="block break-all text-primary-700 underline">{devLink}</a>
+                </div>
+              )}
             </div>
           ) : (
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

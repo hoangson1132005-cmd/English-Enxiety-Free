@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { sendPasswordResetEmail } from '@/lib/mail';
+import { sendPasswordResetEmail, MailNotConfiguredError } from '@/lib/mail';
 
 const schema = z.object({ email: z.string().email() });
 const TOKEN_TTL_MS = 30 * 60 * 1000;
@@ -30,6 +30,12 @@ export async function POST(req: Request) {
     try {
       await sendPasswordResetEmail(user.email, user.fullName, resetUrl);
     } catch (err) {
+      // Chưa cấu hình gửi email: khi phát triển (không phải production) in liên kết ra console máy chủ và trả về
+      // để thử nghiệm; production thì báo lỗi rõ ràng để quản trị viên cấu hình SMTP.
+      if (err instanceof MailNotConfiguredError && process.env.NODE_ENV !== 'production') {
+        console.warn(`[DEV] Chưa cấu hình SMTP. Liên kết đặt lại mật khẩu cho ${user.email}: ${resetUrl}`);
+        return NextResponse.json({ success: true, dev_reset_url: resetUrl });
+      }
       console.error('Gửi email đặt lại mật khẩu thất bại:', err);
       return NextResponse.json({ error: 'Không thể gửi email lúc này' }, { status: 500 });
     }

@@ -3,7 +3,9 @@
 import React from 'react';
 import { useAdminShortcut } from '@/components/features/auth/useAdminShortcut';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useSpring, useReducedMotion } from 'framer-motion';
+import { SakuraPetals } from '@/components/features/landing/SakuraPetals';
+import { Reveal } from '@/components/ui/Reveal';
 import {
   GraduationCap, ArrowRight, CheckCircle2,
   BookOpen, Volume2, PenTool, Mic, BarChart3,
@@ -49,10 +51,16 @@ function Logo({ content, className }: { content: LandingContent; className: stri
 
 export function LandingPageClient({ content }: { content: LandingContent }) {
   const onLogoClick = useAdminShortcut();
+  const { scrollYProgress } = useScroll();
+  const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 24, mass: 0.3 });
+  const reduceMotion = useReducedMotion();
   const bullets = [content.whyChooseBullet1, content.whyChooseBullet2, content.whyChooseBullet3].map(splitBullet);
 
   return (
     <div className="min-h-screen bg-[#FBFDFC] dark:bg-gray-950 text-text-primary dark:text-gray-100 flex flex-col selection:bg-primary-100 selection:text-primary-800">
+      <SakuraPetals />
+      {!reduceMotion && <motion.div className="scroll-progress" style={{ scaleX: progress }} />}
+
       {/* Top Navbar */}
       <header className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-[#E3F2EF] dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
@@ -135,12 +143,6 @@ export function LandingPageClient({ content }: { content: LandingContent }) {
               <span>Làm bài Test đầu vào ngay</span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
-            <Link
-              href="/dashboard"
-              className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-gray-800 text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-gray-700 hover:bg-primary-50 dark:hover:bg-gray-700/60 rounded-2xl font-semibold transition-all shadow-sm text-base"
-            >
-              Trải nghiệm Dashboard Demo
-            </Link>
           </motion.div>
 
           {/* Quick highlight metrics */}
@@ -151,14 +153,13 @@ export function LandingPageClient({ content }: { content: LandingContent }) {
               { label: 'Quy đổi quốc tế', val: 'CEFR / TOEIC', desc: 'Ước lượng trình độ tức thì' },
               { label: 'Hỗ trợ sinh viên', val: 'AI Tutor 24/7', desc: 'Chữa email & giải thích' },
             ].map((stat, i) => (
-              <div
-                key={i}
-                className="p-4 rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-primary-100 dark:border-gray-700 text-left shadow-soft"
-              >
-                <div className="font-serif font-bold text-xl text-primary-700 dark:text-primary-300">{stat.val}</div>
-                <div className="text-xs font-semibold text-text-primary dark:text-gray-200 mt-0.5">{stat.label}</div>
-                <div className="text-[11px] text-text-muted mt-1">{stat.desc}</div>
-              </div>
+              <Reveal key={i} delay={0.45 + i * 0.1} y={20}>
+                <div className="p-4 rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-primary-100 dark:border-gray-700 text-left shadow-soft hover:-translate-y-1 hover:shadow-card-hover transition-all duration-300">
+                  <div className="font-serif font-bold text-xl text-primary-700 dark:text-primary-300">{stat.val}</div>
+                  <div className="text-xs font-semibold text-text-primary dark:text-gray-200 mt-0.5">{stat.label}</div>
+                  <div className="text-[11px] text-text-muted mt-1">{stat.desc}</div>
+                </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -167,14 +168,14 @@ export function LandingPageClient({ content }: { content: LandingContent }) {
       {/* 4 Kỹ năng Chuyên ngành */}
       <section className="py-20 bg-white dark:bg-gray-900 border-y border-[#E3F2EF] dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
+          <Reveal className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="font-serif font-bold text-3xl sm:text-4xl text-primary-900 dark:text-white">
               Rèn luyện toàn diện 4 Kỹ năng thực chiến
             </h2>
             <p className="mt-4 text-text-secondary dark:text-gray-300 text-sm sm:text-base">
               Không học lan man. Mọi bài học xoay quanh tình huống thực tế trong công việc và lĩnh vực của bạn, được chọn riêng cho trình độ và mục tiêu của từng người.
             </p>
-          </div>
+          </Reveal>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
@@ -207,9 +208,9 @@ export function LandingPageClient({ content }: { content: LandingContent }) {
                 color: 'from-primary-600 to-accent-dark',
               },
             ].map((item, idx) => (
+              <Reveal key={idx} delay={idx * 0.12} className="h-full">
               <div
-                key={idx}
-                className="p-6 rounded-3xl bg-[#FBFDFC] dark:bg-gray-800/50 border border-primary-100 dark:border-gray-700 hover:shadow-card-hover transition-all group flex flex-col"
+                className="h-full p-6 rounded-3xl bg-[#FBFDFC] dark:bg-gray-800/50 border border-primary-100 dark:border-gray-700 hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 group flex flex-col"
               >
                 <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center text-white mb-5 shadow-soft group-hover:scale-105 transition-transform`}>
                   <item.icon className="w-6 h-6" />
@@ -224,6 +225,7 @@ export function LandingPageClient({ content }: { content: LandingContent }) {
                   {item.desc}
                 </p>
               </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -232,12 +234,12 @@ export function LandingPageClient({ content }: { content: LandingContent }) {
       {/* Quy trình 3 bước */}
       <section className="py-20 bg-gradient-to-b from-transparent via-[#E3F2EF]/40 to-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
+          <Reveal className="text-center max-w-2xl mx-auto mb-16">
             <span className="text-xs font-bold text-accent uppercase tracking-widest">Phương pháp học tập</span>
             <h2 className="font-serif font-bold text-3xl sm:text-4xl text-primary-900 dark:text-white mt-2">
               Chỉ 3 Bước để Bứt Phá Trình Độ
             </h2>
-          </div>
+          </Reveal>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
             {[
@@ -260,9 +262,9 @@ export function LandingPageClient({ content }: { content: LandingContent }) {
                 icon: Award,
               },
             ].map((st, i) => (
+              <Reveal key={i} delay={i * 0.15} className="h-full">
               <div
-                key={i}
-                className="relative p-8 rounded-3xl bg-white dark:bg-gray-800 border border-primary-100 dark:border-gray-700 shadow-soft flex flex-col"
+                className="relative h-full p-8 rounded-3xl bg-white dark:bg-gray-800 border border-primary-100 dark:border-gray-700 shadow-soft hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 flex flex-col"
               >
                 <div className="text-4xl font-serif font-bold text-primary-200 dark:text-primary-900 mb-4">
                   {st.step}
@@ -277,6 +279,7 @@ export function LandingPageClient({ content }: { content: LandingContent }) {
                   {st.desc}
                 </p>
               </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -285,6 +288,7 @@ export function LandingPageClient({ content }: { content: LandingContent }) {
       {/* Vì sao chọn English Anxiety Free */}
       <section className="py-20 bg-white dark:bg-gray-900 border-t border-[#E3F2EF] dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Reveal y={40}>
           <div className="bg-gradient-to-br from-primary-700 via-primary-800 to-primary-900 rounded-3xl p-8 sm:p-12 text-white relative overflow-hidden shadow-soft-lg">
             <div className="max-w-3xl relative z-10">
               <span className="text-xs font-bold text-cream uppercase tracking-widest">Cam kết chất lượng</span>
@@ -313,6 +317,7 @@ export function LandingPageClient({ content }: { content: LandingContent }) {
               </div>
             </div>
           </div>
+          </Reveal>
         </div>
       </section>
 
@@ -338,7 +343,6 @@ export function LandingPageClient({ content }: { content: LandingContent }) {
           <div className="flex items-center gap-6">
             <Link href="/login" className="hover:text-primary-600">Đăng nhập</Link>
             <Link href="/register" className="hover:text-primary-600">Đăng ký</Link>
-            <Link href="/dashboard" className="hover:text-primary-600">Dashboard</Link>
           </div>
 
           <div className="text-center sm:text-right text-[11px] text-text-muted">

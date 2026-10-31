@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  Search, UserPlus, Ban, CheckCircle2, Trash2, X, Pencil, Route,
+  Search, UserPlus, Ban, CheckCircle2, Trash2, X, Pencil, Route, KeyRound,
 } from 'lucide-react';
 import Link from 'next/link';
 import { AdminLayout } from '@/components/layout/AdminLayout';
@@ -23,7 +23,7 @@ export default function AdminUsersPage() {
   const [facultyFilter, setFacultyFilter] = useState<'all' | FacultyGroup>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'disabled'>('all');
   const [showAddModal, setShowAddModal] = useState(false);
-  const [createdCreds, setCreatedCreds] = useState<{ email: string; password: string } | null>(null);
+  const [createdCreds, setCreatedCreds] = useState<{ email: string; password: string; title: string } | null>(null);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const [newUser, setNewUser] = useState({ full_name: '', student_id: '', email: '', faculty_group: 'engineering' as FacultyGroup });
 
@@ -74,6 +74,14 @@ export default function AdminUsersPage() {
     setUsers((prev) => prev.filter((u) => u.id !== id));
   };
 
+  const resetPassword = async (u: AdminUser) => {
+    if (!confirm(`Đặt lại mật khẩu cho ${u.full_name}? Mật khẩu cũ sẽ không còn dùng được.`)) return;
+    const res = await fetch(`/api/admin/users/${u.id}/reset-password`, { method: 'POST' });
+    const data = await res.json();
+    if (res.ok) setCreatedCreds({ email: data.email, password: data.temp_password, title: 'Đã đặt lại mật khẩu' });
+    else alert(data.error || 'Không đặt lại được mật khẩu');
+  };
+
   const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newUser.full_name || !newUser.student_id || !newUser.email) return;
@@ -84,7 +92,7 @@ export default function AdminUsersPage() {
     });
     if (res.ok) {
       const { temp_password, ...created } = await res.json();
-      setCreatedCreds({ email: created.email, password: temp_password });
+      setCreatedCreds({ email: created.email, password: temp_password, title: 'Đã tạo tài khoản' });
       setUsers((prev) => [created, ...prev]);
       setNewUser({ full_name: '', student_id: '', email: '', faculty_group: 'engineering' });
       setShowAddModal(false);
@@ -222,6 +230,13 @@ export default function AdminUsersPage() {
                           <Pencil className="w-4 h-4" />
                         </button>
                         <button
+                          onClick={() => resetPassword(u)}
+                          title="Đặt lại mật khẩu"
+                          className="p-1.5 rounded-lg text-text-muted hover:text-primary-600 hover:bg-primary-50 transition-colors"
+                        >
+                          <KeyRound className="w-4 h-4" />
+                        </button>
+                        <button
                           onClick={() => toggleStatus(u)}
                           title={u.status === 'active' ? 'Khóa người dùng' : 'Mở khóa'}
                           className={cn(
@@ -260,7 +275,7 @@ export default function AdminUsersPage() {
       {createdCreds && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-soft-lg border border-[var(--color-border)] space-y-3">
-            <h3 className="font-serif font-bold text-lg text-primary-900">Đã tạo tài khoản</h3>
+            <h3 className="font-serif font-bold text-lg text-primary-900">{createdCreds.title}</h3>
             <p className="text-xs text-text-secondary">Hãy gửi thông tin này cho người dùng và yêu cầu đổi mật khẩu. Mật khẩu chỉ hiển thị một lần.</p>
             <div className="p-3 rounded-2xl bg-cream/50 text-sm space-y-1">
               <div>Email: <strong>{createdCreds.email}</strong></div>

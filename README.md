@@ -162,6 +162,8 @@ Checklist: đặt `AUTH_SECRET` mới, `APP_URL` đúng tên miền, cấu hình
 
 `/forgot-password` tạo token ngẫu nhiên (lưu dạng hash SHA-256, hiệu lực 30 phút, dùng một lần) và gửi link `APP_URL/reset-password?token=...` qua SMTP. API: `POST /api/password/forgot`, `POST /api/password/reset`.
 
+Nếu **chưa cấu hình SMTP**: ở chế độ phát triển, trang quên mật khẩu hiện thẳng liên kết đặt lại (và in ra console máy chủ) để thử nghiệm; ở production sẽ báo lỗi. Cách nhanh để có email thật: Gmail → bật xác minh 2 bước → tạo *Mật khẩu ứng dụng*, rồi đặt `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=587`, `SMTP_USER=<gmail>`, `SMTP_PASS=<mật khẩu ứng dụng>`, `MAIL_FROM` trong `.env`. Admin cũng có thể đặt lại mật khẩu cho người dùng ở *Người dùng → biểu tượng chìa khóa* (mật khẩu tạm hiển thị một lần).
+
 ### Lệnh hữu ích
 
 | Lệnh | Tác dụng |
