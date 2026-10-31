@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, Upload, Trash2, CheckCircle2, FileText } from 'lucide-react';
 import { AdminLayout } from '@/components/layout/AdminLayout';
+import { ADMIN_HELP } from '@/lib/adminHelp';
 import { AiImportModal } from '@/components/admin/AiImportModal';
 import { cn } from '@/lib/utils';
 
@@ -63,7 +64,7 @@ export default function AdminTestsListPage() {
   };
 
   return (
-    <AdminLayout title="Quản Lý Đề Test" description={`${tests.length} đề test · lưu toàn bộ lịch sử`}>
+    <AdminLayout title="Quản Lý Đề Test" description={`${tests.length} đề test · lưu toàn bộ lịch sử`} help={ADMIN_HELP.tests}>
       <div className="space-y-5">
         <div className="flex flex-wrap items-center justify-end gap-2">
           <button

@@ -12,6 +12,7 @@ import { apiGetRoadmap, apiRespondSuggestion, apiStartExam, apiStartStageQuiz } 
 import { useUIStore } from '@/store/uiStore';
 import { useProgressStore } from '@/store/progressStore';
 import { cn } from '@/lib/utils';
+import { RoadmapSkeleton } from '@/components/ui/Skeleton';
 import type { SkillType, RoadmapItemStatus, RoadmapItemView, RoadmapView } from '@/types';
 
 const SKILL_LABELS: Record<SkillType, string> = {
@@ -135,7 +136,7 @@ export default function RoadmapPage() {
   if (!data) {
     return (
       <AppLayout title="Lộ Trình Cá Nhân Hóa">
-        <p className="text-center text-sm text-text-muted py-20">Đang tải lộ trình...</p>
+        <RoadmapSkeleton />
       </AppLayout>
     );
   }

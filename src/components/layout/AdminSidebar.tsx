@@ -2,23 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  LayoutDashboard, Users, Library, ClipboardList, BarChart3,
-  ShieldCheck, ArrowLeftRight, Image as ImageIcon, HelpCircle, History, SlidersHorizontal,
-} from 'lucide-react';
+import { ShieldCheck, ArrowLeftRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const adminNavItems = [
-  { href: '/admin', label: 'Tổng quan', icon: LayoutDashboard },
-  { href: '/admin/users', label: 'Người dùng', icon: Users },
-  { href: '/admin/content', label: 'Bài học', icon: Library, extraMatch: '/admin/lessons' },
-  { href: '/admin/question-bank', label: 'Ngân hàng câu hỏi', icon: HelpCircle },
-  { href: '/admin/quiz-sessions', label: 'Lịch sử bốc câu', icon: History },
-  { href: '/admin/quiz-settings', label: 'Cài đặt kiểm tra', icon: SlidersHorizontal },
-  { href: '/admin/tests', label: 'Đề test', icon: ClipboardList },
-  { href: '/admin/landing', label: 'Landing Page', icon: ImageIcon },
-  { href: '/admin/reports', label: 'Báo cáo', icon: BarChart3 },
-];
+import { adminNavItems } from '@/lib/adminNav';
 
 export function AdminSidebar() {
   const pathname = usePathname();
@@ -44,9 +30,9 @@ export function AdminSidebar() {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
         {adminNavItems.map((item) => {
-          const active = isActive(item.href, item.extraMatch);
+          const active = isActive(item.href, 'extraMatch' in item ? item.extraMatch : undefined);
           return (
-            <Link key={item.href} href={item.href}>
+            <Link key={item.href} href={item.href} title={item.hint}>
               <div
                 className={cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors cursor-pointer',

@@ -4,26 +4,18 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AdminSidebar } from '@/components/layout/AdminSidebar';
-import { LayoutDashboard, Users, Library, ClipboardList, BarChart3, Image as ImageIcon, Map } from 'lucide-react';
+import { adminNavItems } from '@/lib/adminNav';
+import { HelpNote, type HelpNoteProps } from '@/components/admin/HelpNote';
 import { cn } from '@/lib/utils';
-
-const mobileNavItems = [
-  { href: '/admin', label: 'Tổng quan', icon: LayoutDashboard },
-  { href: '/admin/users', label: 'Người dùng', icon: Users },
-  { href: '/admin/content', label: 'Nội dung', icon: Library },
-  { href: '/admin/roadmap', label: 'Chặng học', icon: Map },
-  { href: '/admin/tests', label: 'Đề test', icon: ClipboardList },
-  { href: '/admin/landing', label: 'Landing', icon: ImageIcon },
-  { href: '/admin/reports', label: 'Báo cáo', icon: BarChart3 },
-];
 
 interface AdminLayoutProps {
   children: React.ReactNode;
   title: string;
   description?: string;
+  help?: HelpNoteProps; // ghi chú hướng dẫn kèm link nhanh ở đầu trang
 }
 
-export function AdminLayout({ children, title, description }: AdminLayoutProps) {
+export function AdminLayout({ children, title, description, help }: AdminLayoutProps) {
   const pathname = usePathname();
   const isActive = (href: string) => (href === '/admin' ? pathname === '/admin' : pathname.startsWith(href));
 
@@ -34,8 +26,8 @@ export function AdminLayout({ children, title, description }: AdminLayoutProps) 
       <div className="flex-1 flex flex-col md:pl-[240px]">
         {/* Mobile top nav */}
         <nav className="md:hidden sticky top-0 z-30 bg-white border-b border-[var(--color-border)] px-2 py-2 flex items-center gap-1 overflow-x-auto no-scrollbar">
-          {mobileNavItems.map((item) => {
-            const active = isActive(item.href);
+          {adminNavItems.map((item) => {
+            const active = isActive(item.href) || ('extraMatch' in item && !!item.extraMatch && pathname.startsWith(item.extraMatch));
             return (
               <Link
                 key={item.href}
@@ -68,7 +60,10 @@ export function AdminLayout({ children, title, description }: AdminLayoutProps) 
           </div>
         </header>
 
-        <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">{children}</main>
+        <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full animate-fade-in">
+          {help && <HelpNote {...help} />}
+          {children}
+        </main>
       </div>
     </div>
   );

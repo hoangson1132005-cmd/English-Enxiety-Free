@@ -1,6 +1,7 @@
 'use client';
 
 import { Markdown } from '@/components/ui/Markdown';
+import { LessonSkeleton } from '@/components/ui/Skeleton';
 import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -333,7 +334,7 @@ function LessonPageContent() {
   if (loading) {
     return (
       <AppLayout title="Bài học">
-        <p className="text-center text-sm text-text-muted py-20">Đang tải...</p>
+        <LessonSkeleton />
       </AppLayout>
     );
   }

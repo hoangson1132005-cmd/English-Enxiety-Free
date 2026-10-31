@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { Suspense, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Search, Plus, Trash2, X, Upload, Pencil } from 'lucide-react';
 import { AdminLayout } from '@/components/layout/AdminLayout';
+import { ADMIN_HELP } from '@/lib/adminHelp';
 import { AiImportModal } from '@/components/admin/AiImportModal';
 import type { SkillType } from '@/types';
 
@@ -22,13 +24,14 @@ interface LessonRow {
 
 const inputCls = 'w-full px-4 py-2.5 rounded-xl text-sm bg-background-secondary/50 border border-[var(--color-border)] focus:outline-none';
 
-export default function AdminContentPage() {
+function AdminContentInner() {
   const [lessons, setLessons] = useState<LessonRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [search, setSearch] = useState('');
   const [skillFilter, setSkillFilter] = useState<'all' | SkillType>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'published'>('all');
+  const urlStatus = useSearchParams().get('status');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'published'>(urlStatus === 'draft' || urlStatus === 'published' ? urlStatus : 'all');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -117,13 +120,8 @@ export default function AdminContentPage() {
   };
 
   return (
-    <AdminLayout title="Bài Học" description="Kho bài học dùng chung. Bài đã xuất bản được AI chọn để tạo lộ trình riêng cho từng học viên.">
+    <AdminLayout title="Bài Học" description="Kho bài học dùng chung. Bài đã xuất bản được AI chọn để tạo lộ trình riêng cho từng học viên." help={ADMIN_HELP.content}>
       <div className="space-y-5">
-        <div className="p-4 rounded-2xl bg-cream/40 border border-cream-dark/50 text-xs text-text-secondary leading-relaxed">
-          Câu hỏi kiểm tra không còn nhập riêng ở đây: các bài kiểm tra (cuối bài, cuối chặng, cuối khóa) lấy câu từ{' '}
-          <Link href="/admin/question-bank" className="font-semibold text-primary-700 underline">Ngân hàng câu hỏi</Link>.
-        </div>
-
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
           <div className="flex flex-col sm:flex-row gap-3 flex-1">
             <div className="relative flex-1 max-w-sm">
@@ -333,5 +331,13 @@ export default function AdminContentPage() {
         />
       )}
     </AdminLayout>
+  );
+}
+
+export default function AdminContentPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-sm text-text-muted">Đang tải...</div>}>
+      <AdminContentInner />
+    </Suspense>
   );
 }

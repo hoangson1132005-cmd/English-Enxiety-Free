@@ -7,6 +7,7 @@ import {
   Save, KeyRound, Clock, Target, CheckCircle2, Languages, Wrench, Sparkles, Briefcase, GraduationCap
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { ChangePasswordForm } from '@/components/account/ChangePasswordForm';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
 import { apiUpdateProfile, apiGetProfile } from '@/lib/api';
@@ -348,6 +349,10 @@ function ProfileForm({ profile }: { profile: Profile }) {
             </button>
           </div>
         </form>
+
+        <div className="mt-6 p-6 sm:p-8 rounded-3xl bg-white dark:bg-gray-900 border border-[var(--color-border)] shadow-soft">
+          <ChangePasswordForm />
+        </div>
       </div>
     </AppLayout>
   );

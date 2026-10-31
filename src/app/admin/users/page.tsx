@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { AdminLayout } from '@/components/layout/AdminLayout';
+import { ADMIN_HELP } from '@/lib/adminHelp';
 import { FACULTY_GROUP_LABELS, MAJORS_BY_FACULTY, JOB_INTEREST_OPTIONS } from '@/types';
 import type { AdminUser, FacultyGroup, CEFRLevel, InterestArea } from '@/types';
 import { cn, formatDate } from '@/lib/utils';
@@ -125,7 +126,7 @@ export default function AdminUsersPage() {
   const activeCount = users.filter((u) => u.status === 'active').length;
 
   return (
-    <AdminLayout title="Quản Lý Người Dùng" description={`${users.length} người dùng · ${activeCount} đang hoạt động`}>
+    <AdminLayout title="Quản Lý Người Dùng" description={`${users.length} người dùng · ${activeCount} đang hoạt động`} help={ADMIN_HELP.users}>
       <div className="space-y-5">
         {/* TOOLBAR */}
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">

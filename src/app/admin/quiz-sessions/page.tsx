@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Search, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { AdminLayout } from '@/components/layout/AdminLayout';
+import { ADMIN_HELP } from '@/lib/adminHelp';
 import { cn } from '@/lib/utils';
 
 const KIND_LABELS: Record<string, string> = { lesson: 'Cuối bài', stage: 'Cuối chặng', final: 'Cuối khóa' };
@@ -52,7 +53,7 @@ export default function QuizSessionsPage() {
   const selectCls = 'px-3 py-2.5 text-sm rounded-xl bg-white border border-[var(--color-border)] focus:outline-none';
 
   return (
-    <AdminLayout title="Lịch Sử Bốc Câu" description="Mỗi lượt kiểm tra của học viên đã dùng những câu hỏi nào, lấy từ đâu và kết quả ra sao">
+    <AdminLayout title="Lịch Sử Bốc Câu" description="Mỗi lượt kiểm tra của học viên đã dùng những câu hỏi nào, lấy từ đâu và kết quả ra sao" help={ADMIN_HELP.quizSessions}>
       <div className="space-y-5">
         <div className="flex flex-wrap gap-3">
           <form onSubmit={(e) => { e.preventDefault(); setQuery(search); setPage(1); }} className="relative flex-1 min-w-[12rem] max-w-xs">

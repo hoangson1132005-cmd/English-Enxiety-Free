@@ -4,12 +4,13 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   Users, CheckCircle2, UserPlus, TrendingUp, Library,
-  ClipboardList, BarChart3, ArrowRight, Image as ImageIcon,
+  ClipboardList, BarChart3, ArrowRight, Image as ImageIcon, HelpCircle,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from 'recharts';
 import { AdminLayout } from '@/components/layout/AdminLayout';
+import { SetupChecklist } from '@/components/admin/SetupChecklist';
 
 interface OverviewData {
   total_users: number;
@@ -28,7 +29,8 @@ export default function AdminOverviewPage() {
 
   const quickLinks = [
     { href: '/admin/users', label: 'Người dùng', desc: data ? `${data.total_users} tài khoản` : '...', icon: Users },
-    { href: '/admin/content', label: 'Câu hỏi & Bài học', desc: 'Quản lý ngân hàng nội dung', icon: Library },
+    { href: '/admin/content', label: 'Bài học', desc: 'Nạp giáo án, xuất bản', icon: Library },
+    { href: '/admin/question-bank', label: 'Ngân hàng câu hỏi', desc: 'Nguồn câu cho mọi bài kiểm tra', icon: HelpCircle },
     { href: '/admin/tests', label: 'Đề test', desc: 'Cấu hình bài test đầu vào', icon: ClipboardList },
     { href: '/admin/landing', label: 'Landing Page', desc: 'Nội dung trang chủ & logo', icon: ImageIcon },
     { href: '/admin/reports', label: 'Báo cáo', desc: 'Phân tích chi tiết', icon: BarChart3 },
@@ -37,6 +39,7 @@ export default function AdminOverviewPage() {
   return (
     <AdminLayout title="Tổng Quan Quản Trị" description="Theo dõi nhanh tình trạng hệ thống English Anxiety Free">
       <div className="space-y-8">
+        <SetupChecklist />
         {!data ? (
           <p className="text-center text-sm text-text-muted py-10">Đang tải...</p>
         ) : (
@@ -108,7 +111,7 @@ export default function AdminOverviewPage() {
         {/* QUICK LINKS */}
         <div>
           <h3 className="font-serif font-bold text-base text-text-primary mb-3">Truy Cập Nhanh</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
             {quickLinks.map((link) => (
               <Link
                 key={link.href}

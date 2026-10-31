@@ -6,6 +6,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from 'recharts';
 import { AdminLayout } from '@/components/layout/AdminLayout';
+import { ADMIN_HELP } from '@/lib/adminHelp';
 import { FACULTY_GROUP_LABELS } from '@/types';
 import type { AdminUser, FacultyGroup } from '@/types';
 
@@ -51,7 +52,7 @@ export default function AdminReportsPage() {
   }));
 
   return (
-    <AdminLayout title="Báo Cáo & Phân Tích" description="Thống kê tổng hợp toàn hệ thống">
+    <AdminLayout title="Báo Cáo & Phân Tích" description="Thống kê tổng hợp toàn hệ thống" help={ADMIN_HELP.reports}>
       <div className="space-y-6">
         {/* STAT CARDS */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

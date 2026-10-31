@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft, Plus, Trash2, Pencil } from 'lucide-react';
 import { QuestionEditorModal } from '@/components/admin/QuestionEditorModal';
 import { AdminLayout } from '@/components/layout/AdminLayout';
+import { ADMIN_HELP } from '@/lib/adminHelp';
 import type { SkillType, CEFRLevel, QuestionBankItem } from '@/types';
 
 const SKILL_LABELS: Record<SkillType, string> = {
@@ -153,7 +154,7 @@ function AdminLessonDetailContent() {
   }
 
   return (
-    <AdminLayout title={lesson.title} description={`${lesson.is_published ? 'Đã xuất bản' : 'Nháp'}${lesson.source ? ` · Nguồn: ${lesson.source}` : ''}`}>
+    <AdminLayout title={lesson.title} description={`${lesson.is_published ? 'Đã xuất bản' : 'Nháp'}${lesson.source ? ` · Nguồn: ${lesson.source}` : ''}`} help={ADMIN_HELP.lesson}>
       <div className="space-y-6 max-w-3xl">
         <Link href="/admin/content" className="inline-flex items-center gap-1.5 text-xs text-text-secondary hover:text-primary-600">
           <ArrowLeft className="w-3.5 h-3.5" /> Về Câu hỏi & Bài học

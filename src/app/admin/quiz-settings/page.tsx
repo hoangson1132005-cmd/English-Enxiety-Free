@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { AdminLayout } from '@/components/layout/AdminLayout';
+import { ADMIN_HELP } from '@/lib/adminHelp';
 
 interface Values {
   lessonSize: number; lessonSizeFreeText: number; stageSize: number; finalSize: number; passScore: number;
@@ -47,7 +48,7 @@ export default function QuizSettingsPage() {
   };
 
   return (
-    <AdminLayout title="Cài Đặt Bài Kiểm Tra" description="Quy tắc chung cho mọi học viên và mọi lộ trình, chỉnh một lần là áp dụng toàn hệ thống">
+    <AdminLayout title="Cài Đặt Bài Kiểm Tra" description="Quy tắc chung cho mọi học viên và mọi lộ trình, chỉnh một lần là áp dụng toàn hệ thống" help={ADMIN_HELP.quizSettings}>
       {!values ? (
         <p className="text-center text-sm text-text-muted py-10">Đang tải...</p>
       ) : (
@@ -70,10 +71,6 @@ export default function QuizSettingsPage() {
                 <p className="text-xs text-text-muted mt-1">{f.help}</p>
               </div>
             ))}
-          </div>
-          <div className="p-4 rounded-2xl bg-cream/40 border border-cream-dark/50 text-xs text-text-secondary leading-relaxed">
-            Muốn một bài cụ thể khác mặc định (số câu riêng, chỉ dùng câu của bài): vào trang chi tiết bài học, mục “Bài Kiểm Tra Cuối Bài”.
-            Muốn bỏ một câu hỏi có vấn đề: “Tạm ẩn” trong Ngân hàng câu hỏi, câu đó sẽ không còn được bốc cho bất kỳ ai.
           </div>
           {message && (
             <div className={`p-3 rounded-xl text-sm ${message.ok ? 'bg-success-light text-success' : 'bg-error-light text-error'}`}>{message.text}</div>

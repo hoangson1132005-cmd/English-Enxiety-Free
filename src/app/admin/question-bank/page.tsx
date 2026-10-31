@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Search, Plus, Trash2, Pencil, Upload, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { AdminLayout } from '@/components/layout/AdminLayout';
+import { ADMIN_HELP } from '@/lib/adminHelp';
 import { AiImportModal } from '@/components/admin/AiImportModal';
 import { QuestionEditorModal } from '@/components/admin/QuestionEditorModal';
 import { cn } from '@/lib/utils';
@@ -28,7 +30,7 @@ interface Facets {
 
 const selectCls = 'px-3 py-2.5 text-sm rounded-xl bg-white border border-[var(--color-border)] focus:outline-none';
 
-export default function QuestionBankPage() {
+function QuestionBankInner() {
   const [items, setItems] = useState<BankItem[]>([]);
   const [total, setTotal] = useState(0);
   const [facets, setFacets] = useState<Facets | null>(null);
@@ -39,10 +41,11 @@ export default function QuestionBankPage() {
   const [skill, setSkill] = useState('all');
   const [type, setType] = useState('all');
   const [topic, setTopic] = useState('all');
-  const [source, setSource] = useState('all');
-  const [active, setActive] = useState('all');
-  const [sort, setSort] = useState('newest');
-  const initialQuery = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('q') ?? '' : '';
+  const urlParams = useSearchParams();
+  const [source, setSource] = useState(urlParams?.get('source') ?? 'all');
+  const [active, setActive] = useState(urlParams?.get('active') ?? 'all');
+  const [sort, setSort] = useState(urlParams.get('sort') ?? 'newest');
+  const initialQuery = urlParams.get('q') ?? '';
   const [search, setSearch] = useState(initialQuery);
   const [query, setQuery] = useState(initialQuery);
 
@@ -130,18 +133,8 @@ export default function QuestionBankPage() {
   const bankTotal = facets?.levels.reduce((s, l) => s + l.count, 0) ?? 0;
 
   return (
-    <AdminLayout title="Ngân Hàng Câu Hỏi" description={`${bankTotal} câu · dùng cho bài kiểm tra cuối bài, cuối chặng và cuối khóa của mọi học viên`}>
+    <AdminLayout title="Ngân Hàng Câu Hỏi" description={`${bankTotal} câu · dùng cho bài kiểm tra cuối bài, cuối chặng và cuối khóa của mọi học viên`} help={ADMIN_HELP.questionBank}>
       <div className="space-y-5">
-        <div className="p-4 rounded-2xl bg-cream/40 border border-cream-dark/50 text-xs text-text-secondary leading-relaxed space-y-1">
-          <p>
-            Khi học viên làm bài kiểm tra, hệ thống bốc câu từ đây theo <strong>cấp độ</strong>, <strong>chủ đề</strong> và <strong>kỹ năng</strong> của bài, ưu tiên câu họ chưa gặp.
-            Cuối bài 5-10 câu, cuối chặng 15-20 câu, cuối khóa khoảng 30 câu.
-          </p>
-          <p className="flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-accent" /> Nếu không đủ câu phù hợp, AI tự sinh thêm và lưu vào đây (nguồn “AI tạo”) để dùng lại cho người khác. Bạn nên xem lại các câu này.
-          </p>
-        </div>
-
         {/* Thống kê theo cấp độ (bấm để lọc) */}
         <div className="grid grid-cols-5 gap-3">
           {(facets?.levels ?? LEVELS.map((l) => ({ value: l, count: 0 }))).map((l) => (
@@ -374,5 +367,13 @@ export default function QuestionBankPage() {
         />
       )}
     </AdminLayout>
+  );
+}
+
+export default function QuestionBankPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-sm text-text-muted">Đang tải...</div>}>
+      <QuestionBankInner />
+    </Suspense>
   );
 }

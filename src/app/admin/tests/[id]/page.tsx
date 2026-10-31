@@ -6,6 +6,7 @@ import { Clock, FileText, Plus, Trash2, ChevronDown, ChevronUp, X, CheckCircle2,
 import { QuestionEditorModal } from '@/components/admin/QuestionEditorModal';
 import Link from 'next/link';
 import { AdminLayout } from '@/components/layout/AdminLayout';
+import { ADMIN_HELP } from '@/lib/adminHelp';
 import type { SkillType, TestSection, QuestionBankItem } from '@/types';
 
 const SKILL_LABELS: Record<SkillType, string> = {
@@ -148,7 +149,7 @@ function AdminTestDetailContent() {
   }
 
   return (
-    <AdminLayout title={title} description={isActive ? 'Đề đang được dùng cho học viên' : 'Đề nháp — chưa kích hoạt'}>
+    <AdminLayout title={title} description={isActive ? 'Đề đang được dùng cho học viên' : 'Đề nháp — chưa kích hoạt'} help={ADMIN_HELP.testDetail}>
       <div className="space-y-6">
         <Link href="/admin/tests" className="inline-flex items-center gap-1.5 text-xs text-text-secondary hover:text-primary-600">
           <ArrowLeft className="w-3.5 h-3.5" /> Về danh sách đề test

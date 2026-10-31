@@ -12,9 +12,9 @@ import {
 } from 'recharts';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useAuthStore } from '@/store/authStore';
-import { apiGetDashboard } from '@/lib/api';
+import { apiGetDashboard, apiGetRoadmap } from '@/lib/api';
 import { FACULTY_GROUP_LABELS } from '@/types';
-import type { SkillProgress } from '@/types';
+import type { SkillProgress, RoadmapView } from '@/types';
 
 const SKILL_LABELS: Record<string, string> = {
   listening: 'Nghe', reading: 'Đọc', writing: 'Viết', speaking: 'Nói', vocabulary: 'Từ vựng',
@@ -32,10 +32,22 @@ interface DashboardData {
 export default function DashboardPage() {
   const { profile } = useAuthStore();
   const [data, setData] = useState<DashboardData | null>(null);
+  const [roadmap, setRoadmap] = useState<RoadmapView | null>(null);
 
   useEffect(() => {
     apiGetDashboard().then(setData).catch(() => {});
+    apiGetRoadmap().then(setRoadmap).catch(() => {});
   }, []);
+
+  // Nút hành động chính: dẫn thẳng tới việc nên làm tiếp theo thay vì chỉ về trang lộ trình
+  const nextItem = roadmap?.stages.flatMap((s) => s.items).find((i) => i.item_id === roadmap.next_item_id);
+  const cta = !profile?.placement_completed
+    ? { href: '/placement', label: 'Làm bài test đầu vào', sub: 'Để hệ thống xếp trình độ và tạo lộ trình riêng cho bạn' }
+    : roadmap?.all_done
+      ? { href: '/roadmap', label: 'Làm bài kiểm tra cuối khóa', sub: 'Bạn đã học hết lộ trình, sẵn sàng lên trình độ tiếp theo' }
+      : nextItem
+        ? { href: `/learn/${nextItem.lesson_id}`, label: `Học tiếp: ${nextItem.title}`, sub: `Đã xong ${roadmap!.progress.done}/${roadmap!.progress.total} bài · ${nextItem.duration_minutes} phút` }
+        : { href: '/roadmap', label: 'Xem lộ trình của bạn', sub: '' };
 
   const weeklyData = data?.weekly_stats.daily_breakdown.map((d) => ({
     name: d.day_label,
@@ -88,12 +100,13 @@ export default function DashboardPage() {
 
             <div className="pt-2 flex flex-wrap items-center gap-4">
               <Link
-                href="/roadmap"
+                href={cta.href}
                 className="px-6 py-3 bg-white text-primary-800 hover:bg-cream rounded-2xl font-bold text-xs sm:text-sm shadow-soft transition-all flex items-center gap-2"
               >
                 <Play className="w-4 h-4 fill-primary-800" />
-                <span>Tiếp tục bài học dở dang</span>
+                <span className="truncate max-w-[16rem] sm:max-w-sm">{cta.label}</span>
               </Link>
+              {cta.sub && <span className="text-[11px] text-white/80 w-full sm:w-auto">{cta.sub}</span>}
               <Link href="/roadmap" className="text-xs text-white/80 hover:text-white underline">
                 Xem lộ trình đầy đủ
               </Link>

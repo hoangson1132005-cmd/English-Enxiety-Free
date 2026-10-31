@@ -127,6 +127,12 @@ Kho bài học là một danh sách phẳng (mỗi bài có trạng thái Nháp 
 - Muốn giọng người thật: trong trình sửa câu hỏi (bài nghe), upload file mp3/wav/m4a (tối đa 6MB) hoặc dán đường dẫn audio đã có để dùng lại cho câu khác. File được lưu trong database (`AudioFile`) và chỉ người đã đăng nhập mới nghe được.
 - File Word không chứa audio; sau khi import, admin mở từng câu nghe để gắn audio nếu cần.
 
+## 🧭 Hướng dẫn ngay trong trang admin
+
+- *Admin → Tổng quan* có checklist **Bắt đầu nhanh** (nạp bài, xuất bản, nạp ngân hàng câu hỏi, kích hoạt đề đầu vào, bật AI, email, đổi mật khẩu admin) với trạng thái thật và link bấm ngay, cùng mục **Cần chú ý** (bài nháp, câu AI cần duyệt, mật khẩu mặc định...).
+- Mỗi trang admin có ghi chú **hướng dẫn** ở đầu trang kèm các link nhanh; có thể thu gọn (trình duyệt nhớ lựa chọn).
+- Người dùng tự đổi mật khẩu ở trang *Hồ sơ*; admin ở *Admin → Tài khoản của tôi*.
+
 ## 🔐 Lối vào quản trị
 
 Không có link công khai tới `/admin`. Quản trị viên đăng nhập ở trang đăng nhập thường (tự chuyển sang `/admin`) và thấy mục **Quản trị** trong thanh bên. Lối tắt ẩn: bấm logo 5 lần liên tiếp hoặc nhấn `Alt + Shift + A`. Quyền truy cập luôn được kiểm tra ở server (middleware), lối tắt chỉ để tiện. Đăng nhập sai 5 lần liên tiếp sẽ bị tạm khóa 15 phút (theo email + IP; lưu trong bộ nhớ nên cần chuyển sang Redis nếu chạy nhiều instance).

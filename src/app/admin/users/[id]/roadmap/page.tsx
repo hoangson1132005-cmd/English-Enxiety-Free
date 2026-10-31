@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, ArrowUp, ArrowDown, Plus, Trash2, Sparkles, RefreshCw } from 'lucide-react';
 import { AdminLayout } from '@/components/layout/AdminLayout';
+import { ADMIN_HELP } from '@/lib/adminHelp';
 import { cn } from '@/lib/utils';
 import type { SkillType } from '@/types';
 
@@ -93,7 +94,7 @@ function Content() {
   const side = view.items.filter((i) => i.status === 'suggested' || i.status === 'dismissed');
 
   return (
-    <AdminLayout title={`Lộ trình: ${view.user.full_name}`} description={`${view.user.email} • Trình độ ${view.user.current_level}`}>
+    <AdminLayout title={`Lộ trình: ${view.user.full_name}`} description={`${view.user.email} • Trình độ ${view.user.current_level}`} help={ADMIN_HELP.userRoadmap}>
       <div className="space-y-6">
         <Link href="/admin/users" className="inline-flex items-center gap-1.5 text-xs text-text-secondary hover:text-primary-600">
           <ArrowLeft className="w-3.5 h-3.5" /> Quay lại danh sách người dùng

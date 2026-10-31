@@ -274,3 +274,19 @@ h1, h2, h3, .font-display {
   transform-origin: 0 50%;
   background: linear-gradient(90deg, #2F7F7A, #F4A7B9);
 }
+
+/* ===== Hiệu ứng xuất hiện nhẹ cho nội dung trang ===== */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in { animation: fade-in-up 0.35s ease both; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in { animation: none; }
+}
+
+/* ===== Hoàn thiện trải nghiệm chung ===== */
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+:focus-visible { outline: 2px solid #2F7F7A; outline-offset: 2px; border-radius: 6px; }
+input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offset: 0; }

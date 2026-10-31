@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Save, Upload, Trash2, GraduationCap } from 'lucide-react';
 import { AdminLayout } from '@/components/layout/AdminLayout';
+import { ADMIN_HELP } from '@/lib/adminHelp';
 
 interface SiteContentForm {
   heroBadgeText: string;
@@ -81,7 +82,7 @@ export default function AdminLandingPage() {
     : null;
 
   return (
-    <AdminLayout title="Landing Page" description="Chỉnh sửa nội dung trang chủ công khai">
+    <AdminLayout title="Landing Page" description="Chỉnh sửa nội dung trang chủ công khai" help={ADMIN_HELP.landing}>
       <form onSubmit={handleSave} className="space-y-6 max-w-3xl">
         {/* LOGO */}
         <div className="p-6 rounded-3xl bg-white border border-[var(--color-border)] shadow-soft space-y-4">
