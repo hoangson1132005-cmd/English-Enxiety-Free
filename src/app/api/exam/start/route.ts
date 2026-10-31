@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { getOrCreateExam } from '@/lib/exam';
+import { findAdminExam } from '@/lib/exam';
 import { isRoadmapDone } from '@/lib/roadmap';
+import { createFinalSession } from '@/lib/quiz';
 
-// Mở bài kiểm tra tổng kết khi học viên đã hoàn thành toàn bộ bài trong lộ trình.
+// Mở bài kiểm tra cuối khóa khi học viên đã hoàn thành toàn bộ bài trong lộ trình.
+// Trả về test_id (đề do admin chỉ định cho level này) hoặc session_id (bộ ~30 câu bốc từ ngân hàng).
 export async function POST() {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -19,10 +21,16 @@ export async function POST() {
   }
 
   try {
-    const test = await getOrCreateExam(session.user.id, roadmap.id);
-    return NextResponse.json({ test_id: test.id });
+    const adminExam = await findAdminExam(session.user.id);
+    if (adminExam) return NextResponse.json({ test_id: adminExam.id });
+
+    const { session: quiz, questions } = await createFinalSession(session.user.id, roadmap.id);
+    if (!questions.length) {
+      return NextResponse.json({ error: 'Ngân hàng câu hỏi chưa có câu phù hợp. Vui lòng liên hệ quản trị viên.' }, { status: 503 });
+    }
+    return NextResponse.json({ session_id: quiz.id });
   } catch (err) {
-    console.error('Create exam failed:', err);
-    return NextResponse.json({ error: 'Không tạo được bài kiểm tra. Vui lòng liên hệ quản trị viên.' }, { status: 500 });
+    console.error('Create final exam failed:', err);
+    return NextResponse.json({ error: 'Không tạo được bài kiểm tra. Vui lòng thử lại.' }, { status: 500 });
   }
 }

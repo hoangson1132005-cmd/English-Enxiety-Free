@@ -1,7 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/adminAuth';
-import { ensureActiveRoadmap, generateRoadmap, ROADMAP_WEEKS } from '@/lib/roadmap';
+import { ensureActiveRoadmap, generateRoadmap, ROADMAP_WEEKS, type Phase } from '@/lib/roadmap';
+
+function parsePhases(json: string): Phase[] {
+  try {
+    return JSON.parse(json) as Phase[];
+  } catch {
+    return [];
+  }
+}
 
 async function buildView(userId: string) {
   const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
@@ -37,6 +45,7 @@ async function buildView(userId: string) {
     roadmap: {
       id: roadmap.id, cycle: roadmap.cycle, kind: roadmap.kind, level: roadmap.level,
       generated_by: roadmap.generatedBy, rationale: roadmap.rationale, created_at: roadmap.createdAt.toISOString(),
+      phases: parsePhases(roadmap.phases),
     },
     items: roadmap.items.map((i) => ({
       item_id: i.id,
@@ -48,6 +57,7 @@ async function buildView(userId: string) {
       duration_minutes: i.lesson.durationMinutes,
       order: i.order,
       week: i.week,
+      phase: i.phase,
       status: i.status,
       source: i.source,
       reason: i.reason,
@@ -140,6 +150,25 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       prisma.userRoadmapItem.update({ where: { id: a.id }, data: { order: b.order } }),
       prisma.userRoadmapItem.update({ where: { id: b.id }, data: { order: a.order } }),
     ]);
+  } else if (body.action === 'rename_phase' || body.action === 'add_phase' || body.action === 'set_phase') {
+    const rm = await prisma.userRoadmap.findUniqueOrThrow({ where: { id: roadmap.id } });
+    const phases = parsePhases(rm.phases);
+    if (body.action === 'add_phase') {
+      phases.push({ title: String(body.title || `Chặng ${phases.length + 1}`), description: String(body.description || '') });
+    } else if (body.action === 'rename_phase') {
+      const idx = Number(body.phase) - 1;
+      if (!phases[idx]) return NextResponse.json({ error: 'Không tìm thấy chặng' }, { status: 404 });
+      phases[idx] = { title: String(body.title || phases[idx].title), description: String(body.description ?? phases[idx].description) };
+    } else {
+      const phase = Number(body.phase);
+      if (!Number.isInteger(phase) || phase < 1 || phase > Math.max(1, phases.length)) {
+        return NextResponse.json({ error: 'Chặng không hợp lệ' }, { status: 400 });
+      }
+      const item = items.find((i) => i.id === body.item_id);
+      if (!item) return NextResponse.json({ error: 'Không tìm thấy bài trong lộ trình' }, { status: 404 });
+      await prisma.userRoadmapItem.update({ where: { id: item.id }, data: { phase } });
+    }
+    await prisma.userRoadmap.update({ where: { id: roadmap.id }, data: { phases: JSON.stringify(phases) } });
   } else {
     return NextResponse.json({ error: 'Hành động không hợp lệ' }, { status: 400 });
   }

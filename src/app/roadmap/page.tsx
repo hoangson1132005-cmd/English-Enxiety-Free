@@ -8,7 +8,7 @@ import {
   FlipHorizontal, HelpCircle, Trophy, Plus, X, History, Target,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { apiGetRoadmap, apiRespondSuggestion, apiStartExam } from '@/lib/api';
+import { apiGetRoadmap, apiRespondSuggestion, apiStartExam, apiStartStageQuiz } from '@/lib/api';
 import { useUIStore } from '@/store/uiStore';
 import { cn } from '@/lib/utils';
 import type { SkillType, RoadmapItemStatus, RoadmapItemView, RoadmapView } from '@/types';
@@ -85,11 +85,23 @@ export default function RoadmapPage() {
     }
   };
 
+  const [startingPhase, setStartingPhase] = useState<number | null>(null);
+  const startStageQuiz = async (phase: number) => {
+    setStartingPhase(phase);
+    try {
+      const { session_id } = await apiStartStageQuiz(phase);
+      router.push(`/placement?session=${session_id}`);
+    } catch (err) {
+      addToast({ title: 'Chưa mở được bài kiểm tra', description: (err as Error).message, variant: 'error' });
+      setStartingPhase(null);
+    }
+  };
+
   const startExam = async () => {
     setStartingExam(true);
     try {
-      const { test_id } = await apiStartExam();
-      router.push(`/placement?exam=${test_id}`);
+      const { test_id, session_id } = await apiStartExam();
+      router.push(session_id ? `/placement?session=${session_id}` : `/placement?exam=${test_id}`);
     } catch (err) {
       addToast({ title: 'Chưa mở được bài kiểm tra', description: (err as Error).message, variant: 'error' });
       setStartingExam(false);
@@ -279,9 +291,14 @@ export default function RoadmapPage() {
                     : 'bg-white/70 dark:bg-gray-900/60 border-[var(--color-border)] shadow-soft'
                 )}
               >
-                <div className="flex items-center justify-between gap-3 pb-4 border-b border-[var(--color-border)]">
-                  <h3 className="font-serif font-bold text-lg text-primary-900 dark:text-white">{stage.title}</h3>
-                  <span className="text-xs font-semibold text-text-muted">{done}/{stage.items.length} bài</span>
+                <div className="pb-4 border-b border-[var(--color-border)]">
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="font-serif font-bold text-lg text-primary-900 dark:text-white">
+                      {stage.phase != null ? `Chặng ${stage.phase}: ` : ''}{stage.title}
+                    </h3>
+                    <span className="text-xs font-semibold text-text-muted">{done}/{stage.items.length} bài</span>
+                  </div>
+                  {stage.description && <p className="text-xs text-text-secondary mt-1">{stage.description}</p>}
                 </div>
 
                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -331,6 +348,26 @@ export default function RoadmapPage() {
                     );
                   })}
                 </div>
+
+                {stage.quiz && stage.phase != null && (
+                  <div className="mt-4 p-4 rounded-2xl bg-cream/40 border border-cream-dark/50 flex flex-wrap items-center justify-between gap-3">
+                    <div className="text-xs text-text-secondary">
+                      <strong className="text-primary-900">Kiểm tra cuối chặng</strong> (15-20 câu từ ngân hàng câu hỏi)
+                      {stage.quiz.state === 'done' && <span> • Điểm cao nhất: <strong>{stage.quiz.score}/100</strong></span>}
+                      {stage.quiz.state === 'locked' && <span> • Hoàn thành các bài trong chặng để mở</span>}
+                    </div>
+                    {stage.quiz.state !== 'locked' && (
+                      <button
+                        type="button"
+                        disabled={startingPhase === stage.phase}
+                        onClick={() => startStageQuiz(stage.phase!)}
+                        className="px-4 py-2 rounded-xl bg-primary-600 hover:bg-primary-hover text-white text-xs font-semibold disabled:opacity-60"
+                      >
+                        {startingPhase === stage.phase ? 'Đang chuẩn bị đề...' : stage.quiz.state === 'done' ? 'Làm lại bài kiểm tra' : 'Làm bài kiểm tra chặng'}
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}

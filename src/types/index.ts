@@ -44,7 +44,7 @@ export type SkillType = 'listening' | 'reading' | 'writing' | 'speaking' | 'voca
 // --- Placement Test ---
 export interface PlacementTest {
   id: string;
-  kind?: 'placement' | 'level_up';
+  kind?: 'placement' | 'level_up' | 'stage';
   title: string;
   description: string;
   duration_minutes: number;
@@ -101,6 +101,7 @@ export interface TestResult {
   faculty_group: FacultyGroup;
   outcome?: 'level_up' | 'improve';
   pass_score?: number;
+  kind?: 'placement' | 'level_up' | 'final' | 'stage';
 }
 
 export interface SkillScores {
@@ -398,6 +399,7 @@ export interface LessonDetail {
   item_status: 'pending' | 'in_progress' | 'completed' | 'suggested' | 'dismissed';
   best_score: number | null;
   next_lesson_id: string | null;
+  session_id: string;
   attempts: { id: string; score: number; passed: boolean; created_at: string }[];
   questions: LessonQuestion[];
 }
@@ -477,9 +479,12 @@ export interface RoadmapItemView {
 }
 
 export interface RoadmapStageView {
-  stage_id: string;
+  stage_id: string; // khóa nhóm hiển thị
+  phase: number | null; // số thứ tự chặng riêng của học viên (null: lộ trình cũ chưa có chặng)
   title: string;
+  description: string;
   items: RoadmapItemView[];
+  quiz: { state: 'locked' | 'available' | 'done'; score: number | null } | null; // kiểm tra cuối chặng
 }
 
 export interface RoadmapView {

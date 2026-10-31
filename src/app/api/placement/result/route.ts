@@ -21,7 +21,8 @@ export async function GET(req: Request) {
   return NextResponse.json({
     id: result.id,
     user_id: result.userId,
-    test_id: result.testId,
+    test_id: result.testId ?? '',
+    kind: result.kind,
     completed_at: result.completedAt.toISOString(),
     scores: JSON.parse(result.scores),
     total_score: result.totalScore,

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { ensureActiveRoadmap, isRoadmapDone } from '@/lib/roadmap';
+import type { Phase } from '@/lib/roadmap';
 import type { RoadmapItemView, RoadmapStageView, SkillType } from '@/types';
 
 export async function GET() {
@@ -39,7 +40,30 @@ export async function GET() {
     source: i.source as RoadmapItemView['source'],
   });
 
+  let phases: Phase[] = [];
+  try {
+    phases = JSON.parse(roadmap.phases) as Phase[];
+  } catch {
+    phases = [];
+  }
+  const legacy = phases.length === 0; // lộ trình cũ chưa có chặng riêng: nhóm theo nhóm nội dung trong kho
+
+  // Điểm kiểm tra cuối chặng đã làm (mỗi chặng lấy điểm cao nhất)
+  const stageSessions = await prisma.quizSession.findMany({
+    where: { userId, roadmapId: roadmap.id, kind: 'stage', status: 'submitted' },
+    select: { id: true, phase: true },
+  });
+  const stageResults = stageSessions.length
+    ? await prisma.testResult.findMany({ where: { sessionId: { in: stageSessions.map((s) => s.id) } }, select: { sessionId: true, totalScore: true } })
+    : [];
+  const quizScoreByPhase = new Map<number, number>();
+  for (const r of stageResults) {
+    const phase = stageSessions.find((s) => s.id === r.sessionId)?.phase;
+    if (phase != null) quizScoreByPhase.set(phase, Math.max(quizScoreByPhase.get(phase) ?? 0, r.totalScore));
+  }
+
   const stages: RoadmapStageView[] = [];
+  const groups = new Map<string, RoadmapStageView>();
   for (const i of core) {
     let status: RoadmapItemView['status'];
     if (i.status === 'completed') status = 'completed';
@@ -49,12 +73,28 @@ export async function GET() {
       unlocked = false;
     } else status = 'locked';
 
-    let group = stages[stages.length - 1];
-    if (!group || group.stage_id !== i.lesson.stageId) {
-      group = { stage_id: i.lesson.stageId, title: i.lesson.stage.title, items: [] };
+    const key = legacy ? `stage:${i.lesson.stageId}` : `phase:${i.phase}`;
+    let group = groups.get(key);
+    if (!group) {
+      group = {
+        stage_id: key,
+        phase: legacy ? null : i.phase,
+        title: legacy ? i.lesson.stage.title : phases[i.phase - 1]?.title ?? `Chặng ${i.phase}`,
+        description: legacy ? '' : phases[i.phase - 1]?.description ?? '',
+        items: [],
+        quiz: null,
+      };
+      groups.set(key, group);
       stages.push(group);
     }
     group.items.push(toView(i, status));
+  }
+  if (!legacy) stages.sort((a, b) => (a.phase ?? 0) - (b.phase ?? 0));
+  for (const g of stages) {
+    if (g.phase == null) continue;
+    const done = quizScoreByPhase.get(g.phase);
+    const allDone = g.items.every((x) => x.status === 'completed');
+    g.quiz = done != null ? { state: 'done', score: done } : { state: allDone ? 'available' : 'locked', score: null };
   }
 
   const done = core.filter((i) => i.status === 'completed');

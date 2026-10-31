@@ -18,10 +18,10 @@ const GENERATED_LABELS: Record<string, string> = { ai: 'AI tạo', heuristic: 'T
 
 interface View {
   user: { id: string; full_name: string; email: string; current_level: string; daily_minutes: number; goal: string | null };
-  roadmap: { id: string; cycle: number; kind: string; level: string; generated_by: string; rationale: string; created_at: string };
+  roadmap: { id: string; cycle: number; kind: string; level: string; generated_by: string; rationale: string; created_at: string; phases: { title: string; description: string }[] };
   items: {
     item_id: string; lesson_id: string; title: string; skill: SkillType; level: string | null; stage_title: string;
-    duration_minutes: number; order: number; week: number; status: string; source: string; reason: string;
+    duration_minutes: number; order: number; week: number; phase: number; status: string; source: string; reason: string;
     best_score: number | null; attempt_count: number;
   }[];
   catalog: { lesson_id: string; title: string; skill: SkillType; level: string | null; stage_title: string; duration_minutes: number }[];
@@ -121,6 +121,44 @@ function Content() {
           {busy && <p className="text-xs text-text-muted">Đang xử lý... AI có thể mất vài giây.</p>}
         </div>
 
+        <div className="p-6 rounded-3xl bg-white border border-[var(--color-border)] shadow-soft space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h3 className="font-display font-bold text-base text-text-primary">Các chặng của học viên này</h3>
+              <p className="text-xs text-text-muted">Chặng chỉ thuộc về riêng học viên này (AI chia khi tạo lộ trình). Bạn có thể đổi tên, thêm chặng và chuyển bài giữa các chặng.</p>
+            </div>
+            <button
+              disabled={busy}
+              onClick={() => call('PATCH', { action: 'add_phase', title: `Chặng ${view.roadmap.phases.length + 1}` })}
+              className="px-3 py-2 rounded-xl bg-primary-50 hover:bg-primary-100 text-primary-700 text-xs font-semibold flex items-center gap-1.5 flex-shrink-0"
+            >
+              <Plus className="w-3.5 h-3.5" /> Thêm chặng
+            </button>
+          </div>
+          {view.roadmap.phases.length === 0 && (
+            <p className="text-xs text-text-muted">Lộ trình này được tạo trước khi có tính năng chặng riêng. Bấm “AI tạo lại” để AI chia chặng cho học viên.</p>
+          )}
+          <div className="space-y-2">
+            {view.roadmap.phases.map((ph, idx) => (
+              <div key={idx} className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-bold text-primary-700 w-16">Chặng {idx + 1}</span>
+                <input
+                  defaultValue={ph.title}
+                  onBlur={(e) => e.target.value.trim() && e.target.value !== ph.title && call('PATCH', { action: 'rename_phase', phase: idx + 1, title: e.target.value, description: ph.description })}
+                  className="flex-1 min-w-[10rem] px-3 py-2 rounded-xl text-sm bg-background-secondary/50 border border-[var(--color-border)]"
+                />
+                <input
+                  defaultValue={ph.description}
+                  placeholder="Mục tiêu của chặng"
+                  onBlur={(e) => e.target.value !== ph.description && call('PATCH', { action: 'rename_phase', phase: idx + 1, title: ph.title, description: e.target.value })}
+                  className="flex-[2] min-w-[12rem] px-3 py-2 rounded-xl text-sm bg-background-secondary/50 border border-[var(--color-border)]"
+                />
+                <span className="text-[11px] text-text-muted">{core.filter((x) => x.phase === idx + 1).length} bài</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="rounded-3xl bg-white border border-[var(--color-border)] shadow-soft overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -129,6 +167,7 @@ function Content() {
                   <th className="px-4 py-3">#</th>
                   <th className="px-4 py-3">Bài học</th>
                   <th className="px-4 py-3">Kỹ năng</th>
+                  <th className="px-4 py-3">Chặng</th>
                   <th className="px-4 py-3">Tuần</th>
                   <th className="px-4 py-3">Trạng thái</th>
                   <th className="px-4 py-3">Điểm tốt nhất</th>
@@ -144,6 +183,18 @@ function Content() {
                       <div className="text-[11px] text-text-muted">{i.stage_title}{i.level ? ` • ${i.level}` : ''}{i.reason ? ` • ${i.reason}` : ''}</div>
                     </td>
                     <td className="px-4 py-3 text-text-secondary">{SKILL_LABELS[i.skill]}</td>
+                    <td className="px-4 py-3">
+                      <select
+                        disabled={busy}
+                        value={i.phase}
+                        onChange={(e) => call('PATCH', { action: 'set_phase', item_id: i.item_id, phase: Number(e.target.value) })}
+                        className="px-2 py-1 rounded-lg text-xs bg-background-secondary/50 border border-[var(--color-border)]"
+                      >
+                        {(view.roadmap.phases.length ? view.roadmap.phases : [{ title: 'Chặng 1', description: '' }]).map((ph, idx) => (
+                          <option key={idx} value={idx + 1}>{idx + 1}. {ph.title}</option>
+                        ))}
+                      </select>
+                    </td>
                     <td className="px-4 py-3 text-text-secondary">{i.week}</td>
                     <td className="px-4 py-3">
                       <span className={cn('text-[11px] font-semibold px-2.5 py-0.5 rounded-full', i.status === 'completed' ? 'bg-success-light text-success' : i.status === 'in_progress' ? 'bg-primary-50 text-primary-700' : 'bg-gray-100 text-text-muted')}>

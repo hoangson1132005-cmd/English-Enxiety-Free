@@ -96,6 +96,26 @@ npm run dev        # http://localhost:3000
 
 ---
 
+## 🏦 Ngân hàng câu hỏi và bài kiểm tra
+
+Mọi bài kiểm tra của học viên đều **bốc câu từ Ngân hàng câu hỏi** (*Admin → Ngân hàng câu hỏi*), không dùng bộ câu cố định:
+
+| Bài kiểm tra | Số câu | Nguồn câu hỏi |
+|---|---|---|
+| Cuối mỗi bài học | 8 (bài Viết/Nói: 5) | Ngân hàng + câu gắn với bài, đúng cấp độ & chủ đề của bài |
+| Cuối mỗi chặng của học viên | 18 | Theo nội dung các bài trong chặng, ưu tiên kỹ năng yếu |
+| Cuối khóa (cuối lộ trình) | 30 | Bao quát toàn bộ bài đã học, cân bằng kỹ năng |
+
+- Chọn theo **cấp độ (A1–C1)**, **chủ đề**, **kỹ năng**, và **ưu tiên câu học viên chưa gặp** (làm lại sẽ ra bộ câu mới). Với bài kiểm tra cuối chặng / cuối khóa, AI đọc danh sách ứng viên và chọn bộ câu sát nhất; AI lỗi thì dùng kết quả lọc.
+- **Không đủ câu phù hợp thì AI tự sinh thêm và lưu vào ngân hàng** (nguồn “AI tạo”, nên xem lại) để dùng lại cho người khác, không sinh riêng cho từng người.
+- Nạp ngân hàng bằng cách nhập tay, hoặc tải file Word/PDF (AI tách câu và gắn cấp độ/kỹ năng/chủ đề). Trang có bộ lọc, sắp xếp, tìm kiếm, sửa/xóa hàng loạt và thống kê số lần dùng, tỷ lệ đúng của từng câu.
+- Đề test cố định do admin tạo vẫn dùng cho **test đầu vào**. Đề tổng kết do admin tạo cho một level, nếu được kích hoạt, sẽ thay thế bài cuối khóa bốc từ ngân hàng cho level đó (mặc định không kích hoạt).
+
+## 🧩 Học phần và chặng
+
+- **Học phần** (*Admin → Học phần*) là nhóm bài do admin tổ chức trong kho nội dung, dùng chung cho mọi người.
+- **Chặng** là phần của **riêng từng học viên**: AI chia lộ trình của họ thành 2–4 chặng có tên và mục tiêu riêng. Admin chỉnh ở *Người dùng → biểu tượng lộ trình* (đổi tên, thêm chặng, chuyển bài giữa các chặng). Mỗi chặng có bài kiểm tra cuối chặng.
+
 ## 🔊 Âm thanh bài nghe
 
 - Mặc định hệ thống **đọc transcript thành tiếng** bằng giọng đọc của trình duyệt (miễn phí, không cần lưu file).
@@ -113,6 +133,7 @@ Thư mục `sample-content/` có sẵn 8 file `.docx` để thử chức năng i
 | File | Dùng ở đâu |
 |---|---|
 | `GiaoAn_01...` đến `GiaoAn_05...` (công sở, email & họp, du lịch - khách sạn, CNTT, bán hàng - CSKH) | *Admin → Nội dung → Import giáo án* |
+| `NganHangCauHoi_Mau.docx` (60 câu, A1–C1) | *Admin → Ngân hàng câu hỏi → Tải file lên* |
 | `DeDauVao_TongHop.docx` | *Admin → Đề test → Tải file lên*, loại đề: Đầu vào |
 | `DeTongKet_A2.docx`, `DeTongKet_B1.docx` | Như trên, sau đó vào đề chọn loại *Đề tổng kết* + level tương ứng rồi kích hoạt |
 

@@ -2,9 +2,11 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { recordActivity } from '@/lib/progress';
-import { gradeFreeTextAnswer, buildReviewSummary } from '@/lib/grading';
+import { gradeQuestion, buildReviewSummary } from '@/lib/grading';
 import { getLessonContext, isRoadmapDone, PASS_SCORE } from '@/lib/roadmap';
 import { getLessonVocab, saveWordsForUser } from '@/lib/lessonVocab';
+import { loadSessionQuestions } from '@/lib/quiz';
+import { recordQuestionResults } from '@/lib/questionBank';
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -16,7 +18,7 @@ export async function POST(req: Request) {
   const answers = (body.answers ?? []) as { question_id: string; answer: string | string[] }[];
   const timeSpentSeconds = Number(body.time_spent_seconds) || 0;
 
-  const lesson = await prisma.lesson.findUnique({ where: { id: lessonId }, include: { questions: true } });
+  const lesson = await prisma.lesson.findUnique({ where: { id: lessonId } });
   if (!lesson) return NextResponse.json({ error: 'Không tìm thấy bài học' }, { status: 404 });
 
   const ctx = await getLessonContext(userId, lessonId);
@@ -24,40 +26,28 @@ export async function POST(req: Request) {
   if (ctx.locked) return NextResponse.json({ error: 'Bài học chưa được mở' }, { status: 403 });
   const item = ctx.item;
 
+  // Chỉ chấm đúng bộ câu của phiên kiểm tra đang mở (học viên không tự chọn được câu để chấm)
+  const quiz = await prisma.quizSession.findFirst({
+    where: { id: String(body.session_id ?? ''), userId, kind: 'lesson', lessonId, status: 'open' },
+  });
+  if (!quiz) return NextResponse.json({ error: 'Phiên làm bài không còn hiệu lực. Hãy tải lại bài học.' }, { status: 409 });
+  const questions = await loadSessionQuestions(quiz);
+
   const answerByQuestion = new Map(answers.map((a) => [a.question_id, a.answer]));
   let scoreSum = 0;
   const results: { question_id: string; score: number; feedback: string; correct_answer: string; given: string }[] = [];
   const mistakes: { question: string; given: string; correct: string; explanation: string }[] = [];
 
-  for (const q of lesson.questions) {
-    const given = answerByQuestion.get(q.id);
-    const givenText = Array.isArray(given) ? given.join('; ') : (given ?? '');
-    const correctAnswer = JSON.parse(q.answer) as string | string[];
-    const correctText = Array.isArray(correctAnswer) ? correctAnswer.join(' / ') : correctAnswer;
-
-    let questionScore: number;
-    let feedback = q.explanation;
-
-    if (q.type === 'essay' || q.type === 'speaking') {
-      const graded = await gradeFreeTextAnswer(q.question, `${correctText}\n${q.explanation}`, givenText);
-      questionScore = graded.score;
-      feedback = graded.feedback;
-    } else {
-      const givenNorm = givenText.trim().toLowerCase();
-      const isCorrect = Array.isArray(correctAnswer)
-        ? correctAnswer.some((a) => a.trim().toLowerCase() === givenNorm)
-        : correctAnswer.trim().toLowerCase() === givenNorm;
-      questionScore = isCorrect ? 100 : 0;
-    }
-
-    scoreSum += questionScore;
-    results.push({ question_id: q.id, score: questionScore, feedback, correct_answer: correctText, given: givenText });
-    if (questionScore < PASS_SCORE) {
-      mistakes.push({ question: q.question, given: givenText, correct: correctText, explanation: feedback });
+  for (const q of questions) {
+    const graded = await gradeQuestion(q, answerByQuestion.get(q.id));
+    scoreSum += graded.score;
+    results.push({ question_id: q.id, score: graded.score, feedback: graded.feedback, correct_answer: graded.correctText, given: graded.givenText });
+    if (graded.score < PASS_SCORE) {
+      mistakes.push({ question: q.question, given: graded.givenText, correct: graded.correctText, explanation: graded.feedback });
     }
   }
 
-  const score = lesson.questions.length > 0 ? Math.round(scoreSum / lesson.questions.length) : 100;
+  const score = questions.length > 0 ? Math.round(scoreSum / questions.length) : 100;
   const passed = score >= PASS_SCORE;
   const previousBest = item.bestScore;
   const firstTimePass = passed && item.status !== 'completed';
@@ -74,6 +64,8 @@ export async function POST(req: Request) {
       timeSpentSeconds,
     },
   });
+  await prisma.quizSession.update({ where: { id: quiz.id }, data: { status: 'submitted', submittedAt: new Date() } });
+  await recordQuestionResults(userId, results.map((r) => ({ questionId: r.question_id, score: r.score })));
 
   await prisma.userRoadmapItem.update({
     where: { id: item.id },

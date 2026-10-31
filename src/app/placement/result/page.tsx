@@ -69,10 +69,10 @@ function PlacementResultContent() {
         <div className="text-center">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-success-light text-success font-semibold text-xs mb-3">
             <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>{result.outcome ? 'Đã hoàn thành bài kiểm tra tổng kết' : 'Đã hoàn thành đánh giá đầu vào'}</span>
+            <span>{result.outcome ? 'Đã hoàn thành bài kiểm tra cuối khóa' : result.kind === 'stage' ? 'Đã hoàn thành bài kiểm tra cuối chặng' : 'Đã hoàn thành đánh giá đầu vào'}</span>
           </div>
           <h1 className="font-serif font-bold text-3xl sm:text-4xl text-primary-900 dark:text-white">
-            {result.outcome ? 'Kết Quả Kiểm Tra Tổng Kết' : 'Báo Cáo Năng Lực Tiếng Anh'}
+            {result.outcome ? 'Kết Quả Kiểm Tra Cuối Khóa' : result.kind === 'stage' ? 'Kết Quả Kiểm Tra Cuối Chặng' : 'Báo Cáo Năng Lực Tiếng Anh'}
           </h1>
           <p className="text-xs sm:text-sm text-text-secondary dark:text-gray-400 mt-2">
             Được phân tích bởi AI Tutor dựa trên Khung tham chiếu Châu Âu (CEFR)

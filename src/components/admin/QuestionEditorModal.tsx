@@ -22,13 +22,14 @@ interface Props {
   initial?: QuestionBankItem | null;
   defaultSkill: SkillType;
   defaultTopic?: string;
+  allowSkillChoice?: boolean; // ngân hàng câu hỏi: cho chọn kỹ năng khi tạo mới
   // Trả về thông báo lỗi (hiện trong form) hoặc null nếu lưu thành công
   onSubmit: (payload: Record<string, unknown>) => Promise<string | null>;
   onClose: () => void;
 }
 
-export function QuestionEditorModal({ title, initial, defaultSkill, defaultTopic, onSubmit, onClose }: Props) {
-  const skill = initial?.skill ?? defaultSkill;
+export function QuestionEditorModal({ title, initial, defaultSkill, defaultTopic, allowSkillChoice, onSubmit, onClose }: Props) {
+  const [skill, setSkill] = useState<SkillType>(initial?.skill ?? defaultSkill);
   const [type, setType] = useState<QuestionType>(initial?.type ?? 'multiple_choice');
   const [level, setLevel] = useState<CEFRLevel>(initial?.level ?? 'B1');
   const [topic, setTopic] = useState(initial?.topic ?? defaultTopic ?? '');
@@ -104,6 +105,17 @@ export function QuestionEditorModal({ title, initial, defaultSkill, defaultTopic
               </select>
             </div>
           </div>
+
+          {allowSkillChoice && (
+            <div>
+              <label className="block text-xs font-semibold text-text-primary mb-1.5">Kỹ năng</label>
+              <select value={skill} onChange={(e) => setSkill(e.target.value as SkillType)} className={inputCls}>
+                {(['vocabulary', 'reading', 'listening', 'writing', 'speaking'] as SkillType[]).map((s) => (
+                  <option key={s} value={s}>{{ vocabulary: 'Từ vựng', reading: 'Đọc hiểu', listening: 'Nghe hiểu', writing: 'Viết', speaking: 'Nói' }[s]}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div>
             <label className="block text-xs font-semibold text-text-primary mb-1.5">Chủ đề</label>

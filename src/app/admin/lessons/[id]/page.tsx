@@ -117,7 +117,7 @@ function AdminLessonDetailContent() {
   }
 
   return (
-    <AdminLayout title={lesson.title} description={`Chặng: ${lesson.stage_title}`}>
+    <AdminLayout title={lesson.title} description={`Học phần: ${lesson.stage_title}`}>
       <div className="space-y-6 max-w-3xl">
         <Link href="/admin/content" className="inline-flex items-center gap-1.5 text-xs text-text-secondary hover:text-primary-600">
           <ArrowLeft className="w-3.5 h-3.5" /> Về Câu hỏi & Bài học

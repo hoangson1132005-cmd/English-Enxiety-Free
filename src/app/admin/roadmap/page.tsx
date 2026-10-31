@@ -47,7 +47,7 @@ export default function AdminRoadmapPage() {
   };
 
   const removeStage = async (id: string, title: string) => {
-    if (!confirm(`Xóa chặng "${title}"? Toàn bộ bài học trong chặng cũng sẽ bị xóa.`)) return;
+    if (!confirm(`Xóa học phần "${title}"? Toàn bộ bài học trong học phần cũng sẽ bị xóa.`)) return;
     const res = await fetch(`/api/admin/stages/${id}`, { method: 'DELETE' });
     if (res.ok) setStages((prev) => prev.filter((s) => s.id !== id));
   };
@@ -88,7 +88,7 @@ export default function AdminRoadmapPage() {
   };
 
   return (
-    <AdminLayout title="Chặng Học (Lộ Trình)" description={`${stages.length} chặng`}>
+    <AdminLayout title="Học Phần (Kho Nội Dung)" description={`${stages.length} học phần · nhóm bài dùng chung, AI chọn bài từ đây để lập lộ trình riêng cho từng học viên`}>
       <div className="space-y-5">
         <div className="flex justify-end">
           <button
@@ -96,7 +96,7 @@ export default function AdminRoadmapPage() {
             className="px-4 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-hover text-white text-sm font-semibold shadow-soft transition-all flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
-            Thêm chặng mới
+            Thêm học phần mới
           </button>
         </div>
 
@@ -112,7 +112,7 @@ export default function AdminRoadmapPage() {
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-text-primary">Chặng {s.order}: {s.title}</span>
+                      <span className="font-semibold text-text-primary">Học phần {s.order}: {s.title}</span>
                       <span className={cn(
                         'text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0',
                         s.is_published ? 'bg-success-light text-success' : 'bg-warning-light text-warning-dark'
@@ -147,7 +147,7 @@ export default function AdminRoadmapPage() {
             </div>
           ))}
           {!loading && stages.length === 0 && (
-            <p className="text-center text-sm text-text-muted py-10">Chưa có chặng học nào.</p>
+            <p className="text-center text-sm text-text-muted py-10">Chưa có học phần nào.</p>
           )}
         </div>
       </div>
@@ -156,14 +156,14 @@ export default function AdminRoadmapPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-soft-lg border border-[var(--color-border)] max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display font-bold text-lg text-primary-900">Thêm Chặng Học</h3>
+              <h3 className="font-display font-bold text-lg text-primary-900">Thêm Học Phần</h3>
               <button onClick={() => setShowModal(false)} className="p-1 rounded-xl text-text-muted hover:bg-background-secondary">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleCreate} className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-text-primary mb-1.5">Tên chặng</label>
+                <label className="block text-xs font-semibold text-text-primary mb-1.5">Tên học phần</label>
                 <input required value={newStage.title} onChange={(e) => setNewStage({ ...newStage, title: e.target.value })} className="w-full px-4 py-2.5 rounded-xl text-sm bg-background-secondary/50 border border-[var(--color-border)] focus:outline-none" />
               </div>
               <div>
@@ -188,19 +188,19 @@ export default function AdminRoadmapPage() {
               <div className="flex gap-4">
                 <label className="flex items-center gap-1.5 text-xs text-text-secondary cursor-pointer">
                   <input type="checkbox" checked={newStage.has_midterm} onChange={(e) => setNewStage({ ...newStage, has_midterm: e.target.checked })} className="rounded text-primary-600" />
-                  Có bài giữa chặng
+                  Có bài giữa học phần
                 </label>
                 <label className="flex items-center gap-1.5 text-xs text-text-secondary cursor-pointer">
                   <input type="checkbox" checked={newStage.has_final} onChange={(e) => setNewStage({ ...newStage, has_final: e.target.checked })} className="rounded text-primary-600" />
-                  Có bài cuối chặng
+                  Có bài cuối học phần
                 </label>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-text-primary mb-1.5">Vì sao chặng này phù hợp (tùy chọn)</label>
+                <label className="block text-xs font-semibold text-text-primary mb-1.5">Mô tả mục đích học phần (tùy chọn)</label>
                 <textarea rows={2} value={newStage.why_this_stage} onChange={(e) => setNewStage({ ...newStage, why_this_stage: e.target.value })} className="w-full px-4 py-2.5 rounded-xl text-sm bg-background-secondary/50 border border-[var(--color-border)] focus:outline-none resize-none" />
               </div>
               <button type="submit" className="w-full mt-2 px-4 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-hover text-white text-sm font-semibold shadow-soft transition-all">
-                Tạo chặng
+                Tạo học phần
               </button>
             </form>
           </div>

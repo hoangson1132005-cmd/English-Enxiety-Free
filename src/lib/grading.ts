@@ -78,3 +78,35 @@ ${mistakes
     return fallback;
   }
 }
+
+export interface GradedAnswer {
+  score: number;
+  feedback: string;
+  correctText: string;
+  givenText: string;
+}
+
+interface GradableQuestion {
+  question: string;
+  type: string;
+  answer: string; // JSON string | string[]
+  explanation: string;
+}
+
+// Chấm một câu: trắc nghiệm/đúng sai/điền từ so khớp đáp án, tự luận/nói chấm bằng AI.
+export async function gradeQuestion(q: GradableQuestion, given: string | string[] | undefined): Promise<GradedAnswer> {
+  const givenText = Array.isArray(given) ? given.join('; ') : (given ?? '');
+  const correctAnswer = JSON.parse(q.answer) as string | string[];
+  const correctText = Array.isArray(correctAnswer) ? correctAnswer.join(' / ') : correctAnswer;
+
+  if (q.type === 'essay' || q.type === 'speaking') {
+    const graded = await gradeFreeTextAnswer(q.question, `${correctText}\n${q.explanation}`, givenText);
+    return { score: graded.score, feedback: graded.feedback, correctText, givenText };
+  }
+
+  const norm = givenText.trim().toLowerCase();
+  const isCorrect = Array.isArray(correctAnswer)
+    ? correctAnswer.some((a) => a.trim().toLowerCase() === norm)
+    : correctAnswer.trim().toLowerCase() === norm;
+  return { score: isCorrect ? 100 : 0, feedback: q.explanation, correctText, givenText };
+}

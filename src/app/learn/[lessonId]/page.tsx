@@ -308,6 +308,7 @@ function LessonPageContent() {
     try {
       const res = await apiSubmitLesson({
         lesson_id: lesson.id,
+        session_id: lesson.session_id,
         answers: lesson.questions.map((q) => ({ question_id: q.id, answer: answers[q.id] ?? '' })),
         time_spent_seconds: Math.round((Date.now() - startedAt) / 1000),
       });
@@ -322,7 +323,16 @@ function LessonPageContent() {
     }
   };
 
-  const retry = () => {
+  // Làm lại: lấy bộ câu hỏi MỚI từ ngân hàng (không lặp lại câu vừa làm nếu còn câu khác)
+  const retry = async () => {
+    if (!lesson) return;
+    try {
+      const fresh = await apiGetLesson(lesson.id);
+      setLesson(fresh);
+    } catch {
+      addToast({ title: 'Không tải được bộ câu hỏi mới', variant: 'error' });
+      return;
+    }
     setAnswers({});
     setResult(null);
     setQIndex(0);

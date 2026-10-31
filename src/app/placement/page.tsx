@@ -15,7 +15,7 @@ import type { Question, UserAnswer, SkillType, PlacementTest } from '@/types';
 
 type TestState = 'intro' | 'testing' | 'analyzing' | 'finished';
 
-function PlacementRunner({ test, testId }: { test: PlacementTest; testId: string | null }) {
+function PlacementRunner({ test, testId, sessionId }: { test: PlacementTest; testId: string | null; sessionId: string | null }) {
   const router = useRouter();
   const { addToast } = useUIStore();
 
@@ -173,6 +173,7 @@ function PlacementRunner({ test, testId }: { test: PlacementTest; testId: string
         answers: payloadAnswers,
         time_spent_seconds: test.duration_minutes * 60 - timeLeft,
         test_id: testId ?? undefined,
+        session_id: sessionId ?? undefined,
       });
 
       router.push(`/placement/result?id=${res.result_id}`);
@@ -208,7 +209,7 @@ function PlacementRunner({ test, testId }: { test: PlacementTest; testId: string
         <div className="max-w-2xl mx-auto w-full">
           <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 sm:p-10 shadow-soft-lg border border-[var(--color-border)]">
             <div className="text-center mb-6">
-              <span className="text-xs font-bold text-accent uppercase tracking-wider">{test.kind === 'level_up' ? 'Kiểm tra tổng kết lộ trình' : 'Đánh giá năng lực chuẩn xác'}</span>
+              <span className="text-xs font-bold text-accent uppercase tracking-wider">{test.kind === 'level_up' ? 'Kiểm tra tổng kết lộ trình' : test.kind === 'stage' ? 'Kiểm tra cuối chặng' : 'Đánh giá năng lực chuẩn xác'}</span>
               <h1 className="font-serif font-bold text-2xl sm:text-3xl text-primary-900 dark:text-white mt-1">
                 {test.title}
               </h1>
@@ -615,14 +616,15 @@ function PlacementRunner({ test, testId }: { test: PlacementTest; testId: string
 function PlacementLoader() {
   const searchParams = useSearchParams();
   const testId = searchParams.get('exam');
+  const sessionId = searchParams.get('session');
   const [test, setTest] = useState<PlacementTest | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    apiGetPlacementTest(testId ?? undefined)
+    apiGetPlacementTest(testId ?? undefined, sessionId ?? undefined)
       .then(setTest)
       .catch(() => setError('Không tải được đề thi. Vui lòng liên hệ quản trị viên.'));
-  }, [testId]);
+  }, [testId, sessionId]);
 
   if (error) {
     return <div className="min-h-screen flex items-center justify-center text-sm text-text-muted px-6 text-center">{error}</div>;
@@ -630,7 +632,7 @@ function PlacementLoader() {
   if (!test) {
     return <div className="min-h-screen flex items-center justify-center text-sm text-text-muted">Đang tải đề thi...</div>;
   }
-  return <PlacementRunner test={test} testId={testId} />;
+  return <PlacementRunner test={test} testId={testId} sessionId={sessionId} />;
 }
 
 export default function PlacementTestPage() {

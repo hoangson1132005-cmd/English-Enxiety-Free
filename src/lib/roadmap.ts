@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { extractStructured } from '@/lib/gemini';
+import { cleanStageTitle } from '@/lib/importNormalize';
 import type { CEFRLevel, SkillType } from '@/types';
 
 export const PASS_SCORE = 70; // điểm tối thiểu để qua bài học / qua bài kiểm tra tổng kết
@@ -11,6 +12,14 @@ const SKILLS: SkillType[] = ['listening', 'reading', 'writing', 'speaking', 'voc
 
 export function nextLevel(level: CEFRLevel): CEFRLevel {
   return LEVELS[Math.min(LEVELS.indexOf(level) + 1, LEVELS.length - 1)];
+}
+
+export function lastPhaseOf(phasesJson: string) {
+  try {
+    return Math.max(1, (JSON.parse(phasesJson) as unknown[]).length);
+  } catch {
+    return 1;
+  }
 }
 
 export type RoadmapKind = 'initial' | 'level_up' | 'improve';
@@ -29,10 +38,16 @@ interface Candidate {
   stageTitle: string;
 }
 
+export interface Phase {
+  title: string;
+  description: string;
+}
+
 interface AiPlan {
   rationale: string;
   focus_skills: string[];
   items: { lesson_id: string; reason: string }[];
+  phases?: { title: string; description: string; lesson_ids: string[] }[];
 }
 
 const PLAN_SCHEMA = {
@@ -51,8 +66,21 @@ const PLAN_SCHEMA = {
         required: ['lesson_id', 'reason'],
       },
     },
+    phases: {
+      type: 'array',
+      description: 'Chia lộ trình thành 2-4 chặng riêng cho học viên này, theo đúng thứ tự học',
+      items: {
+        type: 'object',
+        properties: {
+          title: { type: 'string', description: 'Tên chặng ngắn gọn bằng tiếng Việt' },
+          description: { type: 'string', description: 'Mục tiêu của chặng, 1 câu' },
+          lesson_ids: { type: 'array', items: { type: 'string' } },
+        },
+        required: ['title', 'description', 'lesson_ids'],
+      },
+    },
   },
-  required: ['rationale', 'focus_skills', 'items'],
+  required: ['rationale', 'focus_skills', 'items', 'phases'],
 };
 
 function levelDistance(a: CEFRLevel | null, b: CEFRLevel) {
@@ -81,7 +109,14 @@ async function findWeakSkills(userId: string): Promise<SkillType[]> {
   if (lastResult) {
     const scores = JSON.parse(lastResult.scores) as Partial<Record<SkillType, number>>;
     // Kỹ năng không có câu hỏi trong đề được lưu 0 điểm; không tính là "yếu".
-    const tested = new Set(lastResult.test.sections.map((s) => s.skill));
+    let tested = new Set<string>(lastResult.test?.sections.map((s) => s.skill) ?? []);
+    if (!lastResult.test && lastResult.sessionId) {
+      const quiz = await prisma.quizSession.findUnique({ where: { id: lastResult.sessionId } });
+      if (quiz) {
+        const qs = await prisma.question.findMany({ where: { id: { in: JSON.parse(quiz.questionIds) as string[] } }, select: { skill: true } });
+        tested = new Set(qs.map((q) => q.skill));
+      }
+    }
     for (const s of SKILLS) if (tested.has(s) && typeof scores[s] === 'number') (totals[s] ??= []).push(scores[s]!);
   }
 
@@ -145,11 +180,62 @@ Học viên:
 - Thời gian học: ${user.dailyMinutes} phút/ngày, tổng ngân sách khoảng ${budgetMinutes} phút (${ROADMAP_WEEKS} tuần)
 
 Yêu cầu: chọn và SẮP XẾP bài theo thứ tự học hợp lý (dễ đến khó, bài nền tảng trước), cân bằng 5 kỹ năng nhưng tăng tỷ trọng kỹ năng yếu, tổng thời lượng sát ngân sách. Mỗi bài kèm lý do ngắn bằng tiếng Việt.
+Sau đó CHIA lộ trình thành 2-4 CHẶNG RIÊNG cho học viên này (phases): mỗi chặng có tên và mục tiêu gắn với nhu cầu của họ (không cần trùng với "chặng" trong kho), liệt kê lesson_ids của chặng theo đúng thứ tự học; mỗi bài thuộc đúng một chặng.
 
 Kho bài học (lesson_id | kỹ năng | level | chủ đề | tiêu đề | thời lượng | chặng):
 ${list}`;
 
   return extractStructured<AiPlan>(prompt, [], PLAN_SCHEMA);
+}
+
+
+// Chia các bài thành chặng riêng của học viên. Ưu tiên cách AI chia; nếu AI không chia hợp lệ thì gom theo nhóm nội dung
+// trong kho, hoặc chia đều khi toàn bộ bài thuộc cùng một nhóm.
+function buildPhases(
+  ordered: { lesson_id: string; stageTitle: string }[],
+  aiPhases: AiPlan['phases']
+): { phases: Phase[]; phaseOfLesson: Map<string, number> } {
+  const phaseOfLesson = new Map<string, number>();
+  let phases: Phase[] = [];
+
+  const valid = (aiPhases ?? []).filter((p) => p.title?.trim() && p.lesson_ids?.some((id) => ordered.some((o) => o.lesson_id === id)));
+  if (valid.length >= 1) {
+    valid.forEach((p, idx) => {
+      phases.push({ title: cleanStageTitle(p.title), description: (p.description ?? '').trim() });
+      for (const id of p.lesson_ids) if (!phaseOfLesson.has(id)) phaseOfLesson.set(id, idx + 1);
+    });
+  }
+
+  if (!phases.length) {
+    const titles: string[] = [];
+    for (const o of ordered) if (titles[titles.length - 1] !== o.stageTitle) titles.push(o.stageTitle);
+    if (new Set(titles).size >= 2) {
+      phases = titles.map((t) => ({ title: t, description: '' }));
+      let idx = 0;
+      ordered.forEach((o, i) => {
+        if (i > 0 && ordered[i - 1].stageTitle !== o.stageTitle) idx += 1;
+        phaseOfLesson.set(o.lesson_id, idx + 1);
+      });
+    } else {
+      const chunks = Math.max(1, Math.min(3, Math.ceil(ordered.length / 5)));
+      const size = Math.ceil(ordered.length / chunks);
+      phases = Array.from({ length: chunks }, (_, i) => ({ title: `Chặng ${i + 1}`, description: '' }));
+      ordered.forEach((o, i) => phaseOfLesson.set(o.lesson_id, Math.floor(i / size) + 1));
+    }
+  }
+
+  // Bài AI chưa xếp vào chặng nào: theo chặng của bài đứng trước. Rồi ép chặng không giảm dần theo thứ tự học.
+  let prev = 1;
+  const monotonic = ordered.map((o) => {
+    prev = Math.max(prev, phaseOfLesson.get(o.lesson_id) ?? prev);
+    return prev;
+  });
+  const used = [...new Set(monotonic)];
+  const remap = new Map(used.map((oldIdx, i) => [oldIdx, i + 1]));
+  const finalPhases = used.map((oldIdx) => phases[oldIdx - 1] ?? { title: `Chặng ${remap.get(oldIdx)}`, description: '' });
+  const result = new Map<string, number>();
+  ordered.forEach((o, i) => result.set(o.lesson_id, remap.get(monotonic[i])!));
+  return { phases: finalPhases, phaseOfLesson: result };
 }
 
 export interface GenerateOptions {
@@ -239,6 +325,19 @@ export async function generateRoadmap(userId: string, opts: GenerateOptions) {
   const newItems = (plan?.items ?? []).map((i) => ({ ...i, c: byId.get(i.lesson_id)! }));
   const weekList = weeksFor([...kept.map(() => 0), ...newItems.map((i) => i.c.durationMinutes)], user.dailyMinutes);
 
+  // Chặng riêng của học viên. Khi giữ lại các bài đã học, giữ nguyên các chặng cũ và nối chặng mới phía sau.
+  const built = buildPhases(newItems.map((i) => ({ lesson_id: i.lesson_id, stageTitle: i.c.stageTitle })), plan?.phases);
+  let oldPhases: Phase[] = [];
+  if (kept.length) {
+    try {
+      oldPhases = JSON.parse(previous?.phases ?? '[]') as Phase[];
+    } catch {
+      oldPhases = [];
+    }
+    if (!oldPhases.length) oldPhases = [{ title: 'Đã hoàn thành trước đó', description: '' }];
+  }
+  const allPhases = [...oldPhases, ...built.phases];
+
   const roadmap = await prisma.$transaction(async (tx) => {
     if (previous) {
       await tx.userRoadmap.update({ where: { id: previous.id }, data: { status: 'archived' } });
@@ -252,16 +351,18 @@ export async function generateRoadmap(userId: string, opts: GenerateOptions) {
         generatedBy: author,
         rationale: plan?.rationale ?? 'Chưa có bài học nào được xuất bản trong kho. Quản trị viên cần xuất bản chặng học.',
         focusSkills: JSON.stringify(plan?.focus_skills?.length ? plan.focus_skills : weak),
+        phases: JSON.stringify(allPhases),
         items: {
           create: [
             ...kept.map((k, idx) => ({
-              lessonId: k.lessonId, order: idx + 1, week: 1, reason: k.reason, source: k.source,
+              lessonId: k.lessonId, order: idx + 1, week: 1, phase: Math.min(k.phase, Math.max(1, oldPhases.length)), reason: k.reason, source: k.source,
               status: 'completed', bestScore: k.bestScore, completedAt: k.completedAt,
             })),
             ...newItems.map((i, idx) => ({
               lessonId: i.lesson_id,
               order: kept.length + idx + 1,
               week: weekList[kept.length + idx],
+              phase: oldPhases.length + (built.phaseOfLesson.get(i.lesson_id) ?? 1),
               reason: i.reason,
               source: author === 'admin' ? 'admin' : 'ai',
               status: 'pending',
@@ -340,7 +441,7 @@ export async function suggestStageToLearners(stageId: string) {
     if (!fits.length) continue;
     await prisma.userRoadmapItem.createMany({
       data: fits.map((l) => ({
-        roadmapId: rm.id, lessonId: l.id, order: ++order, week: ROADMAP_WEEKS,
+        roadmapId: rm.id, lessonId: l.id, order: ++order, week: ROADMAP_WEEKS, phase: lastPhaseOf(rm.phases),
         reason: 'Bài học mới vừa được thêm vào kho, phù hợp trình độ của bạn', source: 'suggested', status: 'suggested',
       })),
     });

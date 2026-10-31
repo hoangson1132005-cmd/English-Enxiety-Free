@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
+import type { Question } from '@prisma/client';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { recordActivity } from '@/lib/progress';
-import { gradeFreeTextAnswer } from '@/lib/grading';
+import { gradeQuestion } from '@/lib/grading';
 import { resolveTestForUser } from '@/lib/testAccess';
+import { loadSessionQuestions } from '@/lib/quiz';
+import { recordQuestionResults } from '@/lib/questionBank';
 import { generateRoadmap, nextLevel, PASS_SCORE } from '@/lib/roadmap';
 import { CEFR_TOEIC_MAP, CEFR_IELTS_MAP } from '@/types';
 import type { CEFRLevel, SkillType } from '@/types';
@@ -24,8 +27,10 @@ function levelFromScore(score: number): CEFRLevel {
   return 'A1';
 }
 
-// Nộp bài test đầu vào (xếp trình độ + tạo lộ trình đầu tiên) hoặc bài kiểm tra tổng kết
-// (đạt -> lên level, chưa đạt -> lộ trình cải thiện).
+// Nộp bài. Ba trường hợp:
+//  - Test đầu vào: xếp trình độ + tạo lộ trình đầu tiên.
+//  - Kiểm tra cuối khóa (đề admin hoặc bốc từ ngân hàng): đạt -> lên level, chưa đạt -> lộ trình cải thiện.
+//  - Kiểm tra cuối chặng (bốc từ ngân hàng): chỉ ghi nhận kết quả, không đổi lộ trình.
 export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -35,36 +40,40 @@ export async function POST(req: Request) {
   const answers = (body.answers ?? []) as { question_id: string; answer: string | string[] }[];
   const timeSpentSeconds = body.time_spent_seconds ?? 0;
 
-  const test = await resolveTestForUser(userId, body.test_id ?? null);
-  if (!test) return NextResponse.json({ error: 'Chưa có đề test đang hoạt động' }, { status: 404 });
-  const isExam = test.kind === 'level_up';
+  let questions: Question[];
+  let kind: 'placement' | 'level_up' | 'final' | 'stage';
+  let testId: string | null = null;
+  let quizId: string | null = null;
+  let quizRoadmapId: string | null = null;
 
-  const allQuestions = test.sections.flatMap((s) => s.questions);
+  if (body.session_id) {
+    const quiz = await prisma.quizSession.findFirst({
+      where: { id: String(body.session_id), userId, kind: { in: ['stage', 'final'] }, status: 'open' },
+    });
+    if (!quiz) return NextResponse.json({ error: 'Phiên kiểm tra không còn hiệu lực' }, { status: 409 });
+    questions = await loadSessionQuestions(quiz);
+    kind = quiz.kind as 'stage' | 'final';
+    quizId = quiz.id;
+    quizRoadmapId = quiz.roadmapId;
+  } else {
+    const test = await resolveTestForUser(userId, body.test_id ?? null);
+    if (!test) return NextResponse.json({ error: 'Chưa có đề test đang hoạt động' }, { status: 404 });
+    questions = test.sections.flatMap((s) => s.questions);
+    kind = test.kind as 'placement' | 'level_up';
+    testId = test.id;
+  }
+
+  const isExam = kind === 'level_up' || kind === 'final';
   const answerByQuestion = new Map(answers.map((a) => [a.question_id, a.answer]));
 
   const perSkill: Record<string, { scoreSum: number; total: number }> = {};
-
-  for (const q of allQuestions) {
-    const given = answerByQuestion.get(q.id);
+  const perQuestion: { questionId: string; score: number }[] = [];
+  for (const q of questions) {
     perSkill[q.skill] ??= { scoreSum: 0, total: 0 };
     perSkill[q.skill].total += 1;
-
-    let questionScore: number;
-    if (q.type === 'essay' || q.type === 'speaking') {
-      const givenText = typeof given === 'string' ? given : '';
-      const correctAnswer = JSON.parse(q.answer) as string | string[];
-      const modelAnswer = `${Array.isArray(correctAnswer) ? correctAnswer.join('; ') : correctAnswer}\n${q.explanation}`;
-      const graded = await gradeFreeTextAnswer(q.question, modelAnswer, givenText);
-      questionScore = graded.score;
-    } else {
-      const correctAnswer = JSON.parse(q.answer) as string | string[];
-      const givenNorm = typeof given === 'string' ? given.trim().toLowerCase() : '';
-      const isCorrect = Array.isArray(correctAnswer)
-        ? correctAnswer.some((a) => a.trim().toLowerCase() === givenNorm)
-        : correctAnswer.trim().toLowerCase() === givenNorm;
-      questionScore = isCorrect ? 100 : 0;
-    }
-    perSkill[q.skill].scoreSum += questionScore;
+    const graded = await gradeQuestion(q, answerByQuestion.get(q.id));
+    perSkill[q.skill].scoreSum += graded.score;
+    perQuestion.push({ questionId: q.id, score: graded.score });
   }
 
   const skillScores: Record<string, number> = {};
@@ -83,7 +92,7 @@ export async function POST(req: Request) {
   const passedExam = isExam && totalScore >= PASS_SCORE;
   const cefrLevel: CEFRLevel = isExam
     ? passedExam ? nextLevel(user.currentLevel as CEFRLevel) : (user.currentLevel as CEFRLevel)
-    : levelFromScore(totalScore);
+    : kind === 'stage' ? (user.currentLevel as CEFRLevel) : levelFromScore(totalScore);
 
   // Chỉ xét kỹ năng thực sự có câu hỏi trong đề.
   const scoredSkills = Object.entries(skillScores).filter(([skill]) => perSkill[skill]);
@@ -100,22 +109,32 @@ export async function POST(req: Request) {
 
   const aiFeedback = isExam
     ? passedExam
-      ? `Chúc mừng! Bạn đạt ${totalScore}/100 trong bài kiểm tra tổng kết${cefrLevel !== user.currentLevel ? ` và được nâng lên trình độ ${cefrLevel}` : ''}.${
+      ? `Chúc mừng! Bạn đạt ${totalScore}/100 trong bài kiểm tra cuối khóa${cefrLevel !== user.currentLevel ? ` và được nâng lên trình độ ${cefrLevel}` : ''}.${
           strengths.length ? ` Điểm mạnh: ${strengths.join(', ')}.` : ''
         } Lộ trình mới đã được tạo cho trình độ này.`
       : `Bạn đạt ${totalScore}/100, chưa đủ ${PASS_SCORE} điểm để lên trình độ tiếp theo.${
           weaknesses.length ? ` Cần cải thiện: ${weaknesses.join(', ')}.` : ''
         } Hệ thống đã tạo lộ trình cải thiện tập trung vào phần còn yếu.`
-    : `Bạn đạt ${totalScore}/100 điểm, tương đương trình độ ${cefrLevel} theo khung CEFR.${
-        strengths.length ? ` Điểm mạnh: ${strengths.join(', ')}.` : ''
-      }${weaknesses.length ? ` Cần cải thiện: ${weaknesses.join(', ')}.` : ''} Lộ trình học cá nhân hóa đã được thiết kế dựa trên kết quả này.`;
+    : kind === 'stage'
+      ? `Bạn đạt ${totalScore}/100 trong bài kiểm tra cuối chặng.${strengths.length ? ` Điểm mạnh: ${strengths.join(', ')}.` : ''}${
+          weaknesses.length ? ` Nên ôn lại: ${weaknesses.join(', ')}.` : ''
+        } Hãy tiếp tục chặng kế tiếp trong lộ trình.`
+      : `Bạn đạt ${totalScore}/100 điểm, tương đương trình độ ${cefrLevel} theo khung CEFR.${
+          strengths.length ? ` Điểm mạnh: ${strengths.join(', ')}.` : ''
+        }${weaknesses.length ? ` Cần cải thiện: ${weaknesses.join(', ')}.` : ''} Lộ trình học cá nhân hóa đã được thiết kế dựa trên kết quả này.`;
 
-  const activeRoadmap = isExam ? await prisma.userRoadmap.findFirst({ where: { userId, status: 'active' } }) : null;
+  const activeRoadmap = isExam
+    ? await prisma.userRoadmap.findFirst({ where: { userId, status: 'active' } })
+    : kind === 'stage' && quizRoadmapId
+      ? await prisma.userRoadmap.findUnique({ where: { id: quizRoadmapId } })
+      : null;
 
   const result = await prisma.testResult.create({
     data: {
       userId,
-      testId: test.id,
+      testId,
+      sessionId: quizId,
+      kind,
       scores: JSON.stringify(skillScores),
       totalScore,
       cefrLevel,
@@ -131,12 +150,19 @@ export async function POST(req: Request) {
     },
   });
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: isExam ? { currentLevel: cefrLevel } : { placementCompleted: true, currentLevel: cefrLevel },
-  });
+  if (quizId) {
+    await prisma.quizSession.update({ where: { id: quizId }, data: { status: 'submitted', submittedAt: new Date() } });
+  }
+  await recordQuestionResults(userId, perQuestion);
 
-  if (activeRoadmap) {
+  if (kind !== 'stage') {
+    await prisma.user.update({
+      where: { id: userId },
+      data: isExam ? { currentLevel: cefrLevel } : { placementCompleted: true, currentLevel: cefrLevel },
+    });
+  }
+
+  if (isExam && activeRoadmap) {
     await prisma.userRoadmap.update({
       where: { id: activeRoadmap.id },
       data: { status: 'completed', completedAt: new Date() },
@@ -144,16 +170,18 @@ export async function POST(req: Request) {
   }
 
   await recordActivity(userId, {
-    xpEarned: isExam ? (passedExam ? 200 : 50) : 100,
+    xpEarned: isExam ? (passedExam ? 200 : 50) : kind === 'stage' ? 60 : 100,
     minutesStudied: Math.round(timeSpentSeconds / 60),
   });
 
   // Tạo lộ trình kế tiếp: lần đầu / lên level / cải thiện. Lỗi tạo không làm mất kết quả bài thi
   // (lộ trình sẽ được tạo lại khi học viên mở trang Lộ trình).
-  try {
-    await generateRoadmap(userId, { kind: isExam ? (passedExam ? 'level_up' : 'improve') : 'initial' });
-  } catch (err) {
-    console.error('Roadmap generation after test failed:', err);
+  if (kind !== 'stage') {
+    try {
+      await generateRoadmap(userId, { kind: isExam ? (passedExam ? 'level_up' : 'improve') : 'initial' });
+    } catch (err) {
+      console.error('Roadmap generation after test failed:', err);
+    }
   }
 
   return NextResponse.json({ result_id: result.id });

@@ -91,6 +91,7 @@ model User {
   ownedVocabSets        VocabSet[]
   passwordResetTokens   PasswordResetToken[]
   roadmaps              UserRoadmap[]
+  quizSessions          QuizSession[]
   lessonAttempts        LessonAttempt[]
 }
 
@@ -150,7 +151,13 @@ model Question {
   testSection     TestSection?  @relation(fields: [testSectionId], references: [id], onDelete: SetNull)
   lessonId        String?
   lesson          Lesson?       @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  inBank          Boolean       @default(false) // thuộc ngân hàng câu hỏi dùng chung (được bốc cho bài/chặng/bài thi)
+  source          String        @default("manual") // 'manual' | 'import' | 'ai'
+  usedCount       Int           @default(0)
+  correctCount    Int           @default(0)
   createdAt       DateTime      @default(now())
+
+  @@index([inBank, skill, level])
 }
 
 model Stage {
@@ -247,8 +254,10 @@ model TestResult {
   id                 String       @id @default(cuid())
   userId             String
   user               User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  testId             String
-  test               Test         @relation(fields: [testId], references: [id], onDelete: Cascade)
+  testId             String?
+  test               Test?        @relation(fields: [testId], references: [id], onDelete: Cascade)
+  sessionId          String?      // bài kiểm tra bốc từ ngân hàng (QuizSession)
+  kind               String       @default("placement") // 'placement' | 'stage' | 'final' | 'level_up'
   completedAt        DateTime     @default(now())
   scores             String       // JSON SkillScores
   totalScore         Int
@@ -315,6 +324,7 @@ model UserRoadmap {
   generatedBy    String   @default("ai") // 'ai' | 'heuristic' | 'admin'
   rationale      String   @default("")
   focusSkills    String   @default("[]") // JSON SkillType[]
+  phases         String   @default("[]") // JSON [{title, description}] — các chặng RIÊNG của học viên này
   createdAt      DateTime @default(now())
   completedAt    DateTime?
   items          UserRoadmapItem[]
@@ -330,6 +340,7 @@ model UserRoadmapItem {
   lesson       Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   order        Int
   week         Int      @default(1)
+  phase        Int      @default(1) // số thứ tự chặng (1-based) trong roadmap.phases
   reason       String   @default("")
   source       String   @default("ai") // 'ai' | 'admin' | 'suggested'
   status       String   @default("pending") // 'pending' | 'in_progress' | 'completed' | 'suggested' | 'dismissed'
@@ -369,4 +380,30 @@ model AudioFile {
   sizeBytes   Int
   data        Bytes
   createdAt   DateTime @default(now())
+}
+
+// Một lượt kiểm tra với bộ câu hỏi đã được chọn sẵn (từ ngân hàng + AI bù thiếu), giữ cố định cho tới khi nộp bài.
+model QuizSession {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind         String    // 'lesson' | 'stage' | 'final'
+  lessonId     String?
+  roadmapId    String?
+  phase        Int?
+  questionIds  String    // JSON string[] theo thứ tự hiển thị
+  status       String    @default("open") // 'open' | 'submitted'
+  createdAt    DateTime  @default(now())
+  submittedAt  DateTime?
+
+  @@index([userId, kind, status])
+}
+
+// Câu hỏi học viên đã gặp, để các lần kiểm tra sau ưu tiên câu mới.
+model QuestionSeen {
+  userId      String
+  questionId  String
+  createdAt   DateTime @default(now())
+
+  @@id([userId, questionId])
 }

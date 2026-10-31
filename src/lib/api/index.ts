@@ -94,8 +94,9 @@ export async function apiCompleteOnboarding(_userId: string, data: {
 // Placement Test API
 // ============================================================
 
-export async function apiGetPlacementTest(testId?: string): Promise<PlacementTest> {
-  const res = await fetch(`/api/placement/test${testId ? `?test_id=${testId}` : ''}`);
+export async function apiGetPlacementTest(testId?: string, sessionId?: string): Promise<PlacementTest> {
+  const qs = sessionId ? `?session_id=${sessionId}` : testId ? `?test_id=${testId}` : '';
+  const res = await fetch(`/api/placement/test${qs}`);
   if (!res.ok) throw new Error('Không lấy được đề test');
   return res.json();
 }
@@ -104,6 +105,7 @@ export async function apiSubmitPlacementTest(payload: {
   answers: { question_id: string; answer: string | string[]; time_spent_seconds: number }[];
   time_spent_seconds: number;
   test_id?: string;
+  session_id?: string;
 }): Promise<{ result_id: string }> {
   const res = await fetch('/api/placement/submit', {
     method: 'POST',
@@ -139,8 +141,20 @@ export async function apiRespondSuggestion(itemId: string, action: 'accept' | 'd
   if (!res.ok) throw new Error('Không cập nhật được đề xuất');
 }
 
-export async function apiStartExam(): Promise<{ test_id: string }> {
+// Trả về test_id (đề admin chỉ định) hoặc session_id (bộ câu bốc từ ngân hàng)
+export async function apiStartExam(): Promise<{ test_id?: string; session_id?: string }> {
   const res = await fetch('/api/exam/start', { method: 'POST' });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Không mở được bài kiểm tra');
+  return data;
+}
+
+export async function apiStartStageQuiz(phase: number): Promise<{ session_id: string }> {
+  const res = await fetch('/api/quiz/start', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phase }),
+  });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Không mở được bài kiểm tra');
   return data;
@@ -158,6 +172,7 @@ export async function apiGetLesson(lessonId: string): Promise<LessonDetail> {
 
 export async function apiSubmitLesson(payload: {
   lesson_id: string;
+  session_id: string;
   answers: { question_id: string; answer: string | string[] }[];
   time_spent_seconds: number;
 }): Promise<LessonSubmitResult> {
