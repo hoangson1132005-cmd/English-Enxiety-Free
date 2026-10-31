@@ -21,12 +21,16 @@ export default function AdminTestsListPage() {
   const [showImport, setShowImport] = useState(false);
   const [newTitle, setNewTitle] = useState('');
 
-  const load = () => {
-    setLoading(true);
+  const fetchTests = () => {
     fetch('/api/admin/tests').then((r) => r.json()).then((data) => { setTests(data); setLoading(false); });
   };
 
-  useEffect(load, []);
+  const load = () => {
+    setLoading(true);
+    fetchTests();
+  };
+
+  useEffect(fetchTests, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();

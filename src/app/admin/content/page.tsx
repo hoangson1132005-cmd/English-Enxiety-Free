@@ -48,8 +48,7 @@ export default function AdminContentPage() {
     duration_minutes: 20, xp_reward: 50, topic: '', description: '',
   });
 
-  const loadAll = () => {
-    setLoading(true);
+  const fetchAll = () => {
     Promise.all([
       fetch('/api/admin/questions').then((r) => r.json()),
       fetch('/api/admin/lessons').then((r) => r.json()),
@@ -63,7 +62,12 @@ export default function AdminContentPage() {
     });
   };
 
-  useEffect(loadAll, []);
+  const loadAll = () => {
+    setLoading(true);
+    fetchAll();
+  };
+
+  useEffect(fetchAll, []);
 
   const filteredQuestions = useMemo(() => {
     return questions.filter((q) => {

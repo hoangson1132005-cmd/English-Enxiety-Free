@@ -22,24 +22,30 @@ const WELCOME_MESSAGE: ChatMessage = {
   timestamp: new Date().toISOString(),
 };
 
+let idCounter = 0;
+function newMessageId(prefix: string) {
+  idCounter += 1;
+  return `${prefix}_${Date.now()}_${idCounter}`;
+}
+
 export function FloatingAITutor() {
   const { tutorOpen, setTutorOpen } = useUIStore();
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const [loadedHistory, setLoadedHistory] = useState(false);
+  const loadedHistory = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (tutorOpen && !loadedHistory) {
-      setLoadedHistory(true);
+    if (tutorOpen && !loadedHistory.current) {
+      loadedHistory.current = true;
       apiGetChatHistory()
         .then((history) => {
           if (history.length > 0) setMessages(history);
         })
         .catch(() => {});
     }
-  }, [tutorOpen, loadedHistory]);
+  }, [tutorOpen]);
 
   useEffect(() => {
     if (tutorOpen) {
@@ -52,7 +58,7 @@ export function FloatingAITutor() {
     if (!text.trim() || isSending) return;
 
     const userMsg: ChatMessage = {
-      id: 'usr_' + Date.now(),
+      id: newMessageId('usr'),
       role: 'user',
       content: text,
       timestamp: new Date().toISOString(),
@@ -65,7 +71,7 @@ export function FloatingAITutor() {
     try {
       const res = await apiSendMessage(text);
       const aiMsg: ChatMessage = {
-        id: 'ai_' + Date.now(),
+        id: newMessageId('ai'),
         role: 'assistant',
         content: res.content,
         timestamp: new Date().toISOString(),

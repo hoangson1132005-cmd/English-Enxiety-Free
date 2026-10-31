@@ -25,17 +25,19 @@ export default function AdminUsersPage() {
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const [newUser, setNewUser] = useState({ full_name: '', student_id: '', email: '', faculty_group: 'engineering' as FacultyGroup });
 
-  const loadUsers = () => {
-    setLoading(true);
+  const fetchUsers = () => {
     fetch('/api/admin/users')
       .then((res) => res.json())
       .then(setUsers)
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
+  const loadUsers = () => {
+    setLoading(true);
+    fetchUsers();
+  };
+
+  useEffect(fetchUsers, []);
 
   const filtered = useMemo(() => {
     return users.filter((u) => {

@@ -53,24 +53,6 @@ export default function PlacementTestPage() {
   const totalQuestions = allQuestions.length;
   const answeredCount = Object.keys(answers).length;
 
-  // Timer countdown
-  useEffect(() => {
-    if (testState !== 'testing') return;
-
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          handleSubmitTest();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [testState]);
-
   // Audio toggle
   const toggleAudio = () => {
     setIsPlayingAudio(!isPlayingAudio);
@@ -157,6 +139,24 @@ export default function PlacementTestPage() {
       router.push('/placement/result');
     }
   };
+
+  // Timer countdown
+  useEffect(() => {
+    if (testState !== 'testing') return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          handleSubmitTest();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [testState]);
 
   // ==========================================
   // RENDER: INTRO SCREEN

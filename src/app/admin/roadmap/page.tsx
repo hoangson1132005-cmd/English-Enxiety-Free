@@ -26,12 +26,16 @@ export default function AdminRoadmapPage() {
     has_midterm: false, has_final: false, why_this_stage: '',
   });
 
-  const load = () => {
-    setLoading(true);
+  const fetchStages = () => {
     fetch('/api/admin/stages').then((r) => r.json()).then((data) => { setStages(data); setLoading(false); });
   };
 
-  useEffect(load, []);
+  const load = () => {
+    setLoading(true);
+    fetchStages();
+  };
+
+  useEffect(fetchStages, []);
 
   const togglePublish = async (stage: StageRow) => {
     const res = await fetch(`/api/admin/stages/${stage.id}/publish`, {

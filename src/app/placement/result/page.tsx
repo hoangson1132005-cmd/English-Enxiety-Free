@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense, useState, useEffect } from 'react';
+import React, { Suspense, useState, useEffect, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import {
@@ -31,11 +31,10 @@ export default function PlacementResultPage() {
 function PlacementResultContent() {
   const searchParams = useSearchParams();
   const { updateProfile } = useAuthStore();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
   const [result, setResult] = useState<TestResult | null>(null);
 
   useEffect(() => {
-    setMounted(true);
     apiGetTestResult(searchParams.get('id') ?? undefined)
       .then((r) => {
         setResult(r);

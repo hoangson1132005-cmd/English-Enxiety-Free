@@ -61,7 +61,7 @@ function LessonPageContent() {
   const [submitResult, setSubmitResult] = useState<{
     score: number; xp_earned: number; results: { question_id: string; score: number; feedback: string }[];
   } | null>(null);
-  const startedAt = useRef(Date.now());
+  const [startedAt] = useState(() => Date.now());
 
   useEffect(() => {
     apiGetLesson(params.lessonId)
@@ -75,7 +75,7 @@ function LessonPageContent() {
     if (!lesson) return;
     setSubmitting(true);
     try {
-      const timeSpentSeconds = Math.round((Date.now() - startedAt.current) / 1000);
+      const timeSpentSeconds = Math.round((Date.now() - startedAt) / 1000);
       const res = await apiSubmitLesson({
         lesson_id: lesson.id,
         answers: lesson.questions.map((q) => ({ question_id: q.id, answer: answers[q.id] ?? '' })),

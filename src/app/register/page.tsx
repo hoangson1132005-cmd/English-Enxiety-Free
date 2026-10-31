@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { ArrowRight, ShieldCheck, Languages, Wrench, Sparkles, Check, Eye, EyeOff, Briefcase, GraduationCap } from 'lucide-react';
@@ -61,7 +61,7 @@ export default function RegisterPage() {
     setValue,
     formState: { errors },
   } = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema) as any,
+    resolver: zodResolver(registerSchema) as Resolver<RegisterFormData>,
     defaultValues: {
       employment_status: 'student',
       faculty_group: 'engineering',

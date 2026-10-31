@@ -35,8 +35,7 @@ function AdminTestDetailContent() {
   const [showModal, setShowModal] = useState(false);
   const [newSection, setNewSection] = useState({ title: '', skill: 'vocabulary' as SkillType, time_limit_minutes: 10, instructions: '' });
 
-  const load = () => {
-    setLoading(true);
+  const fetchTest = () => {
     fetch(`/api/admin/tests/${params.id}`)
       .then(async (r) => {
         if (!r.ok) { setNotFound(true); return; }
@@ -50,7 +49,13 @@ function AdminTestDetailContent() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [params.id]);
+  const load = () => {
+    setLoading(true);
+    fetchTest();
+  };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(fetchTest, [params.id]);
 
   const totalQuestions = sections.reduce((sum, s) => sum + s.questions.length, 0);
 

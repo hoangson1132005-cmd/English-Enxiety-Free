@@ -30,8 +30,7 @@ export default function VocabularyPage() {
   const [showAddCard, setShowAddCard] = useState(false);
   const [newCard, setNewCard] = useState({ term: '', definition_vi: '', definition: '', pronunciation: '', example: '', example_vi: '' });
 
-  const loadSets = () => {
-    setLoading(true);
+  const fetchSets = () => {
     apiGetVocabSets()
       .then((data) => {
         setSets(data);
@@ -40,10 +39,13 @@ export default function VocabularyPage() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => {
-    loadSets();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const loadSets = () => {
+    setLoading(true);
+    fetchSets();
+  };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(fetchSets, []);
 
   const currentSet = sets.find((s) => s.id === activeSetId) || sets[0];
   const activeCard: VocabCard | undefined = currentSet?.cards[cardIndex] || currentSet?.cards[0];

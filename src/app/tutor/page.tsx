@@ -11,6 +11,12 @@ import { useUIStore } from '@/store/uiStore';
 import { cn } from '@/lib/utils';
 import type { ChatMessage } from '@/types';
 
+let idCounter = 0;
+function newMessageId(prefix: string) {
+  idCounter += 1;
+  return `${prefix}_${Date.now()}_${idCounter}`;
+}
+
 export default function AITutorPage() {
   const { addToast } = useUIStore();
 
@@ -52,7 +58,7 @@ export default function AITutorPage() {
     if (!text.trim() || isSending) return;
 
     const userMessage: ChatMessage = {
-      id: 'usr_' + Date.now(),
+      id: newMessageId('usr'),
       role: 'user',
       content: text,
       timestamp: new Date().toISOString(),
@@ -65,7 +71,7 @@ export default function AITutorPage() {
     try {
       const res = await apiSendMessage(text);
       const assistantMessage: ChatMessage = {
-        id: 'ai_' + Date.now(),
+        id: newMessageId('ai'),
         role: 'assistant',
         content: res.content,
         timestamp: new Date().toISOString(),

@@ -39,8 +39,7 @@ function AdminLessonDetailContent() {
     question: '', answer: '', explanation: '',
   });
 
-  const load = () => {
-    setLoading(true);
+  const fetchLesson = () => {
     fetch(`/api/admin/lessons/${params.id}`)
       .then((r) => r.json())
       .then((data: LessonFull) => {
@@ -50,7 +49,12 @@ function AdminLessonDetailContent() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(load, [params.id]);
+  const load = () => {
+    setLoading(true);
+    fetchLesson();
+  };
+
+  useEffect(fetchLesson, [params.id]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
