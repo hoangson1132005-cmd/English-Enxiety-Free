@@ -25,6 +25,7 @@ export function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
+              data-tour={`nav-${item.href.slice(1)}`}
               className={cn(
                 'flex flex-col items-center gap-1 px-3 py-1 rounded-xl transition-all min-w-0',
                 active

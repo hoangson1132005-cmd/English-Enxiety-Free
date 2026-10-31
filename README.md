@@ -131,6 +131,8 @@ Kho bài học là một danh sách phẳng (mỗi bài có trạng thái Nháp 
 
 - *Admin → Tổng quan* có checklist **Bắt đầu nhanh** (nạp bài, xuất bản, nạp ngân hàng câu hỏi, kích hoạt đề đầu vào, bật AI, email, đổi mật khẩu admin) với trạng thái thật và link bấm ngay, cùng mục **Cần chú ý** (bài nháp, câu AI cần duyệt, mật khẩu mặc định...).
 - Mỗi trang admin có ghi chú **hướng dẫn** ở đầu trang kèm các link nhanh; có thể thu gọn (trình duyệt nhớ lựa chọn).
+- Học viên mới thấy **tour giới thiệu** (7 bước, tự chạy lần đầu vào Tổng quan hoặc Lộ trình); xem lại ở *Hồ sơ → Xem lại hướng dẫn* hoặc `/dashboard?tour=1`.
+- *Admin → Tài khoản của tôi → Gửi email* hiện trạng thái SMTP và có nút **Gửi email thử** kèm hướng dẫn cấu hình Gmail.
 - Người dùng tự đổi mật khẩu ở trang *Hồ sơ*; admin ở *Admin → Tài khoản của tôi*.
 
 ## 🔐 Lối vào quản trị

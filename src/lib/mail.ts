@@ -15,6 +15,28 @@ function getTransport() {
   return nodemailer.createTransport({ host, port, secure: port === 465, auth: { user, pass } });
 }
 
+export function getMailStatus() {
+  return {
+    configured: !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS),
+    host: process.env.SMTP_HOST ?? '',
+    port: Number(process.env.SMTP_PORT) || 587,
+    user: process.env.SMTP_USER ?? '',
+    from: process.env.MAIL_FROM || process.env.SMTP_USER || '',
+    app_url: process.env.APP_URL ?? '',
+  };
+}
+
+export async function sendTestEmail(to: string) {
+  const from = process.env.MAIL_FROM || process.env.SMTP_USER;
+  await getTransport().sendMail({
+    from,
+    to,
+    subject: 'Email thử - English Anxiety Free',
+    text: 'Cấu hình gửi email của hệ thống hoạt động bình thường. Chức năng quên mật khẩu sẽ gửi thư được.',
+    html: '<p>Cấu hình gửi email của hệ thống <b>hoạt động bình thường</b>.</p><p>Chức năng quên mật khẩu sẽ gửi thư được.</p>',
+  });
+}
+
 export async function sendPasswordResetEmail(to: string, name: string, resetUrl: string) {
   const from = process.env.MAIL_FROM || process.env.SMTP_USER;
   await getTransport().sendMail({

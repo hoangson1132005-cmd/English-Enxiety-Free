@@ -69,7 +69,7 @@ export function Sidebar() {
         {items.map((item) => {
           const active = isActive(item.href);
           return (
-            <Link key={item.href} href={item.href}>
+            <Link key={item.href} href={item.href} data-tour={`nav-${item.href.slice(1)}`}>
               <motion.div
                 whileHover={{ x: 2 }}
                 whileTap={{ scale: 0.98 }}

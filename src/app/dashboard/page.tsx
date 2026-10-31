@@ -101,6 +101,7 @@ export default function DashboardPage() {
             <div className="pt-2 flex flex-wrap items-center gap-4">
               <Link
                 href={cta.href}
+                data-tour="cta"
                 className="px-6 py-3 bg-white text-primary-800 hover:bg-cream rounded-2xl font-bold text-xs sm:text-sm shadow-soft transition-all flex items-center gap-2"
               >
                 <Play className="w-4 h-4 fill-primary-800" />

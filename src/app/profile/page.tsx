@@ -353,6 +353,16 @@ function ProfileForm({ profile }: { profile: Profile }) {
         <div className="mt-6 p-6 sm:p-8 rounded-3xl bg-white dark:bg-gray-900 border border-[var(--color-border)] shadow-soft">
           <ChangePasswordForm />
         </div>
+
+        <div className="mt-6 p-6 sm:p-8 rounded-3xl bg-white dark:bg-gray-900 border border-[var(--color-border)] shadow-soft flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="text-sm font-semibold text-text-primary dark:text-white">Hướng dẫn sử dụng</div>
+            <p className="text-xs text-text-muted mt-0.5">Xem lại tour giới thiệu các tính năng chính.</p>
+          </div>
+          <Link href="/dashboard?tour=1" className="px-4 py-2.5 rounded-xl border border-primary-300 text-primary-700 hover:bg-primary-50 text-sm font-semibold">
+            Xem lại hướng dẫn
+          </Link>
+        </div>
       </div>
     </AppLayout>
   );

@@ -3,6 +3,7 @@
 import React from 'react';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { ChangePasswordForm } from '@/components/account/ChangePasswordForm';
+import { EmailTestCard } from '@/components/admin/EmailTestCard';
 
 export default function AdminAccountPage() {
   return (
@@ -14,13 +15,20 @@ export default function AdminAccountPage() {
         title: 'Đổi mật khẩu quản trị trước khi triển khai',
         items: [
           'Mật khẩu admin mặc định của bản cài đặt mẫu là công khai trong tài liệu, nên cần đổi ngay trước khi đưa cho khách.',
+          'Phần “Gửi email” bên dưới cho biết hệ thống đã gửi được thư quên mật khẩu chưa và cho bạn gửi thử một thư.',
           'Dùng mật khẩu dài, khó đoán. Quên mật khẩu admin? Chạy lệnh: npx tsx scripts/set-admin-password.ts <email> <mật-khẩu-mới>.',
         ],
-        links: [{ href: '/admin', label: 'Về Tổng quan' }],
+        links: [
+          { href: '/admin', label: 'Về Tổng quan' },
+          { href: '/admin/account#email', label: 'Cấu hình gửi email' },
+        ],
       }}
     >
-      <div className="p-6 rounded-3xl bg-white border border-[var(--color-border)] shadow-soft">
-        <ChangePasswordForm />
+      <div className="space-y-6">
+        <div className="p-6 rounded-3xl bg-white border border-[var(--color-border)] shadow-soft">
+          <ChangePasswordForm />
+        </div>
+        <EmailTestCard />
       </div>
     </AdminLayout>
   );

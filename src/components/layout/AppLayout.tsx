@@ -6,6 +6,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { Topbar } from '@/components/layout/Topbar';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { FloatingAITutor } from '@/components/layout/FloatingAITutor';
+import { GuidedTour } from '@/components/features/tour/GuidedTour';
 import { useUIStore } from '@/store/uiStore';
 import { useAuthStore } from '@/store/authStore';
 import { apiGetProfile } from '@/lib/api';
@@ -49,6 +50,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
       </div>
       <BottomNav />
       <FloatingAITutor />
+      <GuidedTour />
     </div>
   );
 }
