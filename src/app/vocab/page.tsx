@@ -163,14 +163,14 @@ export default function VocabularyPage() {
 
   if (loading) {
     return (
-      <AppLayout title="Kho Từ Vựng & Flashcard Logistics">
+      <AppLayout title="Kho Từ Vựng & Flashcard">
         <p className="text-center text-sm text-text-muted py-20">Đang tải...</p>
       </AppLayout>
     );
   }
 
   return (
-    <AppLayout title="Kho Từ Vựng & Flashcard Logistics">
+    <AppLayout title="Kho Từ Vựng & Flashcard">
       <div className="space-y-8">
         {/* FLASHCARD INTERACTIVE HERO */}
         {currentSet && activeCard ? (
@@ -337,7 +337,7 @@ export default function VocabularyPage() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Tìm thuật ngữ (FOB, B/L...)"
+                  placeholder="Tìm từ vựng..."
                   className="w-full pl-9 pr-4 py-2 rounded-2xl text-xs bg-white dark:bg-gray-900 border border-[var(--color-border)] focus:border-primary-500 focus:outline-none"
                 />
               </div>

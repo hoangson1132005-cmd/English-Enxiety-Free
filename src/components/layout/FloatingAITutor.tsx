@@ -9,9 +9,9 @@ import { cn } from '@/lib/utils';
 import type { ChatMessage } from '@/types';
 
 const quickPrompts = [
-  'Giải thích sự khác nhau giữa FOB và CIF',
-  '3 chức năng chính của Bill of Lading là gì?',
-  'Sửa giúp mình câu email xác nhận booking',
+  'Giải thích sự khác nhau giữa "affect" và "effect"',
+  'Cách viết email xin lùi hạn chót lịch sự',
+  'Sửa giúp mình câu email này',
   'Hôm nay mình nên ôn gì?',
 ];
 
@@ -111,7 +111,7 @@ export function FloatingAITutor() {
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="font-semibold text-sm">AI Tutor</h3>
-                  <span className="text-[10px] bg-accent/30 text-accent-light px-2 py-0.5 rounded-full font-medium">Logistics AI</span>
+                  <span className="text-[10px] bg-accent/30 text-accent-light px-2 py-0.5 rounded-full font-medium">AI Tutor</span>
                 </div>
                 <p className="text-xs text-white/80">Trợ lý học thuật 24/7</p>
               </div>
@@ -192,7 +192,7 @@ export function FloatingAITutor() {
           >
             <input
               type="text"
-              placeholder="Hỏi về Incoterms, email, thuật ngữ..."
+              placeholder="Hỏi về từ vựng, ngữ pháp, email..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={isSending}

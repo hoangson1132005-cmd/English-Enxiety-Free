@@ -48,7 +48,7 @@ export function ResearchConsentModal({ isOpen, onClose, onAccept }: Props) {
             </p>
             <h4 className="font-semibold text-text-primary dark:text-white pt-2">1. Mục đích thu thập dữ liệu:</h4>
             <p>
-              Chúng tôi phân tích điểm số, thời gian làm bài và tỷ lệ đúng/sai để tối ưu lộ trình học, đề xuất bài luyện phù hợp và cải thiện chất lượng nội dung chuyên ngành logistics.
+              Chúng tôi phân tích điểm số, thời gian làm bài và tỷ lệ đúng/sai để tối ưu lộ trình học, đề xuất bài luyện phù hợp và cải thiện chất lượng nội dung học tập.
             </p>
 
             <h4 className="font-semibold text-text-primary dark:text-white pt-2">2. Tính bảo mật và ẩn danh:</h4>

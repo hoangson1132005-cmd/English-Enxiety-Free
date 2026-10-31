@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { chatReply, GeminiNotConfiguredError, type ChatTurn } from '@/lib/gemini';
 
-const SYSTEM_PROMPT = `Bạn là AI Tutor của English Anxiety Free — nền tảng học tiếng Anh chuyên ngành logistics. Trả lời ngắn gọn, đúng trọng tâm, có thể dùng cả tiếng Việt và tiếng Anh tùy ngữ cảnh câu hỏi. Ưu tiên ví dụ thực tế trong ngành logistics (Incoterms, chứng từ, vận tải, hải quan). Không trả lời các chủ đề ngoài tiếng Anh/logistics.`;
+const BASE_PROMPT = `Bạn là AI Tutor của English Anxiety Free — nền tảng học tiếng Anh cho mọi ngành nghề. Trả lời ngắn gọn, đúng trọng tâm, có thể dùng cả tiếng Việt và tiếng Anh tùy ngữ cảnh câu hỏi. Ưu tiên ví dụ thực tế trong lĩnh vực của học viên. Không trả lời các chủ đề ngoài việc học tiếng Anh.`;
 const HISTORY_LIMIT = 20;
 
 export async function POST(req: Request) {
@@ -13,6 +13,14 @@ export async function POST(req: Request) {
   const body = await req.json();
   const message = (body.message ?? '').trim();
   if (!message) return NextResponse.json({ error: 'Thiếu nội dung tin nhắn' }, { status: 400 });
+
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  let interests: string[] = [];
+  try { interests = JSON.parse(user?.interests ?? '[]'); } catch { /* bỏ qua dữ liệu hỏng */ }
+  const learnerContext = user
+    ? `\nThông tin học viên: trình độ ${user.currentLevel}; ngành/chuyên môn: ${user.major ?? 'chưa rõ'}; lĩnh vực quan tâm: ${interests.join(', ') || 'chưa rõ'}; mục tiêu: ${user.goal ?? 'chưa rõ'}.`
+    : '';
+  const SYSTEM_PROMPT = BASE_PROMPT + learnerContext;
 
   const priorMessages = await prisma.chatMessage.findMany({
     where: { userId: session.user.id },

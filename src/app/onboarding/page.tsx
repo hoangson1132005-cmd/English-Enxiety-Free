@@ -10,7 +10,7 @@ import {
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
 import { apiCompleteOnboarding, apiGetProfile } from '@/lib/api';
-import { MAJORS_BY_FACULTY, JOB_INTEREST_OPTIONS, type FacultyGroup, type LearningGoal, type LogisticsArea, type DailyMinutes, type CEFRLevel } from '@/types';
+import { MAJORS_BY_FACULTY, JOB_INTEREST_OPTIONS, INTEREST_GROUPS, type FacultyGroup, type LearningGoal, type InterestArea, type DailyMinutes, type CEFRLevel } from '@/types';
 import { cn } from '@/lib/utils';
 
 export default function OnboardingPage() {
@@ -25,7 +25,7 @@ export default function OnboardingPage() {
 
   const [step, setStep] = useState(1);
   const [goal, setGoal] = useState<LearningGoal>(profile?.goal || 'work');
-  const [interests, setInterests] = useState<LogisticsArea[]>(profile?.interests || ['documentation', 'forwarder']);
+  const [interests, setInterests] = useState<InterestArea[]>(profile?.interests || []);
   const [dailyMinutes, setDailyMinutes] = useState<DailyMinutes>(profile?.daily_minutes || 20);
   const [level, setLevel] = useState<CEFRLevel>(profile?.self_assessed_level || 'A2');
   const [faculty, setFaculty] = useState<FacultyGroup>(profile?.faculty_group || 'engineering');
@@ -47,7 +47,7 @@ export default function OnboardingPage() {
   const totalSteps = 4;
   const progressPercent = (step / totalSteps) * 100;
 
-  const toggleInterest = (item: LogisticsArea) => {
+  const toggleInterest = (item: InterestArea) => {
     if (interests.includes(item)) {
       if (interests.length > 1) {
         setInterests(interests.filter((i) => i !== item));
@@ -144,19 +144,19 @@ export default function OnboardingPage() {
                     {
                       id: 'internship',
                       label: 'Đi thực tập doanh nghiệp',
-                      desc: 'Đọc chứng từ, viết email báo cáo',
+                      desc: 'Đọc tài liệu, viết email báo cáo',
                       icon: GraduationCap,
                     },
                     {
                       id: 'work',
                       label: 'Đi làm chính thức',
-                      desc: 'Làm việc tại Forwarder, Hãng tàu',
+                      desc: 'Dùng tiếng Anh trong công việc hằng ngày',
                       icon: Briefcase,
                     },
                     {
                       id: 'certificate',
-                      label: 'Thi chứng chỉ (TOEIC/FIATA)',
-                      desc: 'Củng cố ngữ pháp & thuật ngữ',
+                      label: 'Thi chứng chỉ (TOEIC/IELTS...)',
+                      desc: 'Củng cố ngữ pháp & từ vựng',
                       icon: Award,
                     },
                     {
@@ -199,15 +199,15 @@ export default function OnboardingPage() {
                 <div>
                   <span className="text-xs font-bold text-accent uppercase tracking-wider">Đa ngành nghề</span>
                   <h2 className="font-serif font-bold text-2xl text-primary-900 dark:text-white mt-1">
-                    Vị trí công việc bạn quan tâm?
+                    Lĩnh vực / ngành nghề bạn quan tâm?
                   </h2>
                   <p className="text-xs text-text-secondary dark:text-gray-400 mt-1">
-                    Bạn có thể chọn nhiều vị trí (tối thiểu 1 vị trí), hoặc tự nhập nếu không thấy trong danh sách.
+                    Bạn có thể chọn nhiều lĩnh vực (tối thiểu 1), hoặc tự nhập nếu không thấy trong danh sách. AI dùng thông tin này để chọn bài và ví dụ phù hợp với bạn.
                   </p>
                 </div>
 
                 <div className="space-y-4 max-h-80 overflow-y-auto pr-1">
-                  {['Logistics & XNK', 'Ngành khác'].map((group) => (
+                  {INTEREST_GROUPS.map((group) => (
                     <div key={group}>
                       <span className="text-[11px] font-bold text-text-muted uppercase tracking-wide">{group}</span>
                       <div className="grid grid-cols-2 gap-2.5 mt-2">
@@ -357,10 +357,10 @@ export default function OnboardingPage() {
 
                 <div className="space-y-3">
                   {[
-                    { id: 'A1', title: 'Mới bắt đầu (A1)', desc: 'Chưa biết nhiều từ vựng logistics, khó đọc email tiếng Anh.' },
-                    { id: 'A2', title: 'Sơ cấp (A2)', desc: 'Biết các Incoterms cơ bản (FOB, CIF), đọc hiểu thông báo đơn giản.' },
-                    { id: 'B1', title: 'Trung cấp (B1)', desc: 'Đọc hiểu B/L, Invoice tốt; có thể viết email trao đổi thông thường.' },
-                    { id: 'B2', title: 'Khá (B2)', desc: 'Tự tin đàm phán cước tàu, xử lý khiếu nại và hiểu quy định hải quan.' },
+                    { id: 'A1', title: 'Mới bắt đầu (A1)', desc: 'Biết rất ít từ vựng, khó hiểu câu tiếng Anh đơn giản.' },
+                    { id: 'A2', title: 'Sơ cấp (A2)', desc: 'Hiểu câu ngắn, giới thiệu bản thân và đọc thông báo đơn giản.' },
+                    { id: 'B1', title: 'Trung cấp (B1)', desc: 'Đọc hiểu tài liệu công việc quen thuộc; viết được email trao đổi thông thường.' },
+                    { id: 'B2', title: 'Khá (B2)', desc: 'Tự tin họp, đàm phán, xử lý tình huống và hiểu tài liệu chuyên môn.' },
                   ].map((item) => (
                     <button
                       key={item.id}

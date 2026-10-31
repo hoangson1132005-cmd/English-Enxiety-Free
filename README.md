@@ -1,48 +1,22 @@
-# UTH English for Logistics
+# English Anxiety Free
 
-> **Nền tảng học tiếng Anh chuyên ngành Logistics & Chuỗi cung ứng dành riêng cho sinh viên Đại học Giao thông Vận tải TP.HCM (UTH).**  
-> Ứng dụng web full-stack (Next.js + Prisma + PostgreSQL) phục vụ đề tài Nghiên cứu Khoa học Sinh viên — 100% Miễn phí, dành cho sinh viên.
+> **Nền tảng học tiếng Anh cho mọi ngành nghề.** Học viên làm bài test đầu vào, nhận lộ trình học cá nhân do AI chọn từ kho nội dung của giáo viên, học từng bài có điểm số và nhận xét, rồi thi tổng kết để lên trình độ tiếp theo.  
+> Ứng dụng web full-stack (Next.js + Prisma + PostgreSQL), 100% miễn phí cho người học.
+
+Nội dung theo ngành (kinh doanh, CNTT, y tế, du lịch, logistics, ...) **không cố định trong code**: admin upload giáo trình, giáo án rồi AI tách thành chặng, bài, từ vựng và câu hỏi. Bộ nội dung mẫu đi kèm là tiếng Anh công việc dùng chung.
 
 ---
 
 ## 🌟 Tính Năng Nổi Bật
 
-1. **Design System đồng bộ bản sắc UTH**:
-   - Tông màu chủ đạo: Primary Teal (`#2F7F7A`), nền nhạt (`#E3F2EF`), hoa đào hồng pastel (`#F4A7B9`), vàng kem (`#FFF4CC`).
-   - Font chữ: *Lora / Playfair Display* (tiêu đề serif trang trọng giống logo UTH) và *Be Vietnam Pro* (nội dung sắc nét).
-   - Bo góc lớn `rounded-2xl`, bóng đổ mềm mại, hỗ trợ Dark Mode hoàn hảo.
-
-2. **Bài Test Đầu Vào Chuyên Sâu (`/placement`)**:
-   - 4 kỹ năng + Từ vựng: Incoterms (FOB, CIF, EXW, DAP...), Bill of Lading, Packing List, FCL/LCL, Demurrage, Detention, HS Code.
-   - Hỗ trợ Audio player giả lập, đếm từ essay viết email nghiệp vụ, thu âm giọng nói với Web Speech API.
-   - Màn hình AI phân tích kết quả từng bước.
-   - Báo cáo kết quả (`/placement/result`): Biểu đồ Radar 5 thành phần (Recharts), CEFR (A1–C1), đối sánh tương đương TOEIC & IELTS, nhận xét AI cá nhân hóa.
-
-3. **Lộ Trình Cá Nhân Hóa 12 Tuần (`/roadmap`)**:
-   - Timeline trực quan theo 4 Chặng (Stages).
-   - Thẻ nổi bật "Hôm nay học gì".
-   - Giải thích lý do lộ trình phù hợp với năng lực sinh viên.
-
-4. **Luyện 4 Kỹ Năng Thực Chiến (`/learn/*`)**:
-   - **Listening**: Player audio (tốc độ 0.75x/1x/1.25x, tua 5s, ẩn/hiện transcript), trắc nghiệm & giải thích.
-   - **Reading**: Bài đọc 2 cột (Bill of Lading thật), tra từ vựng trực tiếp dạng popup & lưu vào Flashcard.
-   - **Writing**: Đề bài tình huống viết email logistics, AI chấm bài chi tiết: highlight lỗi sai, gợi ý sửa và bản viết mẫu (Model Answer).
-   - **Speaking**: Luyện phát âm thuật ngữ, nhận dạng giọng nói, tính điểm tương đồng % (similarity score).
-
-5. **Kho Từ Vựng & Flashcard Lặp Lại Ngắt Quãng (`/vocab`)**:
-   - Flashcard 3D flip card mượt mà.
-   - Phát âm từ bằng Speech Synthesis bản ngữ.
-   - Hệ thống đánh giá Spaced Repetition (SRS): *Đã nhớ (7 ngày)*, *Khó (3 ngày)*, *Chưa nhớ (1 ngày)*.
-
-6. **AI Tutor 24/7 (`/tutor` & Floating Panel)**:
-   - Giao diện chat trực tiếp hoặc widget nổi ở góc màn hình.
-   - Gợi ý câu hỏi nhanh (Incoterms, chữa email, tư vấn bài học).
-   - Giả lập streaming phản hồi, sẵn sàng kết nối API backend.
-
-7. **Dữ Liệu Nghiên Cứu Khoa Học**:
-   - Phân loại Khối ngành: **Kỹ thuật / Kinh tế** (`engineering`), **Ngôn ngữ** (`language`), **Khác** (`other`).
-   - Checkbox cam kết đồng ý nghiên cứu ẩn danh kèm Modal chi tiết.
-   - Dashboard gắn badge khối ngành, đảm bảo **không** hiển thị bảng so sánh xếp hạng giữa các khối cho sinh viên.
+1. **Test đầu vào (`/placement`)**: từ vựng, đọc, nghe (phát âm bằng text-to-speech hoặc file audio), viết (AI chấm), nói (nhận diện giọng nói). Báo cáo radar 5 kỹ năng, CEFR A1–C1, quy đổi TOEIC/IELTS.
+2. **Lộ trình cá nhân (`/roadmap`)**: mỗi học viên một lộ trình riêng, AI xếp bài theo trình độ, kỹ năng yếu, lĩnh vực quan tâm và số phút học mỗi ngày.
+3. **Bài học (`/learn/*`)**: Học → Luyện tập từng câu → Kết quả (điểm, đáp án, nhận xét rút kinh nghiệm, làm lại để cải thiện). Giao diện riêng cho nghe, đọc, viết, nói, từ vựng.
+4. **Kho từ vựng & flashcard (`/vocab`)**: lặp lại ngắt quãng (SRS); từ gặp trong bài tự lưu vào kho cá nhân, giữ qua mọi lộ trình, tự thêm/sửa/xóa.
+5. **AI Tutor (`/tutor`)**: trả lời theo trình độ và lĩnh vực của từng học viên.
+6. **Kiểm tra tổng kết**: học xong lộ trình thì thi để lên level hoặc học lộ trình cải thiện.
+7. **Khu quản trị (`/admin`)**: người dùng, nội dung (import giáo án bằng AI), đề test, lộ trình từng học viên, báo cáo, nội dung trang chủ.
+8. **Dữ liệu nghiên cứu**: khối ngành, ngành học, năm học, đồng ý nghiên cứu ẩn danh; không hiển thị bảng so sánh giữa các khối cho học viên.
 
 ---
 
@@ -174,7 +148,7 @@ Checklist: đặt `AUTH_SECRET` mới, `APP_URL` đúng tên miền, cấu hình
 
 | Tên trường | Kiểu dữ liệu | Ý nghĩa nghiên cứu |
 |---|---|---|
-| `faculty_group` | `'language' \| 'engineering' \| 'other'` | **Khối ngành**: Ngôn ngữ, Kỹ thuật/Kinh tế (Logistics, Vận tải), Khác. |
+| `faculty_group` | `'language' \| 'engineering' \| 'other'` | **Khối ngành**: Ngôn ngữ, Kỹ thuật/Kinh tế, Khác. |
 | `major` | `string` | Ngành học cụ thể của sinh viên tại UTH. |
 | `study_year` | `1 \| 2 \| 3 \| 4 \| 5` | Năm học (K21 - K24). |
 | `research_consent` | `boolean` | Sinh viên xác nhận đồng ý cho phép sử dụng dữ liệu học tập ẩn danh (`true`). |

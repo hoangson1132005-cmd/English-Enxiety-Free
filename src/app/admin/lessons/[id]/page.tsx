@@ -189,7 +189,7 @@ function AdminLessonDetailContent() {
               rows={8}
               value={vocabText}
               onChange={(e) => setVocabText(e.target.value)}
-              placeholder="demurrage | phí lưu container quá hạn | charge for keeping a container beyond free time | The carrier charged us demurrage."
+              placeholder="deadline | hạn chót | the latest time something must be finished | We must meet the deadline."
               className="w-full p-4 rounded-2xl text-xs sm:text-sm bg-background-secondary/30 border border-[var(--color-border)] focus:border-primary-500 focus:outline-none resize-y leading-relaxed font-mono"
             />
           </div>

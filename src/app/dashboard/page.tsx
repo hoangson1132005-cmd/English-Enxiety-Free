@@ -73,7 +73,7 @@ export default function DashboardPage() {
                 <span>Khối: {facultyLabel}</span>
               </span>
               <span className="text-xs bg-white/10 px-3 py-1 rounded-full">
-                Ngành: {profile?.major || 'Logistics & Chuỗi cung ứng'}
+                Ngành: {profile?.major || 'Chưa cập nhật'}
               </span>
             </div>
 
@@ -82,7 +82,7 @@ export default function DashboardPage() {
                 Xin chào, {profile?.full_name || 'bạn'}!
               </h2>
               <p className="mt-1 text-xs sm:text-sm text-white/90 leading-relaxed">
-                Mục tiêu hôm nay: Dành <strong>{profile?.daily_minutes || 20} phút</strong> để ôn tập thuật ngữ vận đơn đường biển và nghe hội thoại booking.
+                Mục tiêu hôm nay: Dành <strong>{profile?.daily_minutes || 20} phút</strong> để học bài kế tiếp trong lộ trình và ôn lại từ vựng đã lưu.
               </p>
             </div>
 

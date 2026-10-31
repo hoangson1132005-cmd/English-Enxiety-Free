@@ -7,7 +7,7 @@ import {
 import Link from 'next/link';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { FACULTY_GROUP_LABELS, MAJORS_BY_FACULTY, JOB_INTEREST_OPTIONS } from '@/types';
-import type { AdminUser, FacultyGroup, CEFRLevel, LogisticsArea } from '@/types';
+import type { AdminUser, FacultyGroup, CEFRLevel, InterestArea } from '@/types';
 import { cn, formatDate } from '@/lib/utils';
 
 const INTEREST_LABELS: Record<string, string> = Object.fromEntries(
@@ -105,7 +105,7 @@ export default function AdminUsersPage() {
     setEditingUser(null);
   };
 
-  const toggleEditingInterest = (item: LogisticsArea) => {
+  const toggleEditingInterest = (item: InterestArea) => {
     if (!editingUser) return;
     const has = editingUser.interests.includes(item);
     const next = has ? editingUser.interests.filter((i) => i !== item) : [...editingUser.interests, item];
@@ -379,7 +379,7 @@ export default function AdminUsersPage() {
               <div>
                 <label className="block text-xs font-semibold text-text-primary mb-2">Vị trí công việc quan tâm</label>
                 <div className="grid grid-cols-2 gap-2">
-                  {(Object.keys(INTEREST_LABELS) as LogisticsArea[]).map((item) => (
+                  {(Object.keys(INTEREST_LABELS) as InterestArea[]).map((item) => (
                     <label key={item} className="flex items-center gap-2 text-xs text-text-secondary cursor-pointer">
                       <input
                         type="checkbox"

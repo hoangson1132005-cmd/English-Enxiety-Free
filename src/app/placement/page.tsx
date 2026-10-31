@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -53,26 +53,67 @@ function PlacementRunner({ test, testId }: { test: PlacementTest; testId: string
   const answeredCount = Object.keys(answers).length;
 
   // Audio toggle
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const stopAudio = () => {
+    audioRef.current?.pause();
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+    setIsPlayingAudio(false);
+  };
+
   const toggleAudio = () => {
-    setIsPlayingAudio(!isPlayingAudio);
-    // In real app, play actual audio
+    if (isPlayingAudio) {
+      stopAudio();
+      return;
+    }
+    if (currentQuestion.audio_url) {
+      const el = new Audio(currentQuestion.audio_url);
+      audioRef.current = el;
+      el.onended = () => setIsPlayingAudio(false);
+      el.play().catch(() => setIsPlayingAudio(false));
+      setIsPlayingAudio(true);
+    } else if (currentQuestion.passage && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(currentQuestion.passage);
+      u.lang = 'en-US';
+      u.onend = () => setIsPlayingAudio(false);
+      window.speechSynthesis.speak(u);
+      setIsPlayingAudio(true);
+    }
   };
 
   // Recording mock
+  const recognitionRef = useRef<{ stop: () => void } | null>(null);
+  const supportsRecognition =
+    typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
+
   const toggleRecording = () => {
-    if (!isRecording) {
-      setIsRecording(true);
-      setTimeout(() => {
-        setIsRecording(false);
-        setRecordedAudio('blob:mock-audio-recording');
-        setAnswers((prev) => ({
-          ...prev,
-          [currentQuestion.id]: 'Audio recorded successfully',
-        }));
-      }, 5000);
-    } else {
-      setIsRecording(false);
+    if (isRecording) {
+      recognitionRef.current?.stop();
+      return;
     }
+    const w = window as unknown as Record<string, new () => {
+      lang: string; continuous: boolean; interimResults: boolean; start: () => void; stop: () => void;
+      onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
+      onend: (() => void) | null; onerror: (() => void) | null;
+    }>;
+    const Ctor = w.SpeechRecognition ?? w.webkitSpeechRecognition;
+    if (!Ctor) return;
+    const qid = currentQuestion.id;
+    const rec = new Ctor();
+    rec.lang = 'en-US';
+    rec.continuous = true;
+    rec.interimResults = false;
+    rec.onresult = (e) => {
+      const text = Array.from(e.results).map((r) => r[0].transcript).join(' ');
+      setRecordedAudio(text);
+      setAnswers((prev) => ({ ...prev, [qid]: text }));
+    };
+    rec.onend = () => setIsRecording(false);
+    rec.onerror = () => setIsRecording(false);
+    recognitionRef.current = rec;
+    rec.start();
+    setIsRecording(true);
   };
 
   const handleSelectOption = (qId: string, option: string) => {
@@ -110,7 +151,7 @@ function PlacementRunner({ test, testId }: { test: PlacementTest; testId: string
     // Simulate AI multi-step analysis
     const steps = [
       'Đang chấm điểm trắc nghiệm từ vựng & đọc hiểu...',
-      'AI Tutor đang phân tích bài viết email logistics...',
+      'AI Tutor đang phân tích bài viết của bạn...',
       'Đối chiếu dữ liệu với khung tham chiếu Châu Âu (CEFR)...',
       'Tính toán điểm quy đổi tương đương TOEIC & IELTS...',
       'Tổng hợp điểm mạnh, điểm yếu và xây dựng lộ trình học...',
@@ -245,7 +286,7 @@ function PlacementRunner({ test, testId }: { test: PlacementTest; testId: string
   if (testState === 'analyzing') {
     const steps = [
       'Đang chấm điểm trắc nghiệm từ vựng & đọc hiểu...',
-      'AI Tutor đang phân tích bài viết email logistics...',
+      'AI Tutor đang phân tích bài viết của bạn...',
       'Đối chiếu dữ liệu với khung tham chiếu Châu Âu (CEFR)...',
       'Tính toán điểm quy đổi tương đương TOEIC & IELTS...',
       'Tổng hợp điểm mạnh, điểm yếu và xây dựng lộ trình học...',
@@ -369,15 +410,15 @@ function PlacementRunner({ test, testId }: { test: PlacementTest; testId: string
             {currentSection.instructions}
           </p>
 
-          {/* Passage if reading */}
-          {currentQuestion.passage && (
+          {/* Passage if reading (bài nghe: đoạn văn là transcript nên không hiển thị) */}
+          {currentQuestion.passage && currentQuestion.skill !== 'listening' && (
             <div className="p-4 rounded-2xl bg-background-secondary/60 dark:bg-gray-800/60 border border-[var(--color-border)] mb-6 text-xs sm:text-sm font-mono whitespace-pre-wrap leading-relaxed max-h-72 overflow-y-auto">
               {currentQuestion.passage}
             </div>
           )}
 
           {/* Audio Player if listening */}
-          {currentQuestion.audio_url && (
+          {(currentQuestion.audio_url || (currentQuestion.skill === 'listening' && currentQuestion.passage)) && (
             <div className="p-4 rounded-2xl bg-primary-50/50 dark:bg-gray-800 border border-primary-200/60 dark:border-gray-700 mb-6 flex items-center gap-4">
               <button
                 type="button"
@@ -389,7 +430,7 @@ function PlacementRunner({ test, testId }: { test: PlacementTest; testId: string
               <div className="flex-1">
                 <div className="text-xs font-semibold text-primary-800 dark:text-primary-300 flex items-center gap-1.5">
                   <Volume2 className="w-4 h-4 text-primary-600" />
-                  <span>Audio hội thoại: Đặt chỗ container và thỏa thuận Incoterms</span>
+                  <span>Bài nghe: bấm nút để nghe, bạn có thể nghe lại</span>
                 </div>
                 <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
                   <div
@@ -474,12 +515,20 @@ function PlacementRunner({ test, testId }: { test: PlacementTest; testId: string
 
               <div>
                 <p className="text-xs font-semibold text-text-primary dark:text-white">
-                  {isRecording ? 'Đang thu âm giọng nói của bạn... (nói trong 60 giây)' : recordedAudio ? 'Đã thu âm câu trả lời thành công!' : 'Bấm vào micro để bắt đầu thu âm'}
+                  {isRecording ? 'Đang nghe giọng nói của bạn... bấm lại để dừng' : recordedAudio ? 'Đã ghi nhận câu trả lời. Bạn có thể sửa lại bên dưới.' : supportsRecognition ? 'Bấm vào micro để bắt đầu nói' : 'Trình duyệt không hỗ trợ thu âm, hãy gõ câu trả lời bên dưới'}
                 </p>
                 <p className="text-[11px] text-text-muted mt-1">
-                  Trình duyệt sẽ nhận dạng và so khớp thuật ngữ chuyên ngành logistics.
+                  Trình duyệt sẽ nhận dạng giọng nói của bạn thành văn bản để AI chấm điểm.
                 </p>
               </div>
+
+              <textarea
+                rows={3}
+                value={answers[currentQuestion.id] || ''}
+                onChange={(e) => setAnswers({ ...answers, [currentQuestion.id]: e.target.value })}
+                placeholder="Nội dung bạn nói sẽ hiện ở đây, có thể sửa hoặc tự gõ..."
+                className="w-full p-3 rounded-2xl text-xs sm:text-sm bg-white dark:bg-gray-900 border border-[var(--color-border)] focus:border-primary-500 focus:outline-none resize-y text-left"
+              />
 
               <div className="pt-2">
                 <button

@@ -61,7 +61,7 @@ export function LandingPageClient({ content }: { content: LandingContent }) {
                 English Anxiety Free
               </span>
               <span className="text-xs text-text-secondary dark:text-gray-400 block font-sans -mt-1">
-                for Logistics
+                for Your Career
               </span>
             </div>
           </Link>
@@ -144,7 +144,7 @@ export function LandingPageClient({ content }: { content: LandingContent }) {
           {/* Quick highlight metrics */}
           <div className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl mx-auto">
             {[
-              { label: 'Thuật ngữ Logistics', val: '500+ Term', desc: 'Incoterms, B/L, Hải quan' },
+              { label: 'Học theo ngành của bạn', val: 'Mọi ngành nghề', desc: 'Nội dung do giáo viên nạp' },
               { label: 'Bộ câu hỏi chuẩn hóa', val: '4 Kỹ năng', desc: 'Nghe, Đọc, Viết, Nói' },
               { label: 'Quy đổi quốc tế', val: 'CEFR / TOEIC', desc: 'Ước lượng trình độ tức thì' },
               { label: 'Hỗ trợ sinh viên', val: 'AI Tutor 24/7', desc: 'Chữa email & giải thích' },
@@ -170,7 +170,7 @@ export function LandingPageClient({ content }: { content: LandingContent }) {
               Rèn luyện toàn diện 4 Kỹ năng thực chiến
             </h2>
             <p className="mt-4 text-text-secondary dark:text-gray-300 text-sm sm:text-base">
-              Không dạy tiếng Anh tổng quát lan man. Mọi bài học đều xoay quanh tình huống thực tế tại cảng biển, hãng tàu, công ty giao nhận forwarder và thủ tục hải quan.
+              Không học lan man. Mọi bài học xoay quanh tình huống thực tế trong công việc và lĩnh vực của bạn, được chọn riêng cho trình độ và mục tiêu của từng người.
             </p>
           </div>
 
@@ -179,22 +179,22 @@ export function LandingPageClient({ content }: { content: LandingContent }) {
               {
                 icon: Volume2,
                 skill: 'Listening',
-                title: 'Nghe điện thoại & Cảng vụ',
-                desc: 'Luyện nghe các cuộc gọi booking container, thông báo ETA/ETD, xử lý delay tàu và trao đổi với thuyền trưởng.',
+                title: 'Nghe hội thoại thực tế',
+                desc: 'Luyện nghe cuộc gọi, thông báo, cuộc họp và hội thoại công việc với tốc độ chậm, thường và nhanh.',
                 color: 'from-teal-500 to-primary-600',
               },
               {
                 icon: BookOpen,
                 skill: 'Reading',
-                title: 'Đọc hiểu Chứng từ & B/L',
-                desc: 'Phân tích thực tế Bill of Lading, Commercial Invoice, Packing List, C/O và các điều khoản Incoterms 2020.',
+                title: 'Đọc hiểu tài liệu chuyên môn',
+                desc: 'Đọc email, báo cáo, hợp đồng, hướng dẫn và tài liệu thuộc lĩnh vực của bạn, tra từ ngay khi đọc.',
                 color: 'from-primary-600 to-primary-700',
               },
               {
                 icon: PenTool,
                 skill: 'Writing',
                 title: 'Soạn thảo Email Nghiệp vụ',
-                desc: 'Thực hành viết email yêu cầu booking, khiếu nại phát sinh phí lưu bãi demurrage và giải trình hải quan.',
+                desc: 'Thực hành viết email, báo cáo, phản hồi khách hàng. AI chấm bài, chỉ lỗi và gợi ý bản viết tốt hơn.',
                 color: 'from-primary-700 to-primary-800',
               },
               {
@@ -242,13 +242,13 @@ export function LandingPageClient({ content }: { content: LandingContent }) {
               {
                 step: '01',
                 title: 'Bài Test Đầu Vào Chuyên Sâu',
-                desc: '45 phút đánh giá 4 kỹ năng + vốn từ vựng logistics thực tế. Nhận ngay báo cáo phân tích điểm mạnh - điểm yếu và quy đổi CEFR/TOEIC.',
+                desc: 'Đánh giá 4 kỹ năng và vốn từ vựng. Nhận ngay báo cáo phân tích điểm mạnh - điểm yếu và quy đổi CEFR/TOEIC.',
                 icon: BarChart3,
               },
               {
                 step: '02',
                 title: 'Lộ Trình Cá Nhân Hóa Tự Động',
-                desc: 'Hệ thống thiết kế từng chặng học 12 tuần thích ứng với mục tiêu của bạn: đi thực tập, làm forwarder, chứng từ hay hãng tàu.',
+                desc: 'AI chọn và sắp xếp bài học 12 tuần riêng cho bạn dựa trên trình độ, ngành nghề và mục tiêu: đi làm, thực tập hay thi chứng chỉ.',
                 icon: Compass,
               },
               {

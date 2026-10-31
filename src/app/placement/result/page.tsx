@@ -72,7 +72,7 @@ function PlacementResultContent() {
             <span>{result.outcome ? 'Đã hoàn thành bài kiểm tra tổng kết' : 'Đã hoàn thành đánh giá đầu vào'}</span>
           </div>
           <h1 className="font-serif font-bold text-3xl sm:text-4xl text-primary-900 dark:text-white">
-            {result.outcome ? 'Kết Quả Kiểm Tra Tổng Kết' : 'Báo Cáo Năng Lực Tiếng Anh Logistics'}
+            {result.outcome ? 'Kết Quả Kiểm Tra Tổng Kết' : 'Báo Cáo Năng Lực Tiếng Anh'}
           </h1>
           <p className="text-xs sm:text-sm text-text-secondary dark:text-gray-400 mt-2">
             Được phân tích bởi AI Tutor dựa trên Khung tham chiếu Châu Âu (CEFR)
@@ -141,7 +141,7 @@ function PlacementResultContent() {
 
         {/* Disclaimer note */}
         <p className="text-center text-[11px] text-text-muted italic -mt-4">
-          * Lưu ý: Thang điểm TOEIC và IELTS là ước lượng dựa trên ma trận kỹ năng logistics của bài test, phục vụ định hướng học tập cá nhân.
+          * Lưu ý: Thang điểm TOEIC và IELTS là ước lượng dựa trên kết quả bài test, phục vụ định hướng học tập cá nhân.
         </p>
 
         {/* Radar Chart & Skill Scores Breakdown */}
@@ -180,7 +180,7 @@ function PlacementResultContent() {
             </h3>
             {[
               { label: 'Đọc hiểu Chứng từ (Reading)', score: scores.reading, icon: BookOpen },
-              { label: 'Từ vựng Logistics (Vocabulary)', score: scores.vocabulary, icon: FlipHorizontal },
+              { label: 'Từ vựng (Vocabulary)', score: scores.vocabulary, icon: FlipHorizontal },
               { label: 'Nghe hiểu Cuộc gọi (Listening)', score: scores.listening, icon: Volume2 },
               { label: 'Viết Email Nghiệp vụ (Writing)', score: scores.writing, icon: PenTool },
               { label: 'Nói & Phát âm (Speaking)', score: scores.speaking, icon: Mic },

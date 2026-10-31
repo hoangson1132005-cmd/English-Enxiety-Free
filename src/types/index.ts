@@ -24,7 +24,7 @@ export interface Profile extends User {
   study_year: 1 | 2 | 3;
   research_consent: boolean;
   goal: LearningGoal;
-  interests: LogisticsArea[];
+  interests: InterestArea[];
   daily_minutes: DailyMinutes;
   self_assessed_level: CEFRLevel;
   current_level: CEFRLevel;
@@ -36,7 +36,7 @@ export interface Profile extends User {
 
 export type LearningGoal = 'internship' | 'work' | 'certificate' | 'communication';
 // Free-text cho phép: đây là danh sách gợi ý, người dùng có thể tự nhập thêm
-export type LogisticsArea = string;
+export type InterestArea = string;
 export type DailyMinutes = 10 | 20 | 30 | 45;
 export type CEFRLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1';
 export type SkillType = 'listening' | 'reading' | 'writing' | 'speaking' | 'vocabulary';
@@ -153,7 +153,7 @@ export interface Lesson {
 
 // --- Vocabulary ---
 export type CardDifficulty = 'easy' | 'hard' | 'unknown';
-export type VocabTopic = 'incoterms' | 'documents' | 'customs' | 'freight' | 'booking' | 'container' | 'shipping';
+export type VocabTopic = string;
 
 export interface VocabCard {
   id: string;
@@ -287,31 +287,30 @@ export const MAJORS_BY_FACULTY: Record<FacultyGroup, string[]> = {
     'Đông phương học',
   ],
   engineering: [
-    'Logistics và Quản lý chuỗi cung ứng',
-    'Kinh tế vận tải biển',
-    'Khai thác vận tải',
-    'Quản trị kinh doanh (Logistics)',
+    'Quản trị kinh doanh',
+    'Kinh tế',
     'Thương mại quốc tế',
-    'Kỹ thuật hàng hải',
-    'Kỹ thuật tàu thủy',
     'Kinh doanh quốc tế',
-    'Quản trị cảng và logistics',
+    'Tài chính ngân hàng',
+    'Kế toán',
+    'Công nghệ thông tin',
+    'Kỹ thuật cơ khí',
+    'Kỹ thuật điện - điện tử',
+    'Kỹ thuật xây dựng',
+    'Khai thác vận tải',
+    'Quản lý chuỗi cung ứng',
   ],
   other: [
-    'Công nghệ thông tin',
-    'Kế toán',
-    'Tài chính ngân hàng',
     'Marketing',
-    'Du lịch',
-    'Quản trị kinh doanh',
-    'Luật kinh tế',
-    'Xây dựng',
-    'Cơ khí',
-    'Điện - Điện tử',
+    'Du lịch - Khách sạn',
+    'Luật',
     'Y - Dược',
     'Sư phạm',
     'Nông - Lâm - Thủy sản',
     'Mỹ thuật - Thiết kế',
+    'Truyền thông',
+    'Tâm lý học',
+    'Xã hội học',
   ],
 };
 
@@ -326,30 +325,33 @@ export const EMPLOYMENT_STATUS_LABELS: Record<EmploymentStatus, string> = {
   employed: 'Đã đi làm',
 };
 
-// --- Vị trí / lĩnh vực công việc quan tâm ---
-// Giá trị sentinel: chọn mục này để hiện ô nhập tay (đa ngành nghề, không chỉ logistics).
+// --- Lĩnh vực / ngành nghề quan tâm ---
+// Giá trị sentinel: chọn mục này để hiện ô nhập tay nếu lĩnh vực của bạn không có trong danh sách.
 export const OTHER_INTEREST_VALUE = '__other__';
 
+export const INTEREST_GROUPS = ['Kinh doanh & Quản lý', 'Công nghệ & Kỹ thuật', 'Dịch vụ & Giao tiếp', 'Giáo dục, Y tế & Khác'] as const;
+
 export const JOB_INTEREST_OPTIONS: { id: string; label: string; group: string }[] = [
-  // Logistics & XNK
-  { id: 'documentation', label: 'Chứng từ XNK (Doc)', group: 'Logistics & XNK' },
-  { id: 'customs', label: 'Thủ tục Hải quan', group: 'Logistics & XNK' },
-  { id: 'sales', label: 'Sales / Pricing cước', group: 'Logistics & XNK' },
-  { id: 'warehouse', label: 'Kho vận & Phân phối', group: 'Logistics & XNK' },
-  { id: 'forwarder', label: 'Giao nhận Forwarder', group: 'Logistics & XNK' },
-  { id: 'shipping_line', label: 'Hãng tàu biển', group: 'Logistics & XNK' },
-  { id: 'supply_chain', label: 'Quản lý chuỗi cung ứng', group: 'Logistics & XNK' },
-  // Các ngành khác
-  { id: 'it', label: 'Công nghệ thông tin', group: 'Ngành khác' },
-  { id: 'finance', label: 'Tài chính / Ngân hàng', group: 'Ngành khác' },
-  { id: 'accounting', label: 'Kế toán / Kiểm toán', group: 'Ngành khác' },
-  { id: 'marketing', label: 'Marketing / Truyền thông', group: 'Ngành khác' },
-  { id: 'hr', label: 'Nhân sự (HR)', group: 'Ngành khác' },
-  { id: 'tourism', label: 'Du lịch / Khách sạn', group: 'Ngành khác' },
-  { id: 'education', label: 'Giáo dục / Đào tạo', group: 'Ngành khác' },
-  { id: 'manufacturing', label: 'Sản xuất / Nhà máy', group: 'Ngành khác' },
-  { id: 'customer_service', label: 'Dịch vụ khách hàng', group: 'Ngành khác' },
-  { id: 'sales_general', label: 'Kinh doanh / Bán hàng', group: 'Ngành khác' },
+  { id: 'business', label: 'Kinh doanh / Quản trị', group: 'Kinh doanh & Quản lý' },
+  { id: 'sales_general', label: 'Bán hàng / Sales', group: 'Kinh doanh & Quản lý' },
+  { id: 'marketing', label: 'Marketing / Truyền thông', group: 'Kinh doanh & Quản lý' },
+  { id: 'finance', label: 'Tài chính / Ngân hàng', group: 'Kinh doanh & Quản lý' },
+  { id: 'accounting', label: 'Kế toán / Kiểm toán', group: 'Kinh doanh & Quản lý' },
+  { id: 'hr', label: 'Nhân sự (HR)', group: 'Kinh doanh & Quản lý' },
+  { id: 'import_export', label: 'Xuất nhập khẩu / Thương mại quốc tế', group: 'Kinh doanh & Quản lý' },
+  { id: 'it', label: 'Công nghệ thông tin', group: 'Công nghệ & Kỹ thuật' },
+  { id: 'engineering', label: 'Kỹ thuật / Cơ khí / Điện', group: 'Công nghệ & Kỹ thuật' },
+  { id: 'construction', label: 'Xây dựng / Kiến trúc', group: 'Công nghệ & Kỹ thuật' },
+  { id: 'manufacturing', label: 'Sản xuất / Nhà máy', group: 'Công nghệ & Kỹ thuật' },
+  { id: 'transport', label: 'Vận tải / Chuỗi cung ứng', group: 'Công nghệ & Kỹ thuật' },
+  { id: 'customer_service', label: 'Dịch vụ khách hàng', group: 'Dịch vụ & Giao tiếp' },
+  { id: 'tourism', label: 'Du lịch / Khách sạn / Nhà hàng', group: 'Dịch vụ & Giao tiếp' },
+  { id: 'office', label: 'Hành chính / Văn phòng', group: 'Dịch vụ & Giao tiếp' },
+  { id: 'daily', label: 'Giao tiếp hằng ngày', group: 'Dịch vụ & Giao tiếp' },
+  { id: 'education', label: 'Giáo dục / Đào tạo', group: 'Giáo dục, Y tế & Khác' },
+  { id: 'healthcare', label: 'Y tế / Dược', group: 'Giáo dục, Y tế & Khác' },
+  { id: 'law', label: 'Luật / Pháp chế', group: 'Giáo dục, Y tế & Khác' },
+  { id: 'design', label: 'Thiết kế / Sáng tạo', group: 'Giáo dục, Y tế & Khác' },
 ];
 
 export const CEFR_TOEIC_MAP: Record<CEFRLevel, number> = {
@@ -436,7 +438,7 @@ export interface AdminUser {
   faculty_group: FacultyGroup;
   major: string;
   study_year: 1 | 2 | 3 | 4 | 5;
-  interests: LogisticsArea[];
+  interests: InterestArea[];
   current_level: CEFRLevel;
   streak: number;
   total_xp: number;

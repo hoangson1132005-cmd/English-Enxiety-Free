@@ -5,9 +5,9 @@ import { SessionProvider } from "@/components/layout/SessionProvider";
 import { ToastProvider } from "@/components/ui/ToastProvider";
 
 export const metadata: Metadata = {
-  title: "English Anxiety Free - English for Logistics",
-  description: "Nền tảng học tiếng Anh chuyên ngành logistics. Có bài test đầu vào, lộ trình cá nhân hóa và AI tutor.",
-  keywords: ["logistics", "English", "English Anxiety Free", "học tiếng Anh", "logistics English"],
+  title: "English Anxiety Free - Tiếng Anh cho mọi ngành nghề",
+  description: "Nền tảng học tiếng Anh cho mọi ngành nghề. Có bài test đầu vào, lộ trình cá nhân hóa và AI tutor.",
+  keywords: ["English", "English Anxiety Free", "học tiếng Anh", "tiếng Anh công việc", "tiếng Anh chuyên ngành"],
   authors: [{ name: "English Anxiety Free Team" }],
 };
 

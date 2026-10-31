@@ -1,5 +1,5 @@
-// Nội dung bài học thật (giảng dạy + câu hỏi ôn cuối bài) cho 4 bài demo gốc,
-// dùng khi seed để /learn/[lessonId] có nội dung thay vì rỗng.
+// Nội dung bài học mẫu (giảng dạy + câu hỏi ôn cuối bài): tiếng Anh công việc dùng chung cho mọi ngành.
+// Dùng khi seed để /learn/[lessonId] có nội dung thay vì rỗng. Nội dung theo ngành cụ thể do admin upload.
 
 interface SeedQuestion {
   skill: 'listening' | 'reading' | 'writing' | 'speaking' | 'vocabulary';
@@ -20,409 +20,372 @@ interface SeedLessonContent {
 
 export const LESSON_CONTENT: Record<string, SeedLessonContent> = {
   lesson_1_1: {
-    content: `## Incoterms Cơ Bản: FOB, CIF, EXW
+    content: `## Giới thiệu bản thân & đồng nghiệp
 
-**Incoterms** (International Commercial Terms) là bộ quy tắc thương mại quốc tế do ICC ban hành, quy định rõ **trách nhiệm, chi phí và rủi ro** giữa người mua (Buyer) và người bán (Seller) trong quá trình giao hàng. Ba điều kiện phổ biến nhất bạn sẽ gặp hàng ngày trong logistics:
+Khi gặp đồng nghiệp hoặc đối tác mới, bạn thường cần giới thiệu **tên, vị trí, phòng ban** và công việc bạn phụ trách. Dưới đây là các mẫu câu thông dụng nhất.
 
-**1. EXW (Ex Works) — Giao tại xưởng**
-Seller chỉ cần để hàng sẵn sàng tại xưởng/nhà máy của mình. Buyer chịu toàn bộ chi phí và rủi ro từ đó: bốc hàng, vận chuyển nội địa, thủ tục xuất khẩu, cước tàu quốc tế...
-→ Đây là điều kiện **tối thiểu trách nhiệm cho Seller**, tối đa trách nhiệm cho Buyer.
+**1. Giới thiệu bản thân**
+- "Hi, I'm Lan. I work in the **marketing department**."
+- "I'm responsible for **customer support**."
+- "I have three years of **experience** in sales."
 
-**2. FOB (Free On Board) — Giao hàng qua lan can tàu**
-Seller chịu trách nhiệm và chi phí cho đến khi hàng được xếp lên tàu tại cảng xuất (Port of Loading). Từ đó, rủi ro và cước tàu chính (ocean freight) chuyển sang Buyer.
-→ Rất phổ biến trong xuất khẩu đường biển FCL.
+**2. Giới thiệu người khác**
+- "Let me introduce you to my **colleague**, Minh."
+- "This is Mr. Park, our **manager**."
 
-**3. CIF (Cost, Insurance, Freight) — Giá đã gồm cước và bảo hiểm**
-Seller chịu chi phí hàng hóa, cước tàu quốc tế **và** bảo hiểm hàng hóa đến cảng đích (Port of Discharge). Tuy vậy, rủi ro vẫn chuyển sang Buyer ngay khi hàng qua lan can tàu ở cảng xuất (giống FOB) — chỉ có chi phí là Seller trả thêm.
+**3. Đáp lại lời giới thiệu**
+- "**Pleased to meet you.**" / "Nice to meet you."
+- "I've heard a lot about your team."
 
 **Ghi nhớ nhanh:**
-| Điều kiện | Ai trả cước tàu? | Ai trả bảo hiểm? | Rủi ro chuyển khi nào? |
-|---|---|---|---|
-| EXW | Buyer | Buyer | Tại xưởng Seller |
-| FOB | Buyer | Buyer (tự mua nếu cần) | Khi hàng qua lan can tàu tại cảng xuất |
-| CIF | Seller | Seller | Khi hàng qua lan can tàu tại cảng xuất |`,
+| Tiếng Anh | Nghĩa |
+|---|---|
+| colleague | đồng nghiệp |
+| department | phòng/ban |
+| position | vị trí, chức vụ |
+| responsible for | chịu trách nhiệm về |
+| team | đội nhóm |`,
     questions: [
       {
-        skill: 'vocabulary', topic: 'incoterms', level: 'A2', type: 'multiple_choice',
-        question: 'Under EXW terms, who is responsible for export customs clearance?',
-        options: ['The Seller', 'The Buyer', 'The shipping line', 'The customs broker only'],
-        answer: 'The Buyer',
-        explanation: 'EXW là điều kiện trách nhiệm tối thiểu cho Seller — Buyer phải tự lo mọi thủ tục và chi phí từ xưởng của Seller, bao gồm cả thông quan xuất khẩu.',
+        skill: 'vocabulary', topic: 'introductions', level: 'A2', type: 'multiple_choice',
+        question: 'Which sentence introduces a colleague politely?',
+        options: ['Let me introduce you to my colleague, Minh.', 'This one is Minh, he work here.', 'Meet Minh now.', 'Minh is introduce.'],
+        answer: 'Let me introduce you to my colleague, Minh.',
+        explanation: '"Let me introduce you to..." là mẫu câu lịch sự, đúng ngữ pháp để giới thiệu một người.',
       },
       {
-        skill: 'vocabulary', topic: 'incoterms', level: 'A2', type: 'true_false',
-        question: 'Under CIF terms, the seller must pay for both ocean freight and marine insurance.',
+        skill: 'vocabulary', topic: 'introductions', level: 'A2', type: 'fill_blank',
+        question: 'I am ______ for customer support. (Chịu trách nhiệm về)',
+        answer: ['responsible', 'Responsible'],
+        explanation: '"responsible for" nghĩa là chịu trách nhiệm về một việc nào đó.',
+      },
+      {
+        skill: 'vocabulary', topic: 'introductions', level: 'A2', type: 'true_false',
+        question: '"Department" means a section of a company with a specific function.',
         options: ['True', 'False'],
         answer: 'True',
-        explanation: 'CIF = Cost, Insurance, Freight — Seller trả cả cước tàu (Freight) và bảo hiểm (Insurance) đến cảng đích.',
-      },
-      {
-        skill: 'vocabulary', topic: 'incoterms', level: 'B1', type: 'fill_blank',
-        question: 'Under FOB terms, risk transfers to the buyer once the goods pass the ship\'s ___ at the port of loading. (one word)',
-        answer: 'rail',
-        explanation: 'Thuật ngữ truyền thống "ship\'s rail" (lan can tàu) là điểm chuyển giao rủi ro theo FOB — dù Incoterms 2020 hiện mô tả là "on board" cho dễ hiểu hơn.',
+        explanation: 'Department là phòng/ban trong công ty, ví dụ marketing department, finance department.',
       },
     ],
   },
-
-  lesson_1_3: {
-    content: `## Từ Vựng: Bill of Lading (Vận Đơn)
-
-**Bill of Lading (B/L)** là chứng từ quan trọng nhất trong vận tải biển. Để đọc hiểu một vận đơn, bạn cần nắm các thuật ngữ sau:
-
-**Các bên liên quan:**
-- **Shipper**: Người gửi hàng (thường là Seller/Exporter)
-- **Consignee**: Người nhận hàng ghi trên B/L (có quyền nhận hàng tại cảng đích)
-- **Notify Party**: Bên được thông báo khi hàng đến (thường là đại lý/broker của Consignee)
-
-**Thông tin lô hàng:**
-- **Port of Loading (POL)**: Cảng xếp hàng (cảng đi)
-- **Port of Discharge (POD)**: Cảng dỡ hàng (cảng đến)
-- **Gross Weight / Net Weight**: Trọng lượng cả bì / trọng lượng tịnh (không tính bao bì)
-- **Measurement (CBM)**: Thể tích hàng hóa (mét khối)
-
-**Phân loại B/L quan trọng:**
-- **Original B/L (vận đơn gốc)**: Có giá trị sở hữu hàng hóa, cần nộp để nhận hàng.
-- **Surrendered/Telex Release B/L**: B/L gốc đã được "giải phóng" tại cảng đi, Consignee chỉ cần bản copy để nhận hàng — nhanh hơn, phổ biến khi hai bên tin tưởng nhau.
-- **Freight Prepaid**: Cước đã trả trước khi tàu chạy (thường đi kèm CIF/CFR).
-- **Freight Collect**: Cước trả tại cảng đích (thường đi kèm FOB).`,
-    questions: [
-      {
-        skill: 'vocabulary', topic: 'documents', level: 'B1', type: 'multiple_choice',
-        question: 'Which party is authorized to claim the cargo at the destination port, as named on the Bill of Lading?',
-        options: ['Shipper', 'Consignee', 'Notify Party', 'Carrier'],
-        answer: 'Consignee',
-        explanation: 'Consignee là người nhận hàng được ghi danh trên B/L — bên có quyền nhận hàng tại cảng đích (khi xuất trình B/L gốc, nếu không phải Surrendered B/L).',
-      },
-      {
-        skill: 'vocabulary', topic: 'documents', level: 'B1', type: 'multiple_choice',
-        question: 'What does "Gross Weight" refer to on a Bill of Lading?',
-        options: ['Weight of cargo only, excluding packaging', 'Total weight including cargo and packaging', 'Volume of cargo in cubic meters', 'Weight of the empty container'],
-        answer: 'Total weight including cargo and packaging',
-        explanation: 'Gross Weight = trọng lượng cả bì, tức bao gồm cả hàng hóa và bao bì đóng gói, khác với Net Weight (chỉ tính hàng hóa).',
-      },
-      {
-        skill: 'vocabulary', topic: 'documents', level: 'B1', type: 'true_false',
-        question: 'A "Surrendered B/L" requires the consignee to present the original paper Bill of Lading to pick up the cargo.',
-        options: ['True', 'False'],
-        answer: 'False',
-        explanation: 'Surrendered (Telex Release) B/L nghĩa là bản gốc đã được giải phóng tại cảng đi, nên Consignee chỉ cần bản copy, không cần B/L gốc để nhận hàng.',
-      },
-    ],
-  },
-
-  lesson_1_4: {
-    content: `## Nghe: Thông Báo ETA Và Delay
-
-Trong vận tải biển, lịch trình tàu thường thay đổi do thời tiết, tắc nghẽn cảng, hoặc lý do vận hành. Forwarder/hãng tàu sẽ gửi thông báo cập nhật **ETA** (Estimated Time of Arrival) cho khách hàng. Hãy đọc kỹ thông báo mẫu dưới đây như một bài luyện nghe/đọc hiểu.
-
-**Từ vựng quan trọng:**
-- **ETA (Estimated Time of Arrival)**: Thời gian dự kiến tàu đến
-- **ETD (Estimated Time of Departure)**: Thời gian dự kiến tàu khởi hành
-- **Delay / Vessel delay**: Sự chậm trễ của tàu
-- **Congestion**: Tắc nghẽn (cảng, kênh đào...)
-- **Rollover**: Hàng bị "rớt" khỏi chuyến tàu dự kiến, phải chuyển sang chuyến sau
-- **Revised schedule**: Lịch trình đã được điều chỉnh
-
-**Thông báo mẫu:**
-
-Subject: URGENT — Schedule Update for Booking MSCU-7734 / Vessel EVER GIVEN
-
-Dear Valued Customer,
-
-We regret to inform you that vessel EVER GIVEN, originally scheduled to depart Cat Lai Port on November 18, has experienced a delay due to port congestion at the transshipment hub in Singapore.
-
-Revised schedule:
-- Original ETD: November 18
-- New ETD: November 22 (4 days delay)
-- Original ETA Rotterdam: December 20
-- New ETA Rotterdam: December 25
-
-Please note this delay does not affect the booking confirmation or container allocation. We apologize for any inconvenience and will keep you updated on further changes.
-
-Best regards,
-Customer Service Team — Global Shipping Lines`,
-    questions: [
-      {
-        skill: 'listening', topic: 'shipping', level: 'B1', type: 'multiple_choice',
-        question: 'What is the reason given for the vessel delay?',
-        options: ['Bad weather at sea', 'Port congestion at the transshipment hub', 'Mechanical failure of the vessel', 'Missing shipping documents'],
-        answer: 'Port congestion at the transshipment hub',
-        explanation: 'Thông báo ghi rõ: "experienced a delay due to port congestion at the transshipment hub in Singapore."',
-      },
-      {
-        skill: 'listening', topic: 'shipping', level: 'B1', type: 'multiple_choice',
-        question: 'What is the new ETA at the destination port (Rotterdam)?',
-        options: ['November 18', 'November 22', 'December 20', 'December 25'],
-        answer: 'December 25',
-        explanation: 'Lịch trình mới cho thấy New ETA Rotterdam được dời từ December 20 sang December 25.',
-      },
-      {
-        skill: 'listening', topic: 'shipping', level: 'B1', type: 'true_false',
-        question: 'The delay affects the customer\'s original booking confirmation and container allocation.',
-        options: ['True', 'False'],
-        answer: 'False',
-        explanation: 'Thông báo nêu rõ: "this delay does not affect the booking confirmation or container allocation" — chỉ lịch trình tàu thay đổi, booking vẫn giữ nguyên.',
-      },
-    ],
-  },
-
-  lesson_1_5: {
-    content: `## Từ Vựng: FCL vs LCL, Demurrage
-
-**FCL (Full Container Load) — Hàng nguyên container**
-Chủ hàng thuê nguyên một container để chở riêng hàng của mình, không ghép chung với hàng của người khác. Phù hợp với lô hàng lớn, cần an toàn và nhanh hơn vì không phải đóng/rút ghép hàng tại cảng.
-
-**LCL (Less than Container Load) — Hàng ghép container**
-Hàng hóa không đủ để lấp đầy một container, nên được ghép chung với hàng của nhiều chủ hàng khác trong cùng một container (do công ty consol/forwarder tổ chức). Chi phí rẻ hơn cho lô hàng nhỏ, nhưng thời gian xử lý tại cảng (đóng/rút hàng - CFS) lâu hơn.
-
-**Demurrage vs Detention — Hai loại phí lưu container dễ nhầm:**
-- **Demurrage**: Phí phát sinh khi container **còn nằm trong cảng/bãi** quá thời hạn miễn phí (free time) mà chưa được kéo ra ngoài.
-- **Detention**: Phí phát sinh khi container **đã được kéo ra ngoài cảng** (về kho riêng) nhưng chưa trả container rỗng lại cho hãng tàu đúng hạn.
-
-**Ghi nhớ nhanh:** Demurrage = phí "giam" container TRONG cảng. Detention = phí "giam" container NGOÀI cảng (tại kho khách hàng).`,
-    questions: [
-      {
-        skill: 'vocabulary', topic: 'freight', level: 'B1', type: 'multiple_choice',
-        question: 'Which shipment type is best suited for a small cargo load that does not fill an entire container?',
-        options: ['FCL', 'LCL', 'Breakbulk', 'RORO'],
-        answer: 'LCL',
-        explanation: 'LCL (Less than Container Load) phù hợp cho lô hàng nhỏ, được ghép chung với hàng của nhiều chủ hàng khác trong một container.',
-      },
-      {
-        skill: 'vocabulary', topic: 'freight', level: 'B1', type: 'multiple_choice',
-        question: 'Demurrage charges apply when a container is:',
-        options: ['Still inside the port/terminal beyond free time', 'Taken out of the port but not yet returned empty', 'Damaged during ocean transit', 'Lost at the transshipment port'],
-        answer: 'Still inside the port/terminal beyond free time',
-        explanation: 'Demurrage là phí phát sinh khi container còn nằm trong cảng/bãi quá thời hạn miễn phí (free time), khác với Detention (container đã ra ngoài cảng).',
-      },
-      {
-        skill: 'vocabulary', topic: 'freight', level: 'B1', type: 'fill_blank',
-        question: '___ charges apply when a container has been taken out of the port to the customer\'s warehouse but not returned empty on time. (one word)',
-        answer: 'Detention',
-        explanation: 'Detention = phí "giam" container ngoài cảng — phát sinh khi khách hàng giữ container quá lâu tại kho riêng mà chưa trả rỗng cho hãng tàu.',
-      },
-    ],
-  },
-
-  lesson_1_6: {
-    content: `## Kiểm Tra Cuối Chặng 1: Nền Tảng Logistics Tiếng Anh
-
-Chúc mừng bạn đã hoàn thành các bài học về **Incoterms, Bill of Lading, thông báo lịch trình tàu, và FCL/LCL/Demurrage**! Đây là bài kiểm tra tổng hợp để ôn lại toàn bộ kiến thức của Chặng 1 trước khi chuyển sang Chặng 2 (Chứng từ & Giao tiếp Email).
-
-Hãy trả lời các câu hỏi dưới đây — đây là tổng hợp các tình huống và thuật ngữ quan trọng nhất mà bạn đã học.`,
-    questions: [
-      {
-        skill: 'vocabulary', topic: 'incoterms', level: 'B1', type: 'multiple_choice',
-        question: 'Which Incoterm places the LEAST responsibility on the seller?',
-        options: ['EXW', 'FOB', 'CIF', 'DDP'],
-        answer: 'EXW',
-        explanation: 'EXW (Ex Works) là điều kiện trách nhiệm tối thiểu cho Seller — chỉ cần để hàng sẵn sàng tại xưởng.',
-      },
-      {
-        skill: 'vocabulary', topic: 'incoterms', level: 'B1', type: 'true_false',
-        question: 'Under CIF, the seller is responsible for paying marine insurance.',
-        options: ['True', 'False'],
-        answer: 'True',
-        explanation: 'CIF = Cost, Insurance, Freight — Seller phải trả bảo hiểm hàng hóa đến cảng đích.',
-      },
-      {
-        skill: 'vocabulary', topic: 'documents', level: 'B1', type: 'multiple_choice',
-        question: 'On a Bill of Lading, who is the party named as authorized to receive the cargo at destination?',
-        options: ['Shipper', 'Consignee', 'Carrier', 'Notify Party'],
-        answer: 'Consignee',
-        explanation: 'Consignee là bên được ghi danh trên B/L có quyền nhận hàng tại cảng đích.',
-      },
-      {
-        skill: 'listening', topic: 'shipping', level: 'B1', type: 'multiple_choice',
-        question: 'If a vessel schedule update says "New ETA: December 25 (revised from December 20)", what happened?',
-        options: ['The vessel arrived earlier than planned', 'The vessel is delayed by 5 days', 'The booking was cancelled', 'The cargo was rolled over to another vessel'],
-        answer: 'The vessel is delayed by 5 days',
-        explanation: 'ETA bị dời từ December 20 sang December 25, tức là trễ 5 ngày so với kế hoạch ban đầu.',
-      },
-      {
-        skill: 'vocabulary', topic: 'freight', level: 'B1', type: 'multiple_choice',
-        question: 'A customer keeps a container at their own warehouse for 3 extra days after the free time without returning it empty. What fee applies?',
-        options: ['Demurrage', 'Detention', 'THC (Terminal Handling Charge)', 'CFS fee'],
-        answer: 'Detention',
-        explanation: 'Vì container đã được kéo ra khỏi cảng về kho riêng của khách hàng, phí trễ hạn áp dụng ở đây là Detention (không phải Demurrage, vốn chỉ áp dụng khi container còn trong cảng).',
-      },
-    ],
-  },
-
   lesson_1_2: {
-    content: `## Luyện Nghe: Cuộc Gọi Booking Container
+    content: `## Nghe: Cuộc gọi đặt lịch hẹn
 
-Trong logistics, rất nhiều giao dịch đặt chỗ (booking) container được thực hiện qua điện thoại giữa **Shipper** (chủ hàng) và **Forwarder** (đại lý giao nhận). Hãy đọc kỹ đoạn hội thoại mẫu dưới đây như một bài luyện nghe/đọc hiểu — đây là tình huống bạn sẽ thường gặp khi làm việc thực tế.
+Trong bài nghe này, bạn sẽ nghe một cuộc gọi ngắn để đặt và đổi lịch hẹn. Hãy chú ý các thông tin: **ai gọi, muốn gì, ngày giờ nào**.
 
-**Từ vựng quan trọng:**
-- **FCL booking**: đặt chỗ nguyên container (Full Container Load)
-- **40HC**: container 40 feet cao (High Cube)
-- **FOB (Free On Board)**: người mua chịu cước tàu chính từ cảng xếp hàng
-- **ETD (Estimated Time of Departure)**: ngày dự kiến tàu khởi hành
-- **Cut-off date**: hạn chót nộp chứng từ/vận đơn nháp trước khi tàu chạy
+**Mẹo nghe hiểu:**
+1. Đọc câu hỏi trước khi nghe để biết cần chú ý thông tin nào.
+2. Ghi lại **con số, ngày, giờ** — đây thường là đáp án.
+3. Nghe lại 2 đến 3 lần với tốc độ chậm (0.75x), sau đó thử tốc độ thường.
 
-**Hội thoại mẫu:**
-
-[Phone rings...]
-Forwarder (Sarah): Good morning, Pacific Freight Lines, Sarah speaking. How may I assist you today?
-Shipper (Minh): Hello Sarah, this is Minh from Mekong Furniture Exports. I would like to request an FCL booking for our upcoming shipment to Hamburg, Germany.
-Sarah: Good morning Mr. Minh! Certainly. Could you provide the container specifications and cargo details?
-Minh: Yes, we need one 40-foot high cube container (1 x 40HC). The commodity is wooden dining tables, total gross weight approximately 18,500 kilograms.
-Sarah: Noted. And what are your requested departure dates and Incoterms?
-Minh: The shipment is on FOB Ho Chi Minh City terms, so the buyer in Germany will cover the ocean freight. We are targeting an ETD around November 15 from Cat Lai Port.
-Sarah: Perfect. We have vessel MSC AURORA departing November 15, with ETA Hamburg on December 22. The documentation cut-off date is November 10 at 5:00 PM.
-Minh: That works well with our production schedule. Please send us the booking confirmation note via email.
-Sarah: Will do immediately. Thank you Mr. Minh!`,
+**Cụm từ thường gặp trong lịch hẹn:**
+- "I'd like to **make an appointment**."
+- "Could we **reschedule** for Thursday?"
+- "Are you **available** at 10 a.m.?"
+- "Let me **check my schedule**."`,
     questions: [
       {
-        skill: 'listening', topic: 'booking', level: 'B1', type: 'multiple_choice',
-        question: 'What type and quantity of containers is the shipper requesting?',
-        options: ['1 x 20GP container', '2 x 40HC containers', '1 x 40HC container', '1 x 45HC container'],
-        answer: '1 x 40HC container',
-        explanation: 'Trong hội thoại, Minh nói: "we need one 40-foot high cube container" — tức 1 x 40HC.',
+        skill: 'listening', topic: 'office', level: 'A2', type: 'multiple_choice',
+        passage: `Receptionist: Good morning, Greenfield Clinic. How can I help you?
+Caller: Hi, this is Anna Tran. I have an appointment on Tuesday at 2 p.m., but I need to change it.
+Receptionist: Of course. Are you available on Wednesday?
+Caller: Wednesday morning would be perfect, maybe around 10.
+Receptionist: Let me check. Yes, 10 a.m. is available. I'll move your appointment to Wednesday at 10.
+Caller: Great, thank you.`,
+        question: 'Why does Anna call the clinic?',
+        options: ['To cancel her job', 'To change her appointment', 'To ask for a refund', 'To get directions'],
+        answer: 'To change her appointment',
+        explanation: 'Anna nói "I have an appointment on Tuesday... but I need to change it" — cô ấy gọi để đổi lịch hẹn.',
       },
       {
-        skill: 'listening', topic: 'booking', level: 'B1', type: 'multiple_choice',
-        question: 'Under the agreed FOB terms, who will be paying the ocean freight?',
-        options: ['The buyer in Germany', 'The seller in Vietnam', 'The shipping line directly', 'Split 50/50 between both parties'],
-        answer: 'The buyer in Germany',
-        explanation: 'Theo điều kiện FOB, người mua (ở Đức) chỉ định hãng tàu và trả cước vận chuyển chính.',
+        skill: 'listening', topic: 'office', level: 'A2', type: 'multiple_choice',
+        passage: `Receptionist: Good morning, Greenfield Clinic. How can I help you?
+Caller: Hi, this is Anna Tran. I have an appointment on Tuesday at 2 p.m., but I need to change it.
+Receptionist: Of course. Are you available on Wednesday?
+Caller: Wednesday morning would be perfect, maybe around 10.
+Receptionist: Let me check. Yes, 10 a.m. is available. I'll move your appointment to Wednesday at 10.
+Caller: Great, thank you.`,
+        question: 'What is the new time of the appointment?',
+        options: ['Tuesday at 2 p.m.', 'Wednesday at 10 a.m.', 'Wednesday at 2 p.m.', 'Thursday at 10 a.m.'],
+        answer: 'Wednesday at 10 a.m.',
+        explanation: 'Lịch hẹn được chuyển sang "Wednesday at 10".',
       },
       {
-        skill: 'listening', topic: 'shipping', level: 'B1', type: 'multiple_choice',
-        question: 'What is the cut-off date for submitting the shipping documents?',
-        options: ['November 8, 2024', 'November 10, 2024', 'November 15, 2024', 'December 22, 2024'],
-        answer: 'November 10, 2024',
-        explanation: 'Sarah xác nhận: "the documentation cut-off date is November 10 at 5:00 PM."',
+        skill: 'listening', topic: 'office', level: 'A2', type: 'true_false',
+        passage: `Receptionist: Good morning, Greenfield Clinic. How can I help you?
+Caller: Hi, this is Anna Tran. I have an appointment on Tuesday at 2 p.m., but I need to change it.
+Receptionist: Of course. Are you available on Wednesday?
+Caller: Wednesday morning would be perfect, maybe around 10.
+Receptionist: Let me check. Yes, 10 a.m. is available. I'll move your appointment to Wednesday at 10.
+Caller: Great, thank you.`,
+        question: 'The receptionist says that 10 a.m. on Wednesday is not available.',
+        options: ['True', 'False'],
+        answer: 'False',
+        explanation: 'Lễ tân nói "Yes, 10 a.m. is available" nên khung giờ này còn trống.',
       },
     ],
   },
+  lesson_1_3: {
+    content: `## Từ vựng: Văn phòng & lịch làm việc
 
+Các từ dưới đây xuất hiện thường xuyên khi bạn sắp xếp công việc và tham gia họp.
+
+**1. Lên lịch**
+- **schedule** (n./v.): lịch trình / lên lịch. "My schedule is full on Tuesday."
+- **appointment**: cuộc hẹn. "I have an appointment at 3 p.m."
+- **postpone**: hoãn lại. "We postponed the meeting until Friday."
+- **available**: rảnh, có mặt. "Are you available on Monday?"
+
+**2. Cuộc họp**
+- **attend**: tham dự.
+- **agenda**: chương trình nghị sự (danh sách nội dung sẽ bàn).
+- **minutes**: biên bản cuộc họp.
+
+**Lưu ý:** "attend" đi thẳng với danh từ, không dùng "attend to" khi nói về tham dự họp. Nói "attend a meeting", không nói "attend to a meeting".`,
+    questions: [
+      {
+        skill: 'vocabulary', topic: 'office', level: 'A2', type: 'multiple_choice',
+        question: 'What does "postpone" mean?',
+        options: ['To cancel forever', 'To move to a later time', 'To start early', 'To repeat'],
+        answer: 'To move to a later time',
+        explanation: 'Postpone = hoãn sang thời điểm muộn hơn, khác với cancel (hủy hẳn).',
+      },
+      {
+        skill: 'vocabulary', topic: 'office', level: 'A2', type: 'fill_blank',
+        question: 'Please check the ______ before the meeting. (chương trình nghị sự)',
+        answer: ['agenda', 'Agenda'],
+        explanation: 'Agenda là danh sách các nội dung sẽ được thảo luận trong cuộc họp.',
+      },
+      {
+        skill: 'vocabulary', topic: 'office', level: 'A2', type: 'multiple_choice',
+        question: 'Who usually writes the "minutes" of a meeting?',
+        options: ['The person who records what was discussed', 'The security guard', 'The customer', 'The printer'],
+        answer: 'The person who records what was discussed',
+        explanation: 'Minutes là biên bản ghi lại nội dung đã bàn và quyết định của cuộc họp.',
+      },
+    ],
+  },
+  lesson_1_4: {
+    content: `## Nghe: Thông báo thay đổi lịch
+
+Bài nghe này là một thông báo nội bộ về việc đổi lịch họp và hạn chót. Hãy nghe để nắm **cái gì thay đổi**, **thay đổi thế nào** và **ai cần làm gì**.
+
+**Từ khóa báo hiệu thay đổi:**
+- "Due to..." (do, vì...)
+- "has been moved to / postponed until..." (được dời sang / hoãn đến...)
+- "Please note that..." (xin lưu ý rằng...)
+- "instead of" (thay vì)
+
+**Kỹ thuật:** nghe lần 1 để hiểu ý chính, lần 2 để ghi chi tiết ngày giờ.`,
+    questions: [
+      {
+        skill: 'listening', topic: 'projects', level: 'B1', type: 'multiple_choice',
+        passage: `Good afternoon, everyone. Please note that tomorrow's project meeting has been moved from 9 a.m. to 11 a.m. because the meeting room is being repaired. The deadline for the monthly report is still Friday, but please send your drafts to Ms. Hoa by Wednesday evening so she can review them. Thank you.`,
+        question: 'Why has the meeting been moved?',
+        options: ['The manager is on holiday', 'The meeting room is being repaired', 'The project was cancelled', 'Nobody is available'],
+        answer: 'The meeting room is being repaired',
+        explanation: 'Thông báo nói "because the meeting room is being repaired".',
+      },
+      {
+        skill: 'listening', topic: 'projects', level: 'B1', type: 'multiple_choice',
+        passage: `Good afternoon, everyone. Please note that tomorrow's project meeting has been moved from 9 a.m. to 11 a.m. because the meeting room is being repaired. The deadline for the monthly report is still Friday, but please send your drafts to Ms. Hoa by Wednesday evening so she can review them. Thank you.`,
+        question: 'When should staff send their drafts to Ms. Hoa?',
+        options: ['By Tuesday morning', 'By Wednesday evening', 'By Thursday noon', 'By Friday'],
+        answer: 'By Wednesday evening',
+        explanation: 'Thông báo yêu cầu gửi bản nháp cho Ms. Hoa "by Wednesday evening".',
+      },
+      {
+        skill: 'listening', topic: 'projects', level: 'B1', type: 'true_false',
+        passage: `Good afternoon, everyone. Please note that tomorrow's project meeting has been moved from 9 a.m. to 11 a.m. because the meeting room is being repaired. The deadline for the monthly report is still Friday, but please send your drafts to Ms. Hoa by Wednesday evening so she can review them. Thank you.`,
+        question: 'The deadline for the monthly report has changed.',
+        options: ['True', 'False'],
+        answer: 'False',
+        explanation: 'Thông báo nói hạn chót báo cáo "is still Friday" — không thay đổi.',
+      },
+    ],
+  },
+  lesson_1_5: {
+    content: `## Từ vựng: Dự án & thời hạn
+
+Khi trao đổi về công việc, bạn thường cần nói về **tiến độ, hạn chót và độ ưu tiên**.
+
+**Từ vựng cốt lõi:**
+- **deadline**: hạn chót. "We must meet the deadline."
+- **deliverable**: sản phẩm/kết quả cần bàn giao.
+- **milestone**: cột mốc quan trọng của dự án.
+- **budget**: ngân sách.
+- **progress**: tiến độ. "How is the progress on the report?"
+- **priority**: việc ưu tiên.
+- **approve**: phê duyệt.
+
+**Mẫu câu hỏi thăm tiến độ:**
+- "Are we on track to meet the deadline?"
+- "Could you give me a quick **update**?"
+- "This task is our top **priority**."`,
+    questions: [
+      {
+        skill: 'vocabulary', topic: 'projects', level: 'B1', type: 'multiple_choice',
+        question: 'What is a "deadline"?',
+        options: ['The latest time something must be finished', 'A type of budget', 'A meeting room', 'A kind of report'],
+        answer: 'The latest time something must be finished',
+        explanation: 'Deadline là hạn chót phải hoàn thành công việc.',
+      },
+      {
+        skill: 'vocabulary', topic: 'projects', level: 'B1', type: 'fill_blank',
+        question: 'We reached an important ______ this week. (cột mốc)',
+        answer: ['milestone', 'Milestone'],
+        explanation: 'Milestone là một cột mốc quan trọng trong tiến trình dự án.',
+      },
+      {
+        skill: 'vocabulary', topic: 'projects', level: 'B1', type: 'true_false',
+        question: '"Approve" means to officially agree to something.',
+        options: ['True', 'False'],
+        answer: 'True',
+        explanation: 'Approve = phê duyệt, chính thức đồng ý.',
+      },
+    ],
+  },
+  lesson_1_6: {
+    content: `## Ôn tập chặng 1: Từ vựng email & văn phòng
+
+Bài ôn tập này tổng hợp từ vựng bạn đã gặp ở chặng 1 cùng các cụm từ email thông dụng.
+
+**Cụm từ email cần nhớ:**
+- **Please find the attachment.** — Vui lòng xem tệp đính kèm.
+- **I am writing to confirm...** — Tôi viết để xác nhận...
+- **Thank you for your inquiry.** — Cảm ơn bạn đã hỏi thông tin.
+- **I will follow up with you.** — Tôi sẽ liên hệ lại với bạn.
+- **I look forward to hearing from you.** — Mong sớm nhận được phản hồi.
+
+**Kết thư:** Best regards / Kind regards / Sincerely.`,
+    questions: [
+      {
+        skill: 'vocabulary', topic: 'email', level: 'A2', type: 'multiple_choice',
+        question: 'Which phrase is the most suitable to end a formal email?',
+        options: ['See ya!', 'Best regards,', 'Whatever.', 'Bye bye lol'],
+        answer: 'Best regards,',
+        explanation: '"Best regards" là cách kết thư lịch sự, phù hợp email công việc.',
+      },
+      {
+        skill: 'vocabulary', topic: 'email', level: 'A2', type: 'fill_blank',
+        question: 'Please find the ______ below. (tệp đính kèm)',
+        answer: ['attachment', 'Attachment'],
+        explanation: 'Attachment là tệp được gửi kèm email.',
+      },
+      {
+        skill: 'vocabulary', topic: 'email', level: 'A2', type: 'multiple_choice',
+        question: '"I look forward to hearing from you" means:',
+        options: ['I am angry with you', 'I hope you will reply soon', 'I cannot hear you', 'I will call you tomorrow'],
+        answer: 'I hope you will reply soon',
+        explanation: 'Đây là cách kết thúc email lịch sự, thể hiện mong nhận được phản hồi.',
+      },
+    ],
+  },
   lesson_2_1: {
-    content: `## Đọc Hiểu: Vận Đơn Đường Biển (Bill of Lading)
+    content: `## Đọc: Email công việc
 
-**Bill of Lading (B/L)** là chứng từ quan trọng nhất trong vận tải biển với 3 chức năng:
-1. **Receipt (Biên lai)**: Xác nhận hãng tàu đã nhận hàng
-2. **Contract of Carriage (Hợp đồng vận chuyển)**: Bằng chứng về thỏa thuận vận chuyển
-3. **Document of Title (Chứng từ sở hữu)**: Người cầm B/L gốc có quyền nhận hàng
+Một email công việc thường có cấu trúc rõ ràng. Nắm cấu trúc giúp bạn đọc nhanh và tìm đúng thông tin.
 
-Dưới đây là một vận đơn mẫu. Hãy đọc kỹ các trường thông tin: Shipper, Consignee, Notify Party, Vessel/Voyage, Port of Loading/Discharge, và điều khoản cước phí (Freight & Charges) trước khi trả lời câu hỏi bên dưới.`,
+**Cấu trúc email:**
+1. **Subject** — chủ đề, cho biết nội dung chính.
+2. **Greeting** — lời chào ("Dear Mr. Lee,").
+3. **Purpose** — mục đích ("I am writing to...").
+4. **Details** — chi tiết (ngày giờ, yêu cầu).
+5. **Closing** — lời kết và hành động tiếp theo ("Please let me know...").
+
+**Kỹ thuật đọc nhanh:** đọc Subject và câu đầu để biết mục đích, sau đó tìm **ngày, số, tên, yêu cầu hành động**.`,
     questions: [
       {
-        skill: 'reading', topic: 'documents', level: 'B1', type: 'multiple_choice',
-        question: 'Who is the consignee authorized to receive the cargo?',
-        passage: `======================================================
-OCEAN BILL OF LADING (NEGOTIABLE)
-B/L No.: MSC-SGN-LAX-2024-8891
-======================================================
-SHIPPER:
-MEKONG VINA EXPORT MANUFACTURING JSC
-Lot C3, Hiep Phuoc Industrial Zone, Nha Be, HCMC, Vietnam
+        skill: 'reading', topic: 'email', level: 'B1', type: 'multiple_choice',
+        passage: `Subject: Request to reschedule project review
 
-CONSIGNEE:
-PACIFIC COAST HOME FURNISHINGS INC.
-1200 Harbor Boulevard, Long Beach, CA 90802, USA
+Dear Ms. Carter,
 
-NOTIFY PARTY:
-WESTERN LOGISTICS BROKERAGE LLC
-Contact: customs@westernlogistics.com
+I am writing to ask if we could move our project review from Monday, 3 June, to Wednesday, 5 June, at the same time (2 p.m.). Our team needs two more days to finish the final test results.
 
-VESSEL / VOYAGE:
-MSC GULSUN / V.2401E
+I have attached the current status report for your reference. If Wednesday is not convenient, I am also available on Thursday morning.
 
-PORT OF LOADING:
-Ho Chi Minh City Port (Cat Lai Terminal), Vietnam
+Thank you for your understanding. I look forward to hearing from you.
 
-PORT OF DISCHARGE:
-Port of Los Angeles (Pier 400), California, USA
-
-CONTAINER NO. & SEAL:
-MSKU8472910 / SEAL: VN-CUSTOMS-991204
-Type: 1 x 40HC (High Cube Container)
-
-DESCRIPTION OF PACKAGES AND GOODS:
-480 CARTONS OF CERAMIC TILES AND BATHROOM DECOR
-Gross Weight: 19,200.00 KGS
-Net Weight: 17,800.00 KGS
-Measurement: 58.50 CBM
-
-FREIGHT & CHARGES:
-"FREIGHT PREPAID" - Under CIF Los Angeles Port Incoterms 2020
-
-SPECIAL INSTRUCTIONS:
-- Free time at destination: 7 calendar days after container discharge.
-- Standard demurrage rate applicable: USD 180 per day thereafter.
-======================================================`,
-        options: ['MEKONG VINA EXPORT MANUFACTURING JSC', 'PACIFIC COAST HOME FURNISHINGS INC.', 'WESTERN LOGISTICS BROKERAGE LLC', 'Cat Lai Terminal Operations'],
-        answer: 'PACIFIC COAST HOME FURNISHINGS INC.',
-        explanation: 'Trên B/L, mục Consignee ghi rõ: PACIFIC COAST HOME FURNISHINGS INC. tại Long Beach, CA, USA.',
+Kind regards,
+David Nguyen
+Project Coordinator`,
+        question: 'Why does David want to reschedule the review?',
+        options: ['He is on holiday', 'His team needs more time to finish the test results', 'The report is lost', 'Ms. Carter is unavailable'],
+        answer: 'His team needs more time to finish the test results',
+        explanation: 'Email nêu rõ: "Our team needs two more days to finish the final test results."',
       },
       {
-        skill: 'reading', topic: 'documents', level: 'B1', type: 'multiple_choice',
-        question: 'What is the freight payment term indicated on the Bill of Lading?',
-        options: ['Freight Collect (paid at destination)', 'Freight Prepaid (paid before shipment departure)', 'Freight split between shipper and consignee', 'Not mentioned on the document'],
-        answer: 'Freight Prepaid (paid before shipment departure)',
-        explanation: 'Mục Freight & Charges ghi "FREIGHT PREPAID" — cước đã được trả trước khi tàu khởi hành.',
+        skill: 'reading', topic: 'email', level: 'B1', type: 'multiple_choice',
+        passage: `Subject: Request to reschedule project review
+
+Dear Ms. Carter,
+
+I am writing to ask if we could move our project review from Monday, 3 June, to Wednesday, 5 June, at the same time (2 p.m.). Our team needs two more days to finish the final test results.
+
+I have attached the current status report for your reference. If Wednesday is not convenient, I am also available on Thursday morning.
+
+Thank you for your understanding. I look forward to hearing from you.
+
+Kind regards,
+David Nguyen
+Project Coordinator`,
+        question: 'What alternative does David offer if Wednesday is not suitable?',
+        options: ['Monday afternoon', 'Tuesday morning', 'Thursday morning', 'Friday at noon'],
+        answer: 'Thursday morning',
+        explanation: 'David viết "I am also available on Thursday morning".',
       },
     ],
   },
-
   lesson_2_2: {
-    content: `## Viết: Email Xác Nhận Booking Hãng Tàu
+    content: `## Viết: Email xác nhận cuộc họp
 
-Một email nghiệp vụ logistics chuyên nghiệp cần có cấu trúc rõ ràng:
-- **Subject line** nêu rõ: loại yêu cầu + tuyến đường + thời gian
-- **Lời chào** trang trọng (Dear Ms./Mr. ...)
-- **Nội dung chính**: nêu đầy đủ thông tin lô hàng (container, POL/POD, ETD, Incoterms)
-- **Yêu cầu hành động cụ thể** (xác nhận, gửi chứng từ, báo giá...)
-- **Kết thư** lịch sự (Best regards,...)
+Một email xác nhận tốt cần **ngắn gọn, rõ ràng và đủ thông tin**: mục đích, thời gian, địa điểm, nội dung chính và yêu cầu phản hồi.
 
-**Tình huống:** Bạn là nhân viên chứng từ (Documentation Executive) tại công ty xuất khẩu Mekong. Hãy viết một email (khoảng 60–100 từ) gửi cho nhân viên dịch vụ khách hàng của đại lý Forwarder (Ms. Sarah) để:
-- Xác nhận đặt chỗ 1 container 40HC chở đồ gỗ nội thất đi Hamburg, ETD dự kiến 15/11/2024.
-- Nhắc điều kiện Incoterms FOB (cước tàu do người mua trả — Freight Collect).
-- Yêu cầu gửi bản nháp vận đơn (draft B/L) trước hạn chót (cut-off date).`,
+**Khung mẫu:**
+> Subject: Confirmation of project meeting on [date]
+>
+> Dear [Name],
+>
+> I am writing to confirm our meeting on [day, date] at [time] in [place/online link]. We will discuss [topics].
+>
+> Please let me know if you need any changes.
+>
+> Best regards,
+> [Your name]
+
+**Mẹo:** dùng câu ngắn, mỗi đoạn một ý, và luôn có **một yêu cầu hành động** ở cuối (ví dụ: "Please confirm by Friday").`,
     questions: [
       {
-        skill: 'writing', topic: 'booking', level: 'B1', type: 'essay',
-        question: 'Viết email (60–100 từ) xác nhận booking container 40HC đi Hamburg, nhắc điều kiện FOB, và yêu cầu gửi draft B/L trước cut-off date.',
-        answer: 'Email cần nêu đủ: xác nhận booking (loại container, hàng hóa, tuyến), điều kiện FOB/Freight Collect, và yêu cầu gửi draft B/L.',
-        explanation: `Gợi ý đáp án mẫu:
-
-Subject: Booking Confirmation - 1 x 40HC / HCMC to Hamburg / ETD 15 Nov
-
-Dear Ms. Sarah,
-
-I am writing to formally confirm our booking for 1 x 40HC container of wooden furniture destined for Hamburg, Germany. Kindly ensure the vessel ETD remains scheduled for November 15, 2024. As agreed under FOB Ho Chi Minh City terms, please confirm the ocean freight will be marked as "Freight Collect" payable by the consignee in Hamburg.
-
-Furthermore, please send us the draft Bill of Lading at your earliest convenience for verification prior to the documentation cut-off date.
-
-Thank you for your prompt assistance.
-
-Best regards,
-Nguyen Van Minh — Logistics Executive, Mekong Furniture Exports`,
+        skill: 'writing', topic: 'email', level: 'A2', type: 'essay',
+        question: 'Write a short email (50-80 words) to confirm a meeting with a colleague next Tuesday at 10 a.m. in Meeting Room 2. Mention the topic (the monthly report) and ask them to reply.',
+        answer: 'Dear Minh, I am writing to confirm our meeting next Tuesday at 10 a.m. in Meeting Room 2. We will discuss the monthly report and the next steps. Please let me know if this time still works for you. Best regards, Lan',
+        explanation: 'Bài viết tốt cần có lời chào, mục đích xác nhận, thời gian/địa điểm, chủ đề họp, yêu cầu phản hồi và lời kết lịch sự.',
       },
     ],
   },
-
   lesson_3_1: {
-    content: `## Nói: Giới Thiệu Lô Hàng Với Khách Hàng
+    content: `## Nói: Giới thiệu công việc của bạn
 
-Khi làm việc với khách hàng quốc tế, bạn thường cần giới thiệu ngắn gọn, rõ ràng về một lô hàng: loại hàng, số lượng, tuyến vận chuyển, và mốc thời gian quan trọng. Một phần giới thiệu tốt thường theo cấu trúc:
+Trong cuộc họp hoặc khi gặp đối tác, bạn thường được hỏi "What do you do?". Hãy chuẩn bị câu trả lời **30 giây** gồm 3 phần.
 
-1. Chào hỏi + giới thiệu bản thân/công ty
-2. Nêu loại hàng và khối lượng
-3. Nêu tuyến đường (POL → POD) và phương thức (FCL/LCL)
-4. Nêu Incoterms áp dụng và mốc ETD/ETA
-5. Mời khách hàng đặt câu hỏi
+**Công thức 3 phần:**
+1. **Bạn là ai:** "I'm a project coordinator at Sunrise Company."
+2. **Bạn làm gì:** "I'm responsible for planning tasks and tracking progress."
+3. **Điểm nổi bật / mục tiêu:** "Right now, I'm working on a new customer app."
 
-**Luyện tập:** Hãy chuẩn bị một đoạn giới thiệu (nói hoặc viết ra như kịch bản nói) khoảng 45–60 giây giới thiệu lô hàng sau với khách hàng: 1 container 20GP, 500 thùng gốm sứ, từ TP.HCM đi Los Angeles, điều kiện CIF, ETD đầu tháng 12.`,
+**Mẹo phát âm:**
+- Nói chậm, rõ từng ý, ngắt nghỉ sau mỗi câu.
+- Nhấn mạnh từ khóa: *coordinator*, *responsible*, *progress*.
+- Nhìn vào người nghe và mỉm cười.
+
+Hãy thu âm nhiều lần cho đến khi bạn cảm thấy tự tin.`,
     questions: [
       {
-        skill: 'speaking', topic: 'booking', level: 'B1', type: 'speaking',
-        question: 'Giới thiệu lô hàng (1 x 20GP, gốm sứ, HCMC → Los Angeles, CIF, ETD đầu tháng 12) với khách hàng trong khoảng 45–60 giây.',
-        answer: 'Cần nêu đủ: loại/số lượng hàng, tuyến đường, Incoterms, mốc thời gian, giọng điệu chuyên nghiệp.',
-        explanation: 'Gợi ý: "Good morning, this is [Name] from Mekong Trading. I would like to introduce our upcoming shipment: 1 x 20GP container of ceramic products, departing Ho Chi Minh City for Los Angeles under CIF terms, with an estimated departure in early December..."',
+        skill: 'speaking', topic: 'introductions', level: 'A2', type: 'speaking',
+        question: 'Introduce yourself in 3-4 sentences: say your name, your job (or major), what you are responsible for, and what you are working on now.',
+        answer: 'Hello, my name is Lan. I am a marketing assistant at Sunrise Company. I am responsible for social media content and customer surveys. Right now, I am working on a new product campaign.',
+        explanation: 'Câu trả lời tốt có tên, vị trí/ngành, trách nhiệm chính và việc đang làm; nói rõ ràng, mạch lạc, đủ ý.',
       },
     ],
   },

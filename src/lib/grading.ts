@@ -28,7 +28,7 @@ export async function gradeFreeTextAnswer(
   }
 
   try {
-    const prompt = `Bạn là giáo viên tiếng Anh chuyên ngành logistics. Chấm điểm câu trả lời của học viên cho câu hỏi sau, thang điểm 0-100, dựa trên nội dung, ngữ pháp và mức độ phù hợp với đáp án mẫu. Trả về JSON đúng schema.
+    const prompt = `Bạn là giáo viên tiếng Anh. Chấm điểm câu trả lời của học viên cho câu hỏi sau, thang điểm 0-100, dựa trên nội dung, ngữ pháp và mức độ phù hợp với đáp án mẫu. Trả về JSON đúng schema.
 
 Câu hỏi: ${question}
 
@@ -63,7 +63,7 @@ export async function buildReviewSummary(
     .join(' ')}`.trim();
 
   try {
-    const prompt = `Bạn là giáo viên tiếng Anh chuyên ngành logistics. Học viên vừa làm bài "${lessonTitle}" và sai các câu sau. Hãy viết phần "rút kinh nghiệm" bằng tiếng Việt, tối đa 4 câu: chỉ ra điểm kiến thức học viên còn nhầm, và gợi ý 1-2 cách ôn cụ thể. Giọng khích lệ.
+    const prompt = `Bạn là giáo viên tiếng Anh. Học viên vừa làm bài "${lessonTitle}" và sai các câu sau. Hãy viết phần "rút kinh nghiệm" bằng tiếng Việt, tối đa 4 câu: chỉ ra điểm kiến thức học viên còn nhầm, và gợi ý 1-2 cách ôn cụ thể. Giọng khích lệ.
 
 ${mistakes
   .map((m, i) => `${i + 1}. Câu hỏi: ${m.question}\n   Học viên trả lời: ${m.given || '(bỏ trống)'}\n   Đáp án đúng/gợi ý: ${m.correct}\n   Giải thích: ${m.explanation}`)

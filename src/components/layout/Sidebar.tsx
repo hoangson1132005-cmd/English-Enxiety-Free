@@ -56,7 +56,7 @@ export function Sidebar() {
             transition={{ duration: 0.2 }}
           >
             <div className="font-display font-bold text-primary-700 dark:text-primary-300 text-sm leading-tight">English Anxiety Free</div>
-            <div className="text-[10px] text-text-secondary font-sans">for Logistics</div>
+            <div className="text-[10px] text-text-secondary font-sans">for Your Career</div>
           </motion.div>
         )}
       </div>

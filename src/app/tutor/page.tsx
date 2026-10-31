@@ -37,7 +37,7 @@ export default function AITutorPage() {
                 {
                   id: 'welcome',
                   role: 'assistant',
-                  content: 'Chào bạn! Mình là AI Tutor của English Anxiety Free. Bạn cần hỗ trợ gì về tiếng Anh logistics hôm nay?',
+                  content: 'Chào bạn! Mình là AI Tutor của English Anxiety Free. Bạn cần hỗ trợ gì về tiếng Anh hôm nay?',
                   timestamp: new Date().toISOString(),
                 },
               ]
@@ -93,7 +93,7 @@ export default function AITutorPage() {
       {
         id: 'welcome_new',
         role: 'assistant',
-        content: 'Cuộc hội thoại đã được làm mới. Bạn cần hỗ trợ gì về tiếng Anh logistics?',
+        content: 'Cuộc hội thoại đã được làm mới. Bạn cần hỗ trợ gì về tiếng Anh?',
         timestamp: new Date().toISOString(),
       },
     ]);
@@ -101,7 +101,7 @@ export default function AITutorPage() {
   };
 
   return (
-    <AppLayout title="AI Tutor - Trợ Lý Học Thuật Logistics">
+    <AppLayout title="AI Tutor - Trợ Lý Học Tiếng Anh">
       <div className="max-w-4xl mx-auto h-[calc(100vh-180px)] flex flex-col bg-white dark:bg-gray-900 rounded-3xl border border-[var(--color-border)] shadow-soft overflow-hidden">
         {/* Chat Header */}
         <div className="p-4 sm:p-5 bg-gradient-to-r from-primary-700 via-primary-600 to-primary-800 text-white flex items-center justify-between">
@@ -113,7 +113,7 @@ export default function AITutorPage() {
               <div className="flex items-center gap-2">
                 <h2 className="font-serif font-bold text-base sm:text-lg">AI Tutor</h2>
                 <span className="text-[10px] bg-accent/30 text-accent-light px-2 py-0.5 rounded-full font-medium">
-                  Logistics & Incoterms Expert
+                  Trợ lý theo ngành của bạn
                 </span>
               </div>
               <p className="text-xs text-white/80">
@@ -138,9 +138,9 @@ export default function AITutorPage() {
             <Lightbulb className="w-3.5 h-3.5 text-accent" /> Gợi ý:
           </span>
           {[
-            'Giải thích FOB và CIF',
-            '3 chức năng của Bill of Lading',
-            'Sửa email booking container giúp mình',
+            'Giải thích sự khác nhau giữa "affect" và "effect"',
+            'Cách mở đầu và kết thúc một email công việc',
+            'Sửa email tiếng Anh giúp mình',
             'Hôm nay mình nên ôn gì?',
           ].map((prompt, idx) => (
             <button
@@ -192,7 +192,7 @@ export default function AITutorPage() {
           {isSending && (
             <div className="flex items-center gap-2 text-xs text-text-muted p-2">
               <RefreshCw className="w-4 h-4 animate-spin text-primary-600" />
-              <span>AI Tutor đang suy nghĩ và tổng hợp kiến thức logistics...</span>
+              <span>AI Tutor đang suy nghĩ và tổng hợp kiến thức...</span>
             </div>
           )}
           <div ref={messagesEndRef} />
@@ -211,7 +211,7 @@ export default function AITutorPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={isSending}
-            placeholder="Hỏi về Incoterms, thuật ngữ, kiểm tra email..."
+            placeholder="Hỏi về từ vựng, ngữ pháp, kiểm tra email..."
             className="flex-1 px-4 py-3 rounded-2xl text-xs sm:text-sm bg-background-secondary/50 dark:bg-gray-800 border border-[var(--color-border)] focus:border-primary-500 focus:outline-none text-text-primary dark:text-white"
           />
           <button

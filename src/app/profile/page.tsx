@@ -20,7 +20,7 @@ export default function ProfilePage() {
   const [fullName, setFullName] = useState(profile?.full_name || 'Nguyễn Thị Lan Anh');
   const [employmentStatus, setEmploymentStatus] = useState<EmploymentStatus>(profile?.employment_status || 'student');
   const [facultyGroup, setFacultyGroup] = useState<FacultyGroup>(profile?.faculty_group || 'engineering');
-  const [major, setMajor] = useState(profile?.major || 'Logistics và Quản lý chuỗi cung ứng');
+  const [major, setMajor] = useState(profile?.major || MAJORS_BY_FACULTY.engineering[0]);
   const [isCustomMajor, setIsCustomMajor] = useState(
     !!profile?.major && !MAJORS_BY_FACULTY[profile.faculty_group || 'engineering'].includes(profile.major)
   );
@@ -174,7 +174,7 @@ export default function ProfilePage() {
                   }}
                   className="w-full px-4 py-2.5 rounded-2xl text-xs sm:text-sm bg-background-secondary/50 dark:bg-gray-800 border border-[var(--color-border)] focus:border-primary-500 focus:outline-none"
                 >
-                  <option value="engineering">Kỹ thuật / Kinh tế (Logistics, Vận tải)</option>
+                  <option value="engineering">Kỹ thuật / Kinh tế</option>
                   <option value="language">Ngôn ngữ (Tiếng Anh, Trung, Nhật)</option>
                   <option value="other">Khối ngành khác</option>
                 </select>
@@ -276,8 +276,8 @@ export default function ProfilePage() {
                   className="w-full px-4 py-2.5 rounded-2xl text-xs sm:text-sm bg-background-secondary/50 dark:bg-gray-800 border border-[var(--color-border)] focus:border-primary-500 focus:outline-none"
                 >
                   <option value="internship">Đi thực tập doanh nghiệp</option>
-                  <option value="work">Đi làm chính thức tại Forwarder / Hãng tàu</option>
-                  <option value="certificate">Thi chứng chỉ (TOEIC / FIATA)</option>
+                  <option value="work">Đi làm chính thức, dùng tiếng Anh trong công việc</option>
+                  <option value="certificate">Thi chứng chỉ (TOEIC / IELTS...)</option>
                   <option value="communication">Giao tiếp với đối tác quốc tế</option>
                 </select>
               </div>

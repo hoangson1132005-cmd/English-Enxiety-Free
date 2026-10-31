@@ -95,7 +95,7 @@ async function buildExamForRoadmap(roadmapId: string) {
     const summary = lessons
       .map((l) => `- [${l.skill}] ${l.title} (chủ đề: ${l.topic}): ${l.description}`)
       .join('\n');
-    const prompt = `Bạn là giáo viên tiếng Anh chuyên ngành logistics. Hãy tạo bài kiểm tra tổng kết gồm ${AI_EXAM_QUESTIONS} câu cho học viên trình độ ${level}, kiểm tra đúng những nội dung họ vừa học dưới đây. Phân bổ: chủ yếu từ vựng và đọc hiểu (câu đọc hiểu phải có passage), kèm 1 câu viết (essay, answer là gợi ý đáp án mẫu). Câu trắc nghiệm có 4 options và answer trùng khớp một option. Không hỏi lại y nguyên ví dụ trong bài, hãy đổi tình huống.
+    const prompt = `Bạn là giáo viên tiếng Anh. Hãy tạo bài kiểm tra tổng kết gồm ${AI_EXAM_QUESTIONS} câu cho học viên trình độ ${level}, kiểm tra đúng những nội dung họ vừa học dưới đây. Phân bổ: chủ yếu từ vựng và đọc hiểu (câu đọc hiểu phải có passage), kèm 1 câu viết (essay, answer là gợi ý đáp án mẫu). Câu trắc nghiệm có 4 options và answer trùng khớp một option. Không hỏi lại y nguyên ví dụ trong bài, hãy đổi tình huống.
 
 Nội dung đã học:
 ${summary}`;

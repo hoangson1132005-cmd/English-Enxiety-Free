@@ -213,17 +213,17 @@ h1, h2, h3, .font-display {
 }
 
 /* Prose for AI tutor markdown */
-.prose-logistics {
+.prose-lesson {
   line-height: 1.7;
 }
-.prose-logistics strong {
+.prose-lesson strong {
   color: var(--color-primary-dark);
   font-weight: 600;
 }
-.dark .prose-logistics strong {
+.dark .prose-lesson strong {
   color: #5AB3A8;
 }
-.prose-logistics code {
+.prose-lesson code {
   background: var(--color-primary-light);
   color: var(--color-primary-dark);
   padding: 0.15em 0.4em;

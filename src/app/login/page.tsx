@@ -87,7 +87,7 @@ export default function LoginPage() {
             Đăng Nhập Sinh Viên
           </h1>
           <p className="mt-2 text-sm text-text-secondary dark:text-gray-400">
-            Nền tảng học tiếng Anh chuyên ngành Logistics
+            Nền tảng học tiếng Anh cho mọi ngành nghề
           </p>
         </div>
 

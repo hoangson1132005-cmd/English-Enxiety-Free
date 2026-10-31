@@ -143,7 +143,7 @@ export default function RegisterPage() {
             Tạo Tài Khoản Học Viên
           </h1>
           <p className="mt-2 text-sm text-text-secondary dark:text-gray-400">
-            Nền tảng miễn phí giúp bạn luyện tiếng Anh chuyên ngành Logistics
+            Nền tảng miễn phí giúp bạn luyện tiếng Anh cho công việc và học tập
           </p>
         </div>
 
@@ -288,7 +288,7 @@ export default function RegisterPage() {
                   {
                     id: 'engineering',
                     label: 'Kỹ thuật / Kinh tế',
-                    desc: 'Logistics, Vận tải biển, QTKD',
+                    desc: 'Kinh tế, Quản trị, Kỹ thuật, CNTT...',
                     icon: Wrench,
                   },
                   {

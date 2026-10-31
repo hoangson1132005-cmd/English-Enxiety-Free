@@ -71,7 +71,7 @@ model User {
   researchConsent       Boolean      @default(false)
 
   goal                  String?
-  interests             String       @default("[]") // JSON string[] các LogisticsArea ("vị trí công việc quan tâm")
+  interests             String       @default("[]") // JSON string[] các lĩnh vực/ngành nghề quan tâm
   dailyMinutes          Int          @default(20)
   selfAssessedLevel     CEFRLevel    @default(A1)
   currentLevel          CEFRLevel    @default(A1)

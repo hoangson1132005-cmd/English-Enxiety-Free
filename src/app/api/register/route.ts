@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       studyYear: data.study_year,
       researchConsent: data.research_consent,
       goal: 'work',
-      interests: JSON.stringify(['documentation', 'forwarder']),
+      interests: JSON.stringify([]),
       dailyMinutes: 20,
       selfAssessedLevel: 'A2',
       currentLevel: 'A2',

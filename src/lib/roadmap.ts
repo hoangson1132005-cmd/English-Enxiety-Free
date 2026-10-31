@@ -135,7 +135,7 @@ async function aiPlan(
     .map((c) => `${c.id} | ${c.skill} | ${c.level ?? '?'} | ${c.topic} | ${c.title} | ${c.durationMinutes}p | chặng: ${c.stageTitle}`)
     .join('\n');
 
-  const prompt = `Bạn là điều phối viên học tập tiếng Anh chuyên ngành Logistics. Hãy xây dựng LỘ TRÌNH HỌC CÁ NHÂN từ kho bài học do giáo viên cung cấp (danh sách bên dưới). CHỈ ĐƯỢC chọn bài có trong danh sách, dùng đúng lesson_id, không tự bịa bài mới.
+  const prompt = `Bạn là điều phối viên học tập tiếng Anh. Hãy xây dựng LỘ TRÌNH HỌC CÁ NHÂN từ kho bài học do giáo viên cung cấp (danh sách bên dưới). CHỈ ĐƯỢC chọn bài có trong danh sách, dùng đúng lesson_id, không tự bịa bài mới.
 
 Học viên:
 - Trình độ hiện tại: ${user.currentLevel}
