@@ -6,7 +6,7 @@ function serializeLessonDetail(lesson: {
   id: string; stageId: string; order: number; title: string; skill: string;
   durationMinutes: number; xpReward: number; description: string; topic: string; content: string; level: string | null; vocabItems: string;
   stage: { title: string };
-  questions: { id: string; question: string; skill: string; topic: string; level: string; type: string; options: string | null; answer: string; explanation: string }[];
+  questions: { id: string; question: string; skill: string; topic: string; level: string; type: string; options: string | null; answer: string; explanation: string; passage: string | null; audioUrl: string | null }[];
 }) {
   return {
     id: lesson.id,
@@ -32,6 +32,8 @@ function serializeLessonDetail(lesson: {
       options: q.options ? JSON.parse(q.options) : undefined,
       answer: JSON.parse(q.answer),
       explanation: q.explanation,
+      passage: q.passage ?? undefined,
+      audio_url: q.audioUrl ?? undefined,
     })),
   };
 }

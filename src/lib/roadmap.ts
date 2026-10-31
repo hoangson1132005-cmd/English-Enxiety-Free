@@ -285,9 +285,21 @@ export async function generateRoadmap(userId: string, opts: GenerateOptions) {
 
 // Lấy lộ trình đang học; nếu học viên chưa có (user cũ / chưa tạo) thì tạo ngay.
 export async function ensureActiveRoadmap(userId: string) {
-  const existing = await prisma.userRoadmap.findFirst({ where: { userId, status: 'active' } });
-  if (existing) return existing;
-  return generateRoadmap(userId, { kind: 'initial' });
+  const existing = await prisma.userRoadmap.findFirst({
+    where: { userId, status: 'active' },
+    include: { items: { select: { status: true } } },
+  });
+  if (!existing) return generateRoadmap(userId, { kind: 'initial' });
+
+  // Bài trong lộ trình bị xóa khỏi kho (cascade) có thể khiến lộ trình trống: tạo lại từ kho hiện tại.
+  const coreCount = existing.items.filter((i) => i.status !== 'suggested' && i.status !== 'dismissed').length;
+  if (coreCount === 0) {
+    const catalog = await prisma.lesson.count({ where: { stage: { isPublished: true } } });
+    if (catalog > 0) {
+      return generateRoadmap(userId, { kind: (existing.kind as RoadmapKind) ?? 'initial' });
+    }
+  }
+  return existing;
 }
 
 // Mở trạng thái "đã học hết" của lộ trình: mọi bài chính thức (không tính đề xuất / đã bỏ qua) đều hoàn thành.

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/adminAuth';
+import { cleanLessonTitle, cleanStageTitle, normalizeImportedQuestion } from '@/lib/importNormalize';
 import { extractStructured, GeminiNotConfiguredError } from '@/lib/gemini';
 import { fileToGeminiParts, MAX_IMPORT_FILE_BYTES } from '@/lib/fileExtract';
 
@@ -58,6 +59,7 @@ const SCHEMA = {
                       level: { type: 'string', enum: ['A1', 'A2', 'B1', 'B2', 'C1'] },
                       topic: { type: 'string' },
                       options: { type: 'array', items: { type: 'string' } },
+                      passage: { type: 'string', description: 'Đoạn văn (bài đọc) hoặc văn bản bài nghe (transcript) mà câu hỏi dựa vào; bỏ trống nếu không có' },
                       answer: { type: 'string' },
                       explanation: { type: 'string' },
                     },
@@ -80,7 +82,7 @@ interface ImportedLesson {
   title: string; skill: string; duration_minutes?: number; xp_reward?: number;
   description: string; topic: string; content: string; level?: string;
   vocabulary?: { term: string; pronunciation?: string; definition: string; definition_vi?: string; example?: string }[];
-  questions: { question: string; type: string; level: string; topic: string; options?: string[]; answer: string; explanation: string }[];
+  questions: { question: string; type: string; level: string; topic: string; options?: string[]; passage?: string; answer: string; explanation: string }[];
 }
 interface ImportedStage {
   title: string; description: string; weeks: number[]; focus_skills: string[];
@@ -89,7 +91,7 @@ interface ImportedStage {
 }
 interface ImportedRoadmap { stages: ImportedStage[] }
 
-const PROMPT = `Bạn nhận được một giáo án/lộ trình giảng dạy tiếng Anh (có thể là tiếng Anh chuyên ngành hoặc tổng quát, file Word hoặc PDF). Hãy đọc và cấu trúc hoá thành lộ trình học đúng JSON schema đã cho: stages (các chặng học theo thứ tự thời gian), mỗi stage có title, description, weeks (các tuần học, ví dụ [1,2,3]), focus_skills, has_midterm/has_final nếu giáo án có nhắc tới kiểm tra giữa/cuối chặng, why_this_stage (vì sao chặng này phù hợp, 1-2 câu), và lessons. Mỗi lesson PHẢI có: title, skill, level (A1-C1 phù hợp bài), description (mô tả ngắn), topic, vocabulary (5-12 từ khóa của bài kèm nghĩa Việt/Anh và ví dụ), content (nội dung giảng dạy ĐẦY ĐỦ dạng markdown — giải thích từ vựng/ngữ pháp/tình huống thực tế, viết chi tiết như một bài giảng thật, không chỉ tóm tắt 1 câu), và questions (3-6 câu hỏi trắc nghiệm/tự luận để ôn lại kiến thức vừa học — bài test cuối bài). Nếu tài liệu không chia rõ chặng/tuần, hãy tự chia hợp lý theo nội dung. Chỉ trả JSON, không thêm chữ nào khác.`;
+const PROMPT = `Bạn nhận được một giáo án/lộ trình giảng dạy tiếng Anh (có thể là tiếng Anh chuyên ngành hoặc tổng quát, file Word hoặc PDF). Hãy đọc và cấu trúc hoá thành lộ trình học đúng JSON schema đã cho: stages (các chặng học theo thứ tự thời gian), mỗi stage có title, description, weeks (các tuần học, ví dụ [1,2,3]), focus_skills, has_midterm/has_final nếu giáo án có nhắc tới kiểm tra giữa/cuối chặng, why_this_stage (vì sao chặng này phù hợp, 1-2 câu), và lessons. Mỗi lesson PHẢI có: title, skill, level (A1-C1 phù hợp bài), description (mô tả ngắn), topic, vocabulary (5-12 từ khóa của bài kèm nghĩa Việt/Anh và ví dụ), content (nội dung giảng dạy ĐẦY ĐỦ dạng markdown — giải thích từ vựng/ngữ pháp/tình huống thực tế, viết chi tiết như một bài giảng thật, không chỉ tóm tắt 1 câu), và questions (3-6 câu hỏi trắc nghiệm/tự luận để ôn lại kiến thức vừa học — bài test cuối bài). Nếu tài liệu không chia rõ chặng/tuần, hãy tự chia hợp lý theo nội dung. Với bài Đọc và bài Nghe, mỗi câu hỏi PHẢI kèm trường passage chứa nguyên văn đoạn đọc hoặc văn bản bài nghe (transcript) để học viên có tư liệu trả lời. Với câu trắc nghiệm, đáp án (answer) phải trùng khớp nguyên văn một lựa chọn trong options. Chỉ trả JSON, không thêm chữ nào khác.`;
 
 export async function POST(req: Request) {
   const session = await requireAdmin();
@@ -124,7 +126,7 @@ export async function POST(req: Request) {
     const createdStage = await prisma.stage.create({
       data: {
         order: nextOrder++,
-        title: stage.title,
+        title: cleanStageTitle(stage.title),
         description: stage.description || '',
         focusSkills: JSON.stringify(stage.focus_skills ?? []),
         weeks: JSON.stringify(stage.weeks ?? []),
@@ -141,7 +143,7 @@ export async function POST(req: Request) {
         data: {
           stageId: createdStage.id,
           order: idx + 1,
-          title: lesson.title,
+          title: cleanLessonTitle(lesson.title),
           skill: lesson.skill as never,
           durationMinutes: lesson.duration_minutes || 20,
           xpReward: lesson.xp_reward || 50,
@@ -151,13 +153,14 @@ export async function POST(req: Request) {
           level: (['A1', 'A2', 'B1', 'B2', 'C1'].includes(lesson.level ?? '') ? lesson.level : null) as never,
           vocabItems: JSON.stringify(lesson.vocabulary ?? []),
           questions: {
-            create: (lesson.questions ?? []).map((q) => ({
+            create: (lesson.questions ?? []).map(normalizeImportedQuestion).map((q) => ({
               question: q.question,
               type: q.type as never,
               level: q.level as never,
               topic: q.topic || lesson.topic || 'general',
               skill: lesson.skill as never,
               options: q.options ? JSON.stringify(q.options) : null,
+              passage: q.passage?.trim() ? q.passage : null,
               answer: JSON.stringify(q.answer),
               explanation: q.explanation || '',
             })),

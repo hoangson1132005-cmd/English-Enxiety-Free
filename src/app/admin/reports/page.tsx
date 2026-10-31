@@ -19,6 +19,14 @@ interface ReportsData {
   signup_trend: { day_label: string; count: number }[];
   faculty_distribution: { faculty_group: FacultyGroup; count: number }[];
   cefr_distribution: { level: string; count: number }[];
+  audience_distribution: {
+    key: string; label: string; count: number; percent: number; avg_xp: number; placement_rate: number;
+    levels: Record<string, number>;
+  }[];
+  study_year_distribution: { name: string; count: number }[];
+  goal_distribution: { name: string; count: number }[];
+  interest_distribution: { name: string; count: number }[];
+  major_distribution: { name: string; count: number }[];
   top_users: AdminUser[];
 }
 
@@ -101,6 +109,77 @@ export default function AdminReportsPage() {
                 <Bar dataKey="count" fill="#2F7F7A" radius={[8, 8, 0, 0]} name="Lượt đăng ký" />
               </BarChart>
             </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* NHÓM ĐỐI TƯỢNG */}
+        <div className="p-6 rounded-3xl bg-white border border-[var(--color-border)] shadow-soft space-y-4">
+          <div>
+            <h3 className="font-serif font-bold text-base text-text-primary">Người dùng theo nhóm đối tượng</h3>
+            <p className="text-xs text-text-muted mt-0.5">Sinh viên theo khối ngành và người đã đi làm, cùng trình độ và mức độ hoàn thành test đầu vào của từng nhóm.</p>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="h-60 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={data.audience_distribution} layout="vertical" margin={{ left: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E3F2EF" />
+                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: '#5F7370' }} />
+                  <YAxis type="category" dataKey="label" width={150} tick={{ fontSize: 11, fill: '#5F7370' }} />
+                  <Tooltip contentStyle={{ borderRadius: '16px', border: '1px solid #D6EAE7', fontSize: '12px' }} />
+                  <Bar dataKey="count" fill="#2F7F7A" radius={[0, 8, 8, 0]} name="Người dùng" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-left text-text-secondary uppercase tracking-wide">
+                    <th className="py-2 pr-3">Nhóm</th>
+                    <th className="py-2 pr-3">SL</th>
+                    <th className="py-2 pr-3">Tỷ lệ</th>
+                    <th className="py-2 pr-3">XP TB</th>
+                    <th className="py-2 pr-3">Đã test</th>
+                    <th className="py-2">A1 / A2 / B1 / B2 / C1</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--color-border)]">
+                  {data.audience_distribution.map((a) => (
+                    <tr key={a.key}>
+                      <td className="py-2 pr-3 font-semibold text-text-primary">{a.label}</td>
+                      <td className="py-2 pr-3">{a.count}</td>
+                      <td className="py-2 pr-3">{a.percent}%</td>
+                      <td className="py-2 pr-3">{a.avg_xp}</td>
+                      <td className="py-2 pr-3">{a.placement_rate}%</td>
+                      <td className="py-2 text-text-secondary">{['A1', 'A2', 'B1', 'B2', 'C1'].map((l) => a.levels[l] ?? 0).join(' / ')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 pt-2">
+            {[
+              { title: 'Năm học (sinh viên)', rows: data.study_year_distribution },
+              { title: 'Mục tiêu học', rows: data.goal_distribution },
+              { title: 'Lĩnh vực quan tâm (top 8)', rows: data.interest_distribution },
+              { title: 'Ngành học (top 8)', rows: data.major_distribution },
+            ].map((block) => (
+              <div key={block.title} className="p-4 rounded-2xl bg-background-secondary/40">
+                <div className="text-xs font-bold text-text-primary mb-2">{block.title}</div>
+                {block.rows.length === 0 ? (
+                  <p className="text-[11px] text-text-muted">Chưa có dữ liệu</p>
+                ) : (
+                  <ul className="space-y-1">
+                    {block.rows.map((r) => (
+                      <li key={r.name} className="flex justify-between gap-2 text-[11px] text-text-secondary">
+                        <span className="truncate">{r.name}</span>
+                        <strong className="text-text-primary">{r.count}</strong>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
           </div>
         </div>
 

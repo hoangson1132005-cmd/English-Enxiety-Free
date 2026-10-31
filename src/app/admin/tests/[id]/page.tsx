@@ -2,10 +2,11 @@
 
 import React, { Suspense, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Clock, FileText, Plus, Trash2, ChevronDown, ChevronUp, X, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { Clock, FileText, Plus, Trash2, ChevronDown, ChevronUp, X, CheckCircle2, ArrowLeft, Pencil } from 'lucide-react';
+import { QuestionEditorModal } from '@/components/admin/QuestionEditorModal';
 import Link from 'next/link';
 import { AdminLayout } from '@/components/layout/AdminLayout';
-import type { SkillType, TestSection } from '@/types';
+import type { SkillType, TestSection, QuestionBankItem } from '@/types';
 
 const SKILL_LABELS: Record<SkillType, string> = {
   listening: 'Nghe', reading: 'Đọc', writing: 'Viết', speaking: 'Nói', vocabulary: 'Từ vựng',
@@ -35,6 +36,7 @@ function AdminTestDetailContent() {
   const [savedAt, setSavedAt] = useState<string | null>(null);
 
   const [showModal, setShowModal] = useState(false);
+  const [qEditor, setQEditor] = useState<{ sectionId: string; q: QuestionBankItem | null } | null>(null);
   const [newSection, setNewSection] = useState({ title: '', skill: 'vocabulary' as SkillType, time_limit_minutes: 10, instructions: '' });
 
   const fetchTest = () => {
@@ -91,6 +93,35 @@ function AdminTestDetailContent() {
       setSections((prev) => [...prev, created]);
       setNewSection({ title: '', skill: 'vocabulary', time_limit_minutes: 10, instructions: '' });
       setShowModal(false);
+    }
+  };
+
+  const saveQuestion = async (payload: Record<string, unknown>): Promise<string | null> => {
+    if (!qEditor) return null;
+    const { sectionId, q } = qEditor;
+    const res = await fetch(q ? `/api/admin/questions/${q.id}` : `/api/admin/tests/sections/${sectionId}/questions`, {
+      method: q ? 'PATCH' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) return data.error || 'Lưu thất bại';
+    setSections((prev) =>
+      prev.map((sec) =>
+        sec.id !== sectionId
+          ? sec
+          : { ...sec, questions: q ? sec.questions.map((x) => (x.id === q.id ? data : x)) : [...sec.questions, data] }
+      )
+    );
+    setQEditor(null);
+    return null;
+  };
+
+  const removeQuestion = async (sectionId: string, qid: string) => {
+    if (!confirm('Xóa câu hỏi này?')) return;
+    const res = await fetch(`/api/admin/questions/${qid}`, { method: 'DELETE' });
+    if (res.ok) {
+      setSections((prev) => prev.map((sec) => (sec.id === sectionId ? { ...sec, questions: sec.questions.filter((x) => x.id !== qid) } : sec)));
     }
   };
 
@@ -245,12 +276,23 @@ function AdminTestDetailContent() {
                     <p className="text-xs text-text-muted italic">Chưa có câu hỏi trong phần này.</p>
                   ) : (
                     s.questions.map((q, idx) => (
-                      <div key={q.id} className="text-xs text-text-primary flex gap-2">
+                      <div key={q.id} className="text-xs text-text-primary flex items-start gap-2 py-1">
                         <span className="text-text-muted">{idx + 1}.</span>
-                        <span className="truncate">{q.question}</span>
+                        <span className="flex-1 min-w-0">
+                          <span className="block truncate">{q.question}</span>
+                          <span className="text-[10px] text-text-muted">{q.type} · {q.level}{q.passage ? ' · có đoạn văn/transcript' : ''}</span>
+                        </span>
+                        <button onClick={() => setQEditor({ sectionId: s.id, q: q as unknown as QuestionBankItem })} title="Sửa" className="p-1 rounded-lg text-text-muted hover:text-primary-600 hover:bg-primary-50"><Pencil className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => removeQuestion(s.id, q.id)} title="Xóa" className="p-1 rounded-lg text-text-muted hover:text-error hover:bg-error-light"><Trash2 className="w-3.5 h-3.5" /></button>
                       </div>
                     ))
                   )}
+                  <button
+                    onClick={() => setQEditor({ sectionId: s.id, q: null })}
+                    className="mt-2 px-3 py-2 rounded-xl bg-primary-50 hover:bg-primary-100 text-primary-700 text-xs font-semibold flex items-center gap-1.5"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Thêm câu hỏi
+                  </button>
                 </div>
               )}
             </div>
@@ -260,6 +302,16 @@ function AdminTestDetailContent() {
           )}
         </div>
       </div>
+
+      {qEditor && (
+        <QuestionEditorModal
+          title={qEditor.q ? 'Sửa Câu Hỏi' : 'Thêm Câu Hỏi'}
+          initial={qEditor.q}
+          defaultSkill={sections.find((x) => x.id === qEditor.sectionId)?.skill ?? 'vocabulary'}
+          onSubmit={saveQuestion}
+          onClose={() => setQEditor(null)}
+        />
+      )}
 
       {/* ADD SECTION MODAL */}
       {showModal && (

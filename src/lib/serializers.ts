@@ -33,7 +33,7 @@ interface TestWithSections {
   isActive: boolean; createdAt: Date; createdVia: string; sourceFileName: string | null; kind: string; targetLevel: string | null;
   sections: {
     id: string; skill: string; title: string; instructions: string; timeLimitMinutes: number | null; order: number;
-    questions: { id: string; question: string; skill: string; topic: string; level: string; type: string; options: string | null; answer: string; explanation: string }[];
+    questions: { id: string; question: string; skill: string; topic: string; level: string; type: string; options: string | null; answer: string; explanation: string; passage: string | null; audioUrl: string | null }[];
   }[];
 }
 
@@ -68,6 +68,8 @@ export function serializeTest(test: TestWithSections) {
           options: q.options ? JSON.parse(q.options) : undefined,
           answer: JSON.parse(q.answer),
           explanation: q.explanation,
+          passage: q.passage ?? undefined,
+          audio_url: q.audioUrl ?? undefined,
         })),
       })),
   };

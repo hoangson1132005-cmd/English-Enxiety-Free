@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/adminAuth';
+import { cleanSectionTitle, normalizeImportedQuestion } from '@/lib/importNormalize';
 import { extractStructured, GeminiNotConfiguredError } from '@/lib/gemini';
 import { fileToGeminiParts, MAX_IMPORT_FILE_BYTES } from '@/lib/fileExtract';
 
@@ -29,6 +30,7 @@ const SCHEMA = {
                 level: { type: 'string', enum: ['A1', 'A2', 'B1', 'B2', 'C1'] },
                 topic: { type: 'string' },
                 options: { type: 'array', items: { type: 'string' } },
+                passage: { type: 'string', description: 'Đoạn văn (bài đọc) hoặc văn bản bài nghe (transcript) mà câu hỏi dựa vào; bỏ trống nếu không có' },
                 answer: { type: 'string' },
                 explanation: { type: 'string' },
               },
@@ -58,13 +60,14 @@ interface ImportedTest {
       level: string;
       topic: string;
       options?: string[];
+      passage?: string;
       answer: string;
       explanation: string;
     }[];
   }[];
 }
 
-const PROMPT = `Bạn nhận được một đề thi/ngân hàng câu hỏi tiếng Anh (chuyên ngành hoặc tổng quát, có thể là file Word hoặc PDF). Hãy đọc và trích xuất thành đề thi đầu vào có cấu trúc đúng JSON schema đã cho: title (tên đề), description (mô tả ngắn), duration_minutes (tổng thời gian làm bài, ước lượng nếu không ghi rõ), sections (các phần thi theo từng kỹ năng: listening/reading/writing/speaking/vocabulary), mỗi section có title, skill, instructions (hướng dẫn làm bài), time_limit_minutes, và questions. Mỗi question có question (nội dung), type, level (ước lượng CEFR A1-C1 nếu không ghi rõ), topic (chủ đề ngắn gọn, ví dụ: email, meeting, travel), options (nếu là trắc nghiệm), answer (đáp án đúng), explanation (giải thích ngắn). Nếu tài liệu không chia rõ phần/kỹ năng, hãy tự phân loại câu hỏi theo kỹ năng phù hợp nhất. Chỉ trả JSON, không thêm chữ nào khác.`;
+const PROMPT = `Bạn nhận được một đề thi/ngân hàng câu hỏi tiếng Anh (chuyên ngành hoặc tổng quát, có thể là file Word hoặc PDF). Hãy đọc và trích xuất thành đề thi đầu vào có cấu trúc đúng JSON schema đã cho: title (tên đề), description (mô tả ngắn), duration_minutes (tổng thời gian làm bài, ước lượng nếu không ghi rõ), sections (các phần thi theo từng kỹ năng: listening/reading/writing/speaking/vocabulary), mỗi section có title, skill, instructions (hướng dẫn làm bài), time_limit_minutes, và questions. Mỗi question có question (nội dung), type, level (ước lượng CEFR A1-C1 nếu không ghi rõ), topic (chủ đề ngắn gọn, ví dụ: email, meeting, travel), options (nếu là trắc nghiệm), answer (đáp án đúng), explanation (giải thích ngắn). Nếu tài liệu không chia rõ phần/kỹ năng, hãy tự phân loại câu hỏi theo kỹ năng phù hợp nhất. Với phần Đọc và phần Nghe, mỗi câu hỏi PHẢI kèm trường passage chứa nguyên văn đoạn đọc hoặc văn bản bài nghe (transcript). Với câu trắc nghiệm, đáp án (answer) phải trùng khớp nguyên văn một lựa chọn trong options. Chỉ trả JSON, không thêm chữ nào khác.`;
 
 export async function POST(req: Request) {
   const session = await requireAdmin();
@@ -101,19 +104,20 @@ export async function POST(req: Request) {
       sourceFileName: file.name,
       sections: {
         create: parsed.sections.map((s, idx) => ({
-          title: s.title,
+          title: cleanSectionTitle(s.title),
           skill: s.skill as never,
           instructions: s.instructions || '',
           timeLimitMinutes: s.time_limit_minutes ?? null,
           order: idx,
           questions: {
-            create: s.questions.map((q) => ({
+            create: s.questions.map(normalizeImportedQuestion).map((q) => ({
               question: q.question,
               type: q.type as never,
               level: q.level as never,
               topic: q.topic || 'general',
               skill: s.skill as never,
               options: q.options ? JSON.stringify(q.options) : null,
+              passage: q.passage?.trim() ? q.passage : null,
               answer: JSON.stringify(q.answer),
               explanation: q.explanation || '',
             })),

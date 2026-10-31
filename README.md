@@ -96,6 +96,20 @@ npm run dev        # http://localhost:3000
 
 ---
 
+## 📄 File Word mẫu để thử import
+
+Thư mục `sample-content/` có sẵn 8 file `.docx` để thử chức năng import bằng AI:
+
+| File | Dùng ở đâu |
+|---|---|
+| `GiaoAn_01...` đến `GiaoAn_05...` (công sở, email & họp, du lịch - khách sạn, CNTT, bán hàng - CSKH) | *Admin → Nội dung → Import giáo án* |
+| `DeDauVao_TongHop.docx` | *Admin → Đề test → Tải file lên*, loại đề: Đầu vào |
+| `DeTongKet_A2.docx`, `DeTongKet_B1.docx` | Như trên, sau đó vào đề chọn loại *Đề tổng kết* + level tương ứng rồi kích hoạt |
+
+Import tạo nội dung ở trạng thái **nháp**: xem lại rồi xuất bản chặng / kích hoạt đề. Định dạng file nên có tiêu đề chặng, bài, danh sách từ vựng, đoạn văn/transcript và câu hỏi kèm đáp án (xem file mẫu).
+
+---
+
 ## 📦 Triển Khai (Production)
 
 ```bash

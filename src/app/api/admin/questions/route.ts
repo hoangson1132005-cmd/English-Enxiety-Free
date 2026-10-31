@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/adminAuth';
+import { buildQuestionData } from '@/lib/questionInput';
 
 function serializeQuestion(q: {
   id: string; skill: string; topic: string; level: string; type: string;
@@ -37,22 +38,10 @@ export async function POST(req: Request) {
   const session = await requireAdmin();
   if (!session) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-  const body = await req.json();
-  if (!body.question || !body.answer) {
-    return NextResponse.json({ error: 'Thiếu nội dung câu hỏi hoặc đáp án' }, { status: 400 });
-  }
+  const built = buildQuestionData(await req.json(), { skill: 'vocabulary', topic: 'general' });
+  if ('error' in built) return NextResponse.json({ error: built.error }, { status: 400 });
 
-  const q = await prisma.question.create({
-    data: {
-      skill: body.skill ?? 'vocabulary',
-      topic: body.topic || 'general',
-      level: body.level ?? 'B1',
-      type: body.type ?? 'multiple_choice',
-      question: body.question,
-      answer: JSON.stringify(body.answer),
-      explanation: body.explanation ?? '',
-    },
-  });
+  const q = await prisma.question.create({ data: built.data });
 
   return NextResponse.json(serializeQuestion(q), { status: 201 });
 }
