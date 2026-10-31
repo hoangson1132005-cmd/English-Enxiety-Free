@@ -1,0 +1,293 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  student
+  admin
+}
+
+enum FacultyGroup {
+  language
+  engineering
+  other
+}
+
+enum CEFRLevel {
+  A1
+  A2
+  B1
+  B2
+  C1
+}
+
+enum SkillType {
+  listening
+  reading
+  writing
+  speaking
+  vocabulary
+}
+
+enum QuestionType {
+  multiple_choice
+  fill_blank
+  true_false
+  matching
+  essay
+  speaking
+}
+
+enum LessonStatus {
+  locked
+  available
+  in_progress
+  completed
+}
+
+model User {
+  id                    String       @id @default(cuid())
+  email                 String       @unique
+  passwordHash          String
+  role                  Role         @default(student)
+  fullName              String
+  studentId             String?
+  avatarUrl             String?
+  createdAt             DateTime     @default(now())
+  lastActiveAt          DateTime     @default(now())
+
+  onboardingCompleted   Boolean      @default(false)
+  placementCompleted    Boolean      @default(false)
+
+  employmentStatus      String       @default("student") // 'student' | 'employed'
+  facultyGroup          FacultyGroup @default(engineering)
+  major                 String?
+  studyYear             Int          @default(1) // chỉ có ý nghĩa khi employmentStatus = 'student'
+  researchConsent       Boolean      @default(false)
+
+  goal                  String?
+  interests             String       @default("[]") // JSON string[] các LogisticsArea ("vị trí công việc quan tâm")
+  dailyMinutes          Int          @default(20)
+  selfAssessedLevel     CEFRLevel    @default(A1)
+  currentLevel          CEFRLevel    @default(A1)
+
+  streak                Int          @default(0)
+  totalXp               Int          @default(0)
+  notificationEnabled   Boolean      @default(true)
+  darkMode              Boolean      @default(false)
+
+  status                String       @default("active") // 'active' | 'disabled'
+
+  testResults           TestResult[]
+  lessonProgress        UserLessonProgress[]
+  vocabProgress         UserVocabProgress[]
+  chatMessages          ChatMessage[]
+  dailyProgress         DailyProgress[]
+  ownedVocabSets        VocabSet[]
+  passwordResetTokens   PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique // SHA-256 của token gửi qua email
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model Test {
+  id               String        @id @default(cuid())
+  title            String
+  description      String
+  durationMinutes  Int
+  isActive         Boolean       @default(false)
+  createdAt        DateTime      @default(now())
+  createdVia       String        @default("manual") // 'manual' | 'ai_import'
+  sourceFileName   String?
+  sections         TestSection[]
+  results          TestResult[]
+}
+
+model TestSection {
+  id                 String     @id @default(cuid())
+  testId             String
+  test               Test       @relation(fields: [testId], references: [id], onDelete: Cascade)
+  skill              SkillType
+  title              String
+  instructions       String
+  timeLimitMinutes   Int?
+  order              Int        @default(0)
+  questions          Question[]
+}
+
+model Question {
+  id              String        @id @default(cuid())
+  skill           SkillType
+  topic           String
+  level           CEFRLevel
+  type            QuestionType
+  question        String
+  options         String?       // JSON string[]
+  answer          String        // JSON string | string[]
+  explanation     String
+  audioUrl        String?
+  passage         String?
+  testSectionId   String?
+  testSection     TestSection?  @relation(fields: [testSectionId], references: [id], onDelete: SetNull)
+  lessonId        String?
+  lesson          Lesson?       @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  createdAt       DateTime      @default(now())
+}
+
+model Stage {
+  id             String   @id @default(cuid())
+  order          Int
+  title          String
+  description    String
+  focusSkills    String   // JSON SkillType[]
+  weeks          String   // JSON number[]
+  hasMidterm     Boolean  @default(false)
+  hasFinal       Boolean  @default(false)
+  whyThisStage   String?
+  isPublished    Boolean  @default(true)
+  lessons        Lesson[]
+}
+
+model Lesson {
+  id               String   @id @default(cuid())
+  stageId          String
+  stage            Stage    @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  order            Int
+  title            String
+  skill            SkillType
+  durationMinutes  Int
+  xpReward         Int
+  description      String
+  topic            String
+  content          String   @default("") // nội dung giảng dạy (markdown) trước phần luyện tập
+  questions        Question[]
+  progress         UserLessonProgress[]
+}
+
+model UserLessonProgress {
+  id           String       @id @default(cuid())
+  userId       String
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId     String
+  lesson       Lesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  status       LessonStatus @default(locked)
+  score        Int?
+  completedAt  DateTime?
+
+  @@unique([userId, lessonId])
+}
+
+model VocabSet {
+  id           String      @id @default(cuid())
+  title        String
+  titleVi      String
+  topic        String
+  description  String
+  icon         String
+  ownerId      String?     // null = bộ từ hệ thống (công khai); có giá trị = bộ từ riêng của học viên
+  owner        User?       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt    DateTime    @default(now())
+  cards        VocabCard[]
+}
+
+model VocabCard {
+  id             String      @id @default(cuid())
+  setId          String
+  set            VocabSet    @relation(fields: [setId], references: [id], onDelete: Cascade)
+  term           String
+  pronunciation  String?
+  definition     String
+  definitionVi   String?
+  example        String?
+  exampleVi      String?
+  topic          String?
+  level          CEFRLevel?
+  audioUrl       String?
+  progress       UserVocabProgress[]
+}
+
+model UserVocabProgress {
+  id            String     @id @default(cuid())
+  userId        String
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cardId        String
+  card          VocabCard  @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  lastReviewed  DateTime?
+  nextReview    DateTime?
+  difficulty    String?    // 'easy' | 'hard' | 'unknown'
+  mastered      Boolean    @default(false)
+
+  @@unique([userId, cardId])
+}
+
+model TestResult {
+  id                 String       @id @default(cuid())
+  userId             String
+  user               User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  testId             String
+  test               Test         @relation(fields: [testId], references: [id], onDelete: Cascade)
+  completedAt        DateTime     @default(now())
+  scores             String       // JSON SkillScores
+  totalScore         Int
+  cefrLevel          CEFRLevel
+  toeicEquivalent    Int
+  ieltsEquivalent    Float
+  strengths          String       // JSON string[]
+  weaknesses         String       // JSON string[]
+  aiFeedback         String
+  timeSpentSeconds   Int
+  facultyGroup       FacultyGroup
+}
+
+model ChatMessage {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       String   // 'user' | 'assistant' | 'system'
+  content    String
+  createdAt  DateTime @default(now())
+}
+
+model DailyProgress {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date              DateTime
+  minutesStudied    Int      @default(0)
+  xpEarned          Int      @default(0)
+  lessonsCompleted  Int      @default(0)
+  vocabReviewed     Int      @default(0)
+  skills            String   @default("{}") // JSON Partial<SkillScores>
+
+  @@unique([userId, date])
+}
+
+// Nội dung landing page do admin chỉnh sửa — 1 row duy nhất (singleton, id cố định "main")
+model SiteContent {
+  id                  String  @id @default("main")
+  heroBadgeText       String
+  heroTitleHighlight  String
+  heroSubtitle        String
+  whyChooseTitle      String
+  whyChooseBullet1    String
+  whyChooseBullet2    String
+  whyChooseBullet3    String
+  footerTagline       String
+  logoImageBase64     String?
+  logoMimeType        String?
+  updatedAt           DateTime @updatedAt
+}

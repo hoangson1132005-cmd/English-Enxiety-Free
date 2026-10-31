@@ -1,0 +1,236 @@
+{
+  "questions": [
+    {
+      "id": "q_vocab_001",
+      "skill": "vocabulary",
+      "topic": "incoterms",
+      "level": "B1",
+      "type": "multiple_choice",
+      "question": "Under FOB (Free On Board) terms, when does the risk transfer from the seller to the buyer?",
+      "options": [
+        "When the goods are loaded onto the vessel at the port of shipment",
+        "When the goods arrive at the destination port",
+        "When the seller delivers goods to the freight forwarder",
+        "When the buyer pays for the goods"
+      ],
+      "answer": "When the goods are loaded onto the vessel at the port of shipment",
+      "explanation": "Under FOB Incoterms, risk transfers from seller to buyer once the goods are loaded on board the vessel nominated by the buyer at the named port of shipment."
+    },
+    {
+      "id": "q_vocab_002",
+      "skill": "vocabulary",
+      "topic": "incoterms",
+      "level": "B1",
+      "type": "multiple_choice",
+      "question": "CIF stands for:",
+      "options": [
+        "Cost, Insurance and Freight",
+        "Cargo, Insurance and Forwarding",
+        "Cost, Import and Freight",
+        "Cleared, Insured and Free"
+      ],
+      "answer": "Cost, Insurance and Freight",
+      "explanation": "CIF (Cost, Insurance and Freight) means the seller pays for the cost of goods, marine insurance, and freight to bring goods to the destination port. Risk transfers when goods are on board the vessel."
+    },
+    {
+      "id": "q_vocab_003",
+      "skill": "vocabulary",
+      "topic": "incoterms",
+      "level": "B2",
+      "type": "multiple_choice",
+      "question": "Under EXW (Ex Works) terms, who is responsible for loading the goods at the seller's premises?",
+      "options": [
+        "The buyer bears all costs and risks from the seller's premises",
+        "The seller loads the goods onto the buyer's truck",
+        "The freight forwarder handles all loading",
+        "The shipping line arranges pickup"
+      ],
+      "answer": "The buyer bears all costs and risks from the seller's premises",
+      "explanation": "EXW represents minimum obligation for the seller. The buyer takes all responsibility from the seller's warehouse, including loading, export clearance, and all transport costs."
+    },
+    {
+      "id": "q_vocab_004",
+      "skill": "vocabulary",
+      "topic": "documents",
+      "level": "B1",
+      "type": "multiple_choice",
+      "question": "A Bill of Lading (B/L) serves as:",
+      "options": [
+        "A receipt, a contract of carriage, and a document of title",
+        "Only a receipt for goods shipped",
+        "A customs clearance document",
+        "An insurance certificate"
+      ],
+      "answer": "A receipt, a contract of carriage, and a document of title",
+      "explanation": "A Bill of Lading has three key functions: (1) Evidence of contract of carriage between shipper and carrier, (2) Receipt for goods shipped, (3) Document of title allowing the holder to claim the goods."
+    },
+    {
+      "id": "q_vocab_005",
+      "skill": "vocabulary",
+      "topic": "documents",
+      "level": "A2",
+      "type": "multiple_choice",
+      "question": "What is a Packing List used for in international trade?",
+      "options": [
+        "To detail the contents, weight, and dimensions of each package in a shipment",
+        "To show the price of goods",
+        "To declare customs value",
+        "To arrange insurance coverage"
+      ],
+      "answer": "To detail the contents, weight, and dimensions of each package in a shipment",
+      "explanation": "A Packing List provides detailed information about the shipment including: number of packages, description of goods, net/gross weight, and dimensions. It assists customs authorities and the consignee to verify the shipment."
+    },
+    {
+      "id": "q_vocab_006",
+      "skill": "vocabulary",
+      "topic": "freight",
+      "level": "B1",
+      "type": "multiple_choice",
+      "question": "What is the difference between FCL and LCL shipping?",
+      "options": [
+        "FCL is a full container load, LCL shares space with other shippers",
+        "FCL is faster, LCL is slower",
+        "FCL is for air freight, LCL is for sea freight",
+        "FCL is cheaper, LCL is more expensive per unit"
+      ],
+      "answer": "FCL is a full container load, LCL shares space with other shippers",
+      "explanation": "FCL (Full Container Load) means one shipper uses the entire container. LCL (Less than Container Load) means multiple shippers share one container, consolidated by a freight forwarder."
+    },
+    {
+      "id": "q_vocab_007",
+      "skill": "vocabulary",
+      "topic": "customs",
+      "level": "B2",
+      "type": "multiple_choice",
+      "question": "What is an HS Code (Harmonized System Code)?",
+      "options": [
+        "A standardized international code used to classify traded products for customs purposes",
+        "A shipping company identification number",
+        "A port registration number",
+        "A freight rate calculator code"
+      ],
+      "answer": "A standardized international code used to classify traded products for customs purposes",
+      "explanation": "The Harmonized System (HS) is an international nomenclature for classifying products. It allows participating countries to classify traded goods on a common basis. HS codes determine applicable tariff rates and trade statistics."
+    },
+    {
+      "id": "q_vocab_008",
+      "skill": "vocabulary",
+      "topic": "shipping",
+      "level": "B1",
+      "type": "multiple_choice",
+      "question": "Demurrage in shipping refers to:",
+      "options": [
+        "Charges for exceeding the free time allowed to unload or return containers",
+        "The cost of ocean freight",
+        "Insurance premium for cargo",
+        "Port handling fees"
+      ],
+      "answer": "Charges for exceeding the free time allowed to unload or return containers",
+      "explanation": "Demurrage is a charge for keeping containers at the terminal beyond the free detention period. Detention is charged when containers are kept outside the terminal (at importer's premises) beyond free time."
+    },
+    {
+      "id": "q_vocab_009",
+      "skill": "vocabulary",
+      "topic": "booking",
+      "level": "A2",
+      "type": "multiple_choice",
+      "question": "ETA stands for:",
+      "options": [
+        "Estimated Time of Arrival",
+        "Export Terminal Authority",
+        "Electronic Trade Agreement",
+        "Expected Transport Allowance"
+      ],
+      "answer": "Estimated Time of Arrival",
+      "explanation": "ETA (Estimated Time of Arrival) is the expected date and time a vessel or shipment will arrive at the destination. ETD (Estimated Time of Departure) is the expected departure time."
+    },
+    {
+      "id": "q_vocab_010",
+      "skill": "vocabulary",
+      "topic": "freight",
+      "level": "B2",
+      "type": "multiple_choice",
+      "question": "A freight forwarder's primary role is to:",
+      "options": [
+        "Arrange transportation on behalf of shippers, handling logistics and documentation",
+        "Own and operate cargo vessels",
+        "Provide customs inspection services",
+        "Manufacture shipping containers"
+      ],
+      "answer": "Arrange transportation on behalf of shippers, handling logistics and documentation",
+      "explanation": "A freight forwarder acts as an intermediary between shippers and transportation services. They arrange cargo transportation, prepare documentation, handle customs clearance, and often consolidate LCL shipments."
+    },
+    {
+      "id": "q_read_001",
+      "skill": "reading",
+      "topic": "documents",
+      "level": "B1",
+      "type": "multiple_choice",
+      "passage": "From: sarah.chen@globalfreight.com\nTo: procurement@uthcompany.vn\nSubject: Booking Confirmation - VTSC2024-0892\n\nDear Mr. Nguyen,\n\nThank you for your booking. We are pleased to confirm the following shipment details:\n\nVessel: MSC AURORA\nVoyage: 042W\nPort of Loading: Ho Chi Minh City (VNSGN)\nPort of Discharge: Hamburg, Germany (DEHAM)\nETD: November 15, 2024\nETA: December 22, 2024\n\nCargo: 1 x 40HC container\nCommodity: Furniture and Home Décor\nGross Weight: 18,500 kgs\n\nPlease ensure all documents (Commercial Invoice, Packing List, and Certificate of Origin) are submitted to our office by November 10, 2024.\n\nFree time at destination: 7 days\nDemurrage rate: USD 150/day after free time\n\nKind regards,\nSarah Chen\nOperations Manager",
+      "question": "What is the deadline for submitting shipping documents?",
+      "options": [
+        "November 10, 2024",
+        "November 15, 2024",
+        "December 22, 2024",
+        "No deadline mentioned"
+      ],
+      "answer": "November 10, 2024",
+      "explanation": "The email clearly states: 'Please ensure all documents... are submitted to our office by November 10, 2024.' This is 5 days before the ETD of November 15."
+    },
+    {
+      "id": "q_read_002",
+      "skill": "reading",
+      "topic": "documents",
+      "level": "B1",
+      "type": "multiple_choice",
+      "passage": "From: sarah.chen@globalfreight.com\nTo: procurement@uthcompany.vn\nSubject: Booking Confirmation - VTSC2024-0892\n\nDear Mr. Nguyen,\n\nThank you for your booking. We are pleased to confirm the following shipment details:\n\nVessel: MSC AURORA\nVoyage: 042W\nPort of Loading: Ho Chi Minh City (VNSGN)\nPort of Discharge: Hamburg, Germany (DEHAM)\nETD: November 15, 2024\nETA: December 22, 2024\n\nCargo: 1 x 40HC container\nCommodity: Furniture and Home Décor\nGross Weight: 18,500 kgs\n\nPlease ensure all documents (Commercial Invoice, Packing List, and Certificate of Origin) are submitted to our office by November 10, 2024.\n\nFree time at destination: 7 days\nDemurrage rate: USD 150/day after free time\n\nKind regards,\nSarah Chen\nOperations Manager",
+      "question": "If the consignee picks up the container on December 31, how much demurrage would be charged?",
+      "options": [
+        "USD 300",
+        "USD 150",
+        "USD 450",
+        "No charge"
+      ],
+      "answer": "USD 300",
+      "explanation": "ETA is December 22. Free time is 7 days, so free time ends December 29. December 30 and 31 = 2 days of demurrage. 2 days × USD 150/day = USD 300."
+    },
+    {
+      "id": "q_listen_001",
+      "skill": "listening",
+      "topic": "booking",
+      "level": "B1",
+      "type": "multiple_choice",
+      "audio_url": "/audio/booking_call_01.mp3",
+      "question": "What is the main purpose of the phone call in the audio?",
+      "options": [
+        "To confirm a container booking and discuss shipping terms",
+        "To complain about delayed shipment",
+        "To negotiate freight rates",
+        "To request a quotation for air freight"
+      ],
+      "answer": "To confirm a container booking and discuss shipping terms",
+      "explanation": "The conversation is between a freight forwarder and a shipper confirming details of an FCL booking including vessel, ETD, and Incoterms."
+    },
+    {
+      "id": "q_write_001",
+      "skill": "writing",
+      "topic": "booking",
+      "level": "B1",
+      "type": "essay",
+      "question": "You are a logistics officer at Mekong Trading Company. Write an email (80-120 words) to your freight forwarder requesting a booking for the following shipment:\n- 1 x 20GP container\n- Goods: Electronic components\n- Origin: Ho Chi Minh City\n- Destination: Singapore\n- Requested ETD: Around December 1, 2024\n- Incoterms: CIF Singapore",
+      "answer": "Sample answer: Dear [Forwarder Name], I hope this email finds you well. I would like to request a container booking for the following shipment: 1 x 20GP container of electronic components from Ho Chi Minh City to Singapore, with a requested ETD around December 1, 2024. The shipment will be on CIF Singapore terms. Please kindly advise on vessel availability, freight rates, and document requirements at your earliest convenience. Thank you for your assistance. Best regards, [Name]",
+      "explanation": "A good booking request email should include: type of container, commodity, origin/destination, requested ETD, Incoterms, and a polite request for available options.",
+      "word_limit": 120
+    },
+    {
+      "id": "q_speak_001",
+      "skill": "speaking",
+      "topic": "incoterms",
+      "level": "B1",
+      "type": "speaking",
+      "question": "Explain the difference between FOB and CIF Incoterms in 3-4 sentences. Include when risk transfers in each case.",
+      "answer": "FOB means the seller delivers goods on board the vessel at the port of shipment. Risk transfers to the buyer when goods are on board. Under CIF, the seller pays for cost, insurance, and freight to the destination port, but risk still transfers when goods are loaded on board at the port of origin.",
+      "explanation": "Key points: FOB - seller responsibility ends at port of loading; CIF - seller pays freight and insurance to destination but risk transfers at same point as FOB."
+    }
+  ]
+}

@@ -1,26 +1,232 @@
 @import "tailwindcss";
+@config "../../tailwind.config.ts";
 
+/* Chỉ dùng giao diện sáng: biến thể dark chỉ bật khi có class .dark (không theo hệ điều hành) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ============================================================
+   CSS VARIABLES — English Anxiety Free Design System
+   ============================================================ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+  /* Primary teal palette */
+  --color-primary: #2F7F7A;
+  --color-primary-hover: #256A66;
+  --color-primary-dark: #1E5A57;
+  --color-primary-light: #E3F2EF;
+  --color-primary-50: #E3F2EF;
+
+  /* Accent pink (cherry blossom) */
+  --color-accent: #F4A7B9;
+  --color-accent-light: #FDE7EC;
+
+  /* Cream/warm */
+  --color-cream: #FFF4CC;
+  --color-cream-warm: #FFE980;
+
+  /* Backgrounds */
+  --color-bg: #FBFDFC;
+  --color-bg-secondary: #E3F2EF;
+
+  /* Text */
+  --color-text-primary: #1F2D2B;
+  --color-text-secondary: #5F7370;
+  --color-text-muted: #9BAFAC;
+
+  /* Status */
+  --color-success: #3BA776;
+  --color-error: #E5676B;
+  --color-warning: #F2B84B;
+
+  /* UI */
+  --color-border: #D6EAE7;
+  --color-border-light: #EAF4F2;
+  --radius-card: 1rem;
+  --radius-button: 0.75rem;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 2px 8px rgba(47, 127, 122, 0.06);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.dark {
+  --color-bg: #0F1F1E;
+  --color-bg-secondary: #162826;
+  --color-text-primary: #E8F4F2;
+  --color-text-secondary: #9BAFAC;
+  --color-text-muted: #6B8A87;
+  --color-border: #2A4340;
+  --color-border-light: #1E3330;
+  --color-primary-light: #162826;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Be Vietnam Pro", system-ui, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3, .font-display {
+  font-family: "Be Vietnam Pro", system-ui, sans-serif;
+  line-height: 1.3;
+}
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary-light);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+/* ============================================================
+   FOCUS STYLES (Accessibility)
+   ============================================================ */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ============================================================
+   UTILITY CLASSES
+   ============================================================ */
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #2F7F7A, #5AB3A8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Card hover effect */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(47, 127, 122, 0.12), 0 1px 3px rgba(0,0,0,0.06);
+}
+
+/* Skeleton loading */
+.skeleton {
+  background: linear-gradient(90deg, #E3F2EF 25%, #C8E6E2 50%, #E3F2EF 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.4s ease infinite;
+}
+.dark .skeleton {
+  background: linear-gradient(90deg, #162826 25%, #1E3330 50%, #162826 75%);
+  background-size: 200% 100%;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Flashcard flip */
+.flashcard-inner {
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+.flashcard-inner.flipped {
+  transform: rotateY(180deg);
+}
+.flashcard-front, .flashcard-back {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.flashcard-back {
+  transform: rotateY(180deg);
+}
+
+/* Progress bar animation */
+.progress-bar {
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* AI typing dots */
+.typing-dots span {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  animation: typing-dot 1.4s ease infinite;
+}
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing-dot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-6px); opacity: 1; }
+}
+
+/* Answer feedback */
+.answer-correct {
+  background: #E8F7F0;
+  border-color: #3BA776;
+  color: #2D8760;
+}
+.dark .answer-correct {
+  background: #0F2E1F;
+  border-color: #3BA776;
+  color: #5FD4A0;
+}
+.answer-wrong {
+  background: #FDEAEA;
+  border-color: #E5676B;
+  color: #C94A4E;
+}
+.dark .answer-wrong {
+  background: #2E1010;
+  border-color: #E5676B;
+  color: #F08F93;
+}
+
+/* Mobile bottom nav safe area */
+.bottom-nav {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Prose for AI tutor markdown */
+.prose-logistics {
+  line-height: 1.7;
+}
+.prose-logistics strong {
+  color: var(--color-primary-dark);
+  font-weight: 600;
+}
+.dark .prose-logistics strong {
+  color: #5AB3A8;
+}
+.prose-logistics code {
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-size: 0.9em;
 }
