@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { ensureActiveRoadmap, isRoadmapDone } from '@/lib/roadmap';
+import { getPassScore } from '@/lib/quizSettings';
 import type { Phase } from '@/lib/roadmap';
 import type { RoadmapItemView, RoadmapStageView, SkillType } from '@/types';
 
@@ -132,6 +133,7 @@ export async function GET() {
     stages,
     suggestions: roadmap.items.filter((i) => i.status === 'suggested').map((i) => toView(i, 'available')),
     next_item_id: nextItemId,
+    pass_score: await getPassScore(),
     all_done: isRoadmapDone(roadmap.items),
     history,
   });

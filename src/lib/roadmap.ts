@@ -3,7 +3,6 @@ import { extractStructured } from '@/lib/gemini';
 import { cleanStageTitle } from '@/lib/importNormalize';
 import type { CEFRLevel, SkillType } from '@/types';
 
-export const PASS_SCORE = 70; // điểm tối thiểu để qua bài học / qua bài kiểm tra tổng kết
 export const ROADMAP_WEEKS = 12;
 const MAX_CANDIDATES_FOR_AI = 250;
 

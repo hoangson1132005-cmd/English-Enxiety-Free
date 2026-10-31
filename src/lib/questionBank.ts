@@ -4,12 +4,6 @@ import { extractStructured } from '@/lib/gemini';
 import { normalizeImportedQuestion } from '@/lib/importNormalize';
 import type { CEFRLevel, SkillType } from '@/types';
 
-// Số câu cho từng loại bài kiểm tra
-export const LESSON_QUIZ_SIZE = 8; // cuối bài: 5-10 câu
-export const LESSON_QUIZ_SIZE_FREE_TEXT = 5; // bài Viết/Nói: ít câu hơn vì mỗi câu tự luận tốn thời gian
-export const STAGE_QUIZ_SIZE = 18; // cuối chặng: 15-20 câu
-export const FINAL_EXAM_SIZE = 30; // cuối khóa: khoảng 30 câu
-
 const LEVELS: CEFRLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1'];
 const SKILL_ORDER: SkillType[] = ['vocabulary', 'reading', 'listening', 'writing', 'speaking'];
 const AI_SHORTLIST_FACTOR = 2.5;
@@ -45,6 +39,8 @@ export interface DrawOptions {
   weakSkills?: SkillType[]; // kỹ năng học viên còn yếu
   skillMix?: Partial<Record<SkillType, number>>; // tỷ trọng mong muốn (tổng ~1)
   maxFreeText: number; // số câu tự luận/nói tối đa (chấm bằng AI nên hạn chế)
+  includeBank?: boolean; // false: chỉ dùng câu gắn riêng với bài (không lấy từ ngân hàng)
+  pinLessonQuestions?: boolean; // true: luôn đưa các câu riêng của bài vào bộ câu
 }
 
 // Bốc câu hỏi từ ngân hàng (+ câu gắn với các bài liên quan), ưu tiên: đúng cấp độ, đúng chủ đề, đúng kỹ năng,
@@ -53,13 +49,16 @@ export async function drawQuestions(opts: DrawOptions): Promise<{ picked: Questi
   const li = Math.max(0, levelIndex(opts.level));
   const nearLevels = LEVELS.filter((_, i) => Math.abs(i - li) <= 1);
 
-  const sourceFilter = [{ inBank: true }, ...(opts.lessonIds?.length ? [{ lessonId: { in: opts.lessonIds } }] : [])];
+  const sourceFilter = [
+    ...(opts.includeBank === false ? [] : [{ inBank: true }]),
+    ...(opts.lessonIds?.length ? [{ lessonId: { in: opts.lessonIds } }] : []),
+  ];
   let candidates = await prisma.question.findMany({
-    where: { OR: sourceFilter, testSectionId: null, level: { in: nearLevels } },
+    where: { OR: sourceFilter, isActive: true, testSectionId: null, level: { in: nearLevels } },
   });
   if (candidates.length < opts.count) {
     // Không đủ trong khoảng cấp độ gần: nới ra mọi cấp độ rồi để điểm số ưu tiên câu đúng cấp.
-    candidates = await prisma.question.findMany({ where: { OR: sourceFilter, testSectionId: null } });
+    candidates = await prisma.question.findMany({ where: { OR: sourceFilter, isActive: true, testSectionId: null } });
   }
 
   const seen = new Set(
@@ -90,7 +89,8 @@ export async function drawQuestions(opts: DrawOptions): Promise<{ picked: Questi
       score += 1;
       relevantIds.add(q.id);
     }
-    if (seen.has(q.id)) score -= 5; // ưu tiên câu mới; chỉ lặp lại khi hết câu khác
+    if (opts.pinLessonQuestions && q.lessonId && lessonSet.has(q.lessonId)) score += 100; // câu riêng của bài luôn có mặt
+    else if (seen.has(q.id)) score -= 5; // ưu tiên câu mới; chỉ lặp lại khi hết câu khác
     score += Math.random() * 1.5; // đề mỗi lần hơi khác nhau
     return { q, score };
   });
@@ -262,6 +262,10 @@ export interface AssembleOptions extends DrawOptions {
 // Bốc câu từ ngân hàng; thiếu thì nhờ AI sinh bổ sung (lưu vào ngân hàng); tùy chọn nhờ AI chọn lại cho sát phạm vi.
 export async function assembleQuestions(opts: AssembleOptions): Promise<Question[]> {
   const drawn = await drawQuestions(opts);
+  if (opts.includeBank === false) {
+    // Bài chỉ dùng câu riêng: không bù từ ngân hàng cũng không nhờ AI
+    return drawn.picked.sort((a, b) => SKILL_ORDER.indexOf(a.skill as SkillType) - SKILL_ORDER.indexOf(b.skill as SkillType));
+  }
   const { shortage, ranked } = drawn;
   let picked = drawn.picked;
 

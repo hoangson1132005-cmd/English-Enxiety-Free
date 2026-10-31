@@ -195,7 +195,7 @@ export default function RoadmapPage() {
               <div className="flex-1">
                 <h2 className="font-display font-bold text-xl">Bạn đã hoàn thành lộ trình!</h2>
                 <p className="text-sm text-white/90 mt-1 leading-relaxed">
-                  Hãy làm bài kiểm tra tổng kết để xem bạn đã sẵn sàng lên trình độ tiếp theo chưa. Đạt từ 70 điểm bạn sẽ lên level, nếu chưa đạt hệ thống sẽ tạo lộ trình cải thiện đúng phần còn yếu.
+                  Hãy làm bài kiểm tra tổng kết để xem bạn đã sẵn sàng lên trình độ tiếp theo chưa. Đạt từ {data.pass_score} điểm bạn sẽ lên level, nếu chưa đạt hệ thống sẽ tạo lộ trình cải thiện đúng phần còn yếu.
                 </p>
                 <button
                   type="button"
@@ -232,7 +232,7 @@ export default function RoadmapPage() {
                 </Link>
                 <div className="flex items-center gap-2 text-xs text-white/80">
                   <Clock className="w-4 h-4" />
-                  <span>Đạt từ 70 điểm để qua bài, thưởng +{nextItem.xp_reward} XP</span>
+                  <span>Đạt từ {data.pass_score} điểm để qua bài, thưởng +{nextItem.xp_reward} XP</span>
                 </div>
               </div>
             </div>

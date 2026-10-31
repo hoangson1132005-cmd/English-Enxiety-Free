@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/adminAuth';
+import { getPassScore } from '@/lib/quizSettings';
 
 // Chi tiết một lượt kiểm tra: danh sách câu hỏi đã được bốc (kèm cấp độ, kỹ năng, chủ đề, nguồn) và kết quả từng câu.
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -25,6 +26,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     kind: quiz.kind,
     status: quiz.status,
     score: quiz.score,
+    pass_score: await getPassScore(),
     created_at: quiz.createdAt.toISOString(),
     submitted_at: quiz.submittedAt?.toISOString() ?? null,
     user: { name: quiz.user.fullName, email: quiz.user.email, level: quiz.user.currentLevel },
@@ -42,6 +44,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
             type: q.type,
             // nguồn câu hỏi: ngân hàng (nhập tay / import / AI tạo) hoặc câu gắn riêng với bài học
             origin: q.inBank ? q.source : q.lessonId ? 'lesson' : 'test',
+            lesson_id: q.lessonId,
+            in_bank: q.inBank,
             score: resultByQ.get(qid) ?? null,
           }
         : { order: idx + 1, id: qid, question: '(câu hỏi đã bị xóa)', skill: '', level: '', topic: '', type: '', origin: 'deleted', score: null };

@@ -399,6 +399,7 @@ export interface LessonDetail {
   best_score: number | null;
   next_lesson_id: string | null;
   session_id: string;
+  pass_score: number;
   attempts: { id: string; score: number; passed: boolean; created_at: string }[];
   questions: LessonQuestion[];
 }
@@ -502,6 +503,7 @@ export interface RoadmapView {
   stages: RoadmapStageView[];
   suggestions: RoadmapItemView[];
   next_item_id: string | null;
+  pass_score: number;
   all_done: boolean;
   history: { id: string; cycle: number; kind: string; level: CEFRLevel; outcome: string | null; exam_score: number | null; completed_at: string | null }[];
 }

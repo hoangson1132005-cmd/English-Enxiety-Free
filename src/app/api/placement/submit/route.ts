@@ -7,7 +7,8 @@ import { gradeQuestion } from '@/lib/grading';
 import { resolveTestForUser } from '@/lib/testAccess';
 import { loadSessionQuestions } from '@/lib/quiz';
 import { recordQuestionResults } from '@/lib/questionBank';
-import { generateRoadmap, nextLevel, PASS_SCORE } from '@/lib/roadmap';
+import { generateRoadmap, nextLevel } from '@/lib/roadmap';
+import { getPassScore } from '@/lib/quizSettings';
 import { CEFR_TOEIC_MAP, CEFR_IELTS_MAP } from '@/types';
 import type { CEFRLevel, SkillType } from '@/types';
 
@@ -35,6 +36,7 @@ export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const userId = session.user.id;
+  const PASS_SCORE = await getPassScore();
 
   const body = await req.json();
   const answers = (body.answers ?? []) as { question_id: string; answer: string | string[] }[];

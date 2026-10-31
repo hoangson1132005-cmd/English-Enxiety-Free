@@ -15,6 +15,10 @@ export async function POST(req: Request) {
     const res = await prisma.question.deleteMany({ where: { id: { in: ids }, inBank: true } });
     return NextResponse.json({ affected: res.count });
   }
+  if (body.action === 'set_active') {
+    const res = await prisma.question.updateMany({ where: { id: { in: ids }, inBank: true }, data: { isActive: !!body.active } });
+    return NextResponse.json({ affected: res.count });
+  }
   if (body.action === 'update') {
     const data: Record<string, string> = {};
     if (['A1', 'A2', 'B1', 'B2', 'C1'].includes(body.level)) data.level = body.level;

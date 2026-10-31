@@ -5,6 +5,7 @@ import { getLessonContext } from '@/lib/roadmap';
 import { getLessonVocab } from '@/lib/lessonVocab';
 import { getOrCreateLessonSession } from '@/lib/quiz';
 import { toLearnerQuestion } from '@/lib/questionBank';
+import { getPassScore } from '@/lib/quizSettings';
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -43,6 +44,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     best_score: ctx.item.bestScore,
     next_lesson_id: ctx.nextItem?.lessonId ?? null,
     session_id: quiz.session.id,
+    pass_score: await getPassScore(),
     attempts: attempts.map((a) => ({ id: a.id, score: a.score, passed: a.passed, created_at: a.createdAt.toISOString() })),
     questions: quiz.questions.map(toLearnerQuestion),
   });

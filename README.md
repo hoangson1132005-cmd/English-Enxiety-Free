@@ -109,6 +109,10 @@ Mọi bài kiểm tra của học viên đều **bốc câu từ Ngân hàng câ
 - Chọn theo **cấp độ (A1–C1)**, **chủ đề**, **kỹ năng**, và **ưu tiên câu học viên chưa gặp** (làm lại sẽ ra bộ câu mới). Với bài kiểm tra cuối chặng / cuối khóa, AI đọc danh sách ứng viên và chọn bộ câu sát nhất; AI lỗi thì dùng kết quả lọc.
 - **Không đủ câu phù hợp thì AI tự sinh thêm và lưu vào ngân hàng** (nguồn “AI tạo”, nên xem lại) để dùng lại cho người khác, không sinh riêng cho từng người.
 - Nạp ngân hàng bằng cách nhập tay, hoặc tải file Word/PDF (AI tách câu và gắn cấp độ/kỹ năng/chủ đề). Trang có bộ lọc, sắp xếp, tìm kiếm, sửa/xóa hàng loạt và thống kê số lần dùng, tỷ lệ đúng của từng câu.
+- **Quản lý tập trung, không chỉnh từng học viên:**
+  - Sửa nội dung một câu trong ngân hàng thì áp dụng cho mọi người. Câu có vấn đề: *Tạm ẩn* (không còn được bốc, vẫn giữ lại để khôi phục).
+  - *Admin → Cài đặt kiểm tra*: số câu cuối bài / bài Viết-Nói / cuối chặng / cuối khóa và điểm đạt, áp dụng toàn hệ thống.
+  - Trang chi tiết bài học, mục *Bài Kiểm Tra Cuối Bài*: số câu riêng của bài, và nguồn câu hỏi (tự động / luôn có câu của bài / chỉ dùng câu của bài).
 - Xem lại việc bốc câu: *Admin → Lịch sử bốc câu* liệt kê từng lượt kiểm tra của học viên (cuối bài / chặng / khóa) cùng danh sách câu đã bốc, nguồn của từng câu và điểm từng câu; trong *Ngân hàng câu hỏi*, mở rộng một câu để xem nó đã được bốc vào những lượt nào. Độ liên quan của câu với bài được chấm theo cấp độ, chủ đề và từ khóa (tên bài, mô tả, từ vựng); nếu quá nửa số câu bốc được là câu lạc đề, AI sinh thêm câu đúng chủ đề và lưu vào ngân hàng.
 - Đề test cố định do admin tạo vẫn dùng cho **test đầu vào**. Đề tổng kết do admin tạo cho một level, nếu được kích hoạt, sẽ thay thế bài cuối khóa bốc từ ngân hàng cho level đó (mặc định không kích hoạt).
 

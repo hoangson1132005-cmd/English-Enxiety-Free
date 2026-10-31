@@ -151,6 +151,7 @@ model Question {
   testSection     TestSection?  @relation(fields: [testSectionId], references: [id], onDelete: SetNull)
   lessonId        String?
   lesson          Lesson?       @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  isActive        Boolean       @default(true) // false = tạm ẩn: không còn được bốc vào bài kiểm tra nhưng vẫn giữ trong ngân hàng
   inBank          Boolean       @default(false) // thuộc ngân hàng câu hỏi dùng chung (được bốc cho bài/chặng/bài thi)
   source          String        @default("manual") // 'manual' | 'import' | 'ai'
   usedCount       Int           @default(0)
@@ -173,6 +174,8 @@ model Lesson {
   topic            String
   content          String   @default("") // nội dung giảng dạy (markdown) trước phần luyện tập
   level            CEFRLevel?
+  quizMode         String   @default("auto") // 'auto' | 'own_first' (luôn có câu riêng của bài) | 'own_only' (chỉ dùng câu riêng của bài)
+  quizSize         Int?     // số câu cuối bài của riêng bài này; để trống = theo cài đặt chung
   vocabItems       String   @default("[]") // JSON [{term, pronunciation, definition, definition_vi, example, example_vi}]
   questions        Question[]
   progress         UserLessonProgress[]
@@ -394,4 +397,15 @@ model QuestionSeen {
   createdAt   DateTime @default(now())
 
   @@id([userId, questionId])
+}
+
+// Cài đặt chung cho mọi bài kiểm tra (1 dòng duy nhất, id = "main")
+model QuizSettings {
+  id                 String   @id @default("main")
+  lessonSize         Int      @default(8)
+  lessonSizeFreeText Int      @default(5)
+  stageSize          Int      @default(18)
+  finalSize          Int      @default(30)
+  passScore          Int      @default(70)
+  updatedAt          DateTime @updatedAt
 }

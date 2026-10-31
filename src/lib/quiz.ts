@@ -1,8 +1,7 @@
 import type { Question } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
-import {
-  assembleQuestions, tokenize, FINAL_EXAM_SIZE, LESSON_QUIZ_SIZE, LESSON_QUIZ_SIZE_FREE_TEXT, STAGE_QUIZ_SIZE, type AssembleOptions,
-} from '@/lib/questionBank';
+import { assembleQuestions, tokenize, type AssembleOptions } from '@/lib/questionBank';
+import { getQuizSettings } from '@/lib/quizSettings';
 import type { CEFRLevel, SkillType } from '@/types';
 
 type LearnerRow = { currentLevel: string; major: string | null; interests: string };
@@ -76,6 +75,7 @@ export async function getOrCreateLessonSession(userId: string, lessonId: string)
     prisma.user.findUniqueOrThrow({ where: { id: userId } }),
     prisma.lesson.findUniqueOrThrow({ where: { id: lessonId } }),
   ]);
+  const settings = await getQuizSettings();
   const freeTextLesson = lesson.skill === 'writing' || lesson.skill === 'speaking';
   const level = ((lesson.level as CEFRLevel | null) ?? (user.currentLevel as CEFRLevel));
   let vocab = '';
@@ -87,7 +87,10 @@ export async function getOrCreateLessonSession(userId: string, lessonId: string)
 
   const questions = await assembleQuestions({
     userId,
-    count: freeTextLesson ? LESSON_QUIZ_SIZE_FREE_TEXT : LESSON_QUIZ_SIZE,
+    // Số câu: cấu hình riêng của bài (nếu có) > cài đặt chung
+    count: lesson.quizSize ?? (freeTextLesson ? settings.lessonSizeFreeText : settings.lessonSize),
+    includeBank: lesson.quizMode !== 'own_only',
+    pinLessonQuestions: lesson.quizMode === 'own_first' || lesson.quizMode === 'own_only',
     level,
     lessonIds: [lessonId],
     topics: [lesson.topic],
@@ -125,7 +128,7 @@ export async function createStageSession(userId: string, roadmapId: string, phas
 
   const questions = await assembleQuestions({
     userId,
-    count: STAGE_QUIZ_SIZE,
+    count: (await getQuizSettings()).stageSize,
     level: user.currentLevel as CEFRLevel,
     lessonIds: lessons.map((l) => l.id),
     topics: [...new Set(lessons.map((l) => l.topic))],
@@ -162,7 +165,7 @@ export async function createFinalSession(userId: string, roadmapId: string) {
 
   const questions = await assembleQuestions({
     userId,
-    count: FINAL_EXAM_SIZE,
+    count: (await getQuizSettings()).finalSize,
     level: user.currentLevel as CEFRLevel,
     lessonIds: lessons.map((l) => l.id),
     topics: [...new Set(lessons.map((l) => l.topic))],

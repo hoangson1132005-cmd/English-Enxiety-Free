@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/adminAuth';
 
 function serializeLessonDetail(lesson: {
-  id: string; order: number; title: string; skill: string; isPublished: boolean; source: string;
+  id: string; order: number; title: string; skill: string; isPublished: boolean; source: string; quizMode: string; quizSize: number | null;
   durationMinutes: number; xpReward: number; description: string; topic: string; content: string; level: string | null; vocabItems: string;
   questions: { id: string; question: string; skill: string; topic: string; level: string; type: string; options: string | null; answer: string; explanation: string; passage: string | null; audioUrl: string | null }[];
 }) {
@@ -11,6 +11,8 @@ function serializeLessonDetail(lesson: {
     id: lesson.id,
     is_published: lesson.isPublished,
     source: lesson.source,
+    quiz_mode: lesson.quizMode,
+    quiz_size: lesson.quizSize,
     order: lesson.order,
     title: lesson.title,
     skill: lesson.skill,
@@ -67,6 +69,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       ...(body.content !== undefined ? { content: body.content } : {}),
       ...(body.level !== undefined ? { level: body.level || null } : {}),
       ...(body.is_published !== undefined ? { isPublished: !!body.is_published } : {}),
+      ...(['auto', 'own_first', 'own_only'].includes(body.quiz_mode) ? { quizMode: body.quiz_mode } : {}),
+      ...(body.quiz_size !== undefined
+        ? { quizSize: body.quiz_size === null || body.quiz_size === '' ? null : Math.min(20, Math.max(1, Math.round(Number(body.quiz_size)) || 8)) }
+        : {}),
       ...(body.vocab_items !== undefined ? { vocabItems: JSON.stringify(body.vocab_items) } : {}),
     },
     include: { questions: true },

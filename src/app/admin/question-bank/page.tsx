@@ -18,7 +18,7 @@ const SOURCE_LABELS: Record<string, string> = { manual: 'Nhập tay', import: 'I
 const LEVELS: CEFRLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1'];
 
 interface BankItem extends QuestionBankItem {
-  source: string; used_count: number; accuracy: number | null; created_at: string;
+  source: string; is_active: boolean; used_count: number; accuracy: number | null; created_at: string;
 }
 interface Facets {
   levels: { value: string; count: number }[];
@@ -40,9 +40,11 @@ export default function QuestionBankPage() {
   const [type, setType] = useState('all');
   const [topic, setTopic] = useState('all');
   const [source, setSource] = useState('all');
+  const [active, setActive] = useState('all');
   const [sort, setSort] = useState('newest');
-  const [search, setSearch] = useState('');
-  const [query, setQuery] = useState('');
+  const initialQuery = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('q') ?? '' : '';
+  const [search, setSearch] = useState(initialQuery);
+  const [query, setQuery] = useState(initialQuery);
 
   const [expanded, setExpanded] = useState<string | null>(null);
   const [usage, setUsage] = useState<{ total_sessions: number; sessions: { id: string; scope: string; user: string; status: string; created_at: string }[] } | null>(null);
@@ -62,7 +64,7 @@ export default function QuestionBankPage() {
   const pageSize = 25;
 
   const load = useCallback(() => {
-    const p = new URLSearchParams({ level, skill, type, topic, source, sort, page: String(page), pageSize: String(pageSize) });
+    const p = new URLSearchParams({ level, skill, type, topic, source, active, sort, page: String(page), pageSize: String(pageSize) });
     if (query) p.set('q', query);
     fetch(`/api/admin/questions?${p}`)
       .then((r) => r.json())
@@ -72,7 +74,7 @@ export default function QuestionBankPage() {
         setFacets(data.facets);
         setLoading(false);
       });
-  }, [level, skill, type, topic, source, sort, page, query]);
+  }, [level, skill, type, topic, source, active, sort, page, query]);
 
   useEffect(load, [load]);
 
@@ -188,6 +190,11 @@ export default function QuestionBankPage() {
               <option value="all">Mọi nguồn</option>
               {Object.entries(SOURCE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
+            <select value={active} onChange={(e) => setFilter(setActive)(e.target.value)} className={selectCls}>
+              <option value="all">Hiện + tạm ẩn</option>
+              <option value="yes">Đang dùng</option>
+              <option value="no">Tạm ẩn</option>
+            </select>
             <select value={sort} onChange={(e) => setFilter(setSort)(e.target.value)} className={selectCls}>
               <option value="newest">Mới nhất</option>
               <option value="level">Theo cấp độ A1 → C1</option>
@@ -229,6 +236,8 @@ export default function QuestionBankPage() {
               <option value="">Đổi cấp độ...</option>
               {LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
             </select>
+            <button onClick={() => bulk({ action: 'set_active', active: false })} className="px-3 py-1.5 rounded-lg text-xs border border-primary-300 text-primary-700 font-semibold">Tạm ẩn</button>
+            <button onClick={() => bulk({ action: 'set_active', active: true })} className="px-3 py-1.5 rounded-lg text-xs border border-primary-300 text-primary-700 font-semibold">Hiện lại</button>
             <button
               onClick={() => confirm(`Xóa ${selected.size} câu hỏi đã chọn?`) && bulk({ action: 'delete' })}
               className="px-3 py-1.5 rounded-lg text-xs bg-error text-white font-semibold"
@@ -269,7 +278,10 @@ export default function QuestionBankPage() {
                       <tr className="hover:bg-background-secondary/30 transition-colors">
                         <td className="px-4 py-3"><input type="checkbox" checked={selected.has(q.id)} onChange={() => toggle(q.id)} /></td>
                         <td className="px-4 py-3 max-w-md">
-                          <div className="font-medium text-text-primary truncate">{q.question}</div>
+                          <div className={cn('font-medium truncate', q.is_active ? 'text-text-primary' : 'text-text-muted line-through')}>
+                            {!q.is_active && <span className="mr-1.5 no-underline text-[10px] font-bold bg-gray-200 text-text-secondary px-1.5 py-0.5 rounded">TẠM ẨN</span>}
+                            {q.question}
+                          </div>
                           <div className="text-xs text-text-muted">{q.topic}{q.passage ? ' · có đoạn văn/transcript' : ''}{q.audio_url ? ' · có audio' : ''}</div>
                         </td>
                         <td className="px-4 py-3"><span className="text-xs font-bold bg-primary-50 text-primary-700 px-2.5 py-1 rounded-full">{q.level}</span></td>

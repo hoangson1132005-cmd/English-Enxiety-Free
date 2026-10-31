@@ -16,10 +16,10 @@ interface Row {
   question_count: number; status: string; score: number | null; created_at: string;
 }
 interface Detail {
-  id: string; kind: string; status: string; score: number | null; created_at: string; submitted_at: string | null;
+  id: string; kind: string; status: string; score: number | null; pass_score?: number; created_at: string; submitted_at: string | null;
   user: { name: string; email: string; level: string };
   lesson: { title: string; topic: string; level: string | null } | null;
-  questions: { order: number; id: string; question: string; skill: string; level: string; topic: string; type: string; origin: string; score: number | null }[];
+  questions: { order: number; id: string; question: string; skill: string; level: string; topic: string; type: string; origin: string; score: number | null; lesson_id?: string | null; in_bank?: boolean }[];
 }
 
 export default function QuizSessionsPage() {
@@ -142,10 +142,12 @@ export default function QuizSessionsPage() {
                     <div className="text-sm text-text-primary">{q.question}</div>
                     <div className="text-[11px] text-text-muted mt-1 flex flex-wrap gap-x-3">
                       <span>{q.level}</span><span>{SKILL_LABELS[q.skill] ?? q.skill}</span><span>{q.topic}</span><span>{ORIGIN_LABELS[q.origin] ?? q.origin}</span>
+                      {q.in_bank && <a href={`/admin/question-bank?q=${encodeURIComponent(q.question.slice(0, 40))}`} className="text-primary-700 underline">Sửa / ẩn trong ngân hàng</a>}
+                      {!q.in_bank && q.lesson_id && <a href={`/admin/lessons/${q.lesson_id}`} className="text-primary-700 underline">Sửa trong bài học</a>}
                     </div>
                   </div>
                   {q.score != null && (
-                    <span className={cn('text-xs font-bold self-start', q.score >= 70 ? 'text-success' : 'text-error')}>{q.score}</span>
+                    <span className={cn('text-xs font-bold self-start', q.score >= (detail.pass_score ?? 70) ? 'text-success' : 'text-error')}>{q.score}</span>
                   )}
                 </div>
               ))}

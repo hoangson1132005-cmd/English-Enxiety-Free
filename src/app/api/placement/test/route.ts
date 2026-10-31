@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { resolveTestForUser } from '@/lib/testAccess';
 import { loadSessionQuestions } from '@/lib/quiz';
 import { toLearnerQuestion } from '@/lib/questionBank';
+import { getPassScore } from '@/lib/quizSettings';
 
 const SKILL_TITLES: Record<string, string> = {
   vocabulary: 'Từ vựng', reading: 'Đọc hiểu', listening: 'Nghe hiểu', writing: 'Viết', speaking: 'Nói',
@@ -43,7 +44,7 @@ export async function GET(req: Request) {
       title: quiz.kind === 'final' ? 'Kiểm tra cuối khóa' : 'Kiểm tra cuối chặng',
       description:
         quiz.kind === 'final'
-          ? 'Bài kiểm tra tổng kết toàn bộ nội dung đã học. Đạt từ 70 điểm để lên trình độ tiếp theo.'
+          ? `Bài kiểm tra tổng kết toàn bộ nội dung đã học. Đạt từ ${await getPassScore()} điểm để lên trình độ tiếp theo.`
           : 'Bài kiểm tra các bài học trong chặng vừa hoàn thành.',
       duration_minutes: Math.max(10, Math.round(questions.length * MINUTES_PER_QUESTION)),
       sections,

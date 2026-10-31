@@ -413,7 +413,7 @@ function LessonPageContent() {
             </div>
           </div>
           {lesson.best_score != null && phase !== 'result' && (
-            <p className="mt-3 text-xs text-text-secondary">Điểm cao nhất của bạn: <strong>{lesson.best_score}/100</strong> • Cần từ 70 điểm để qua bài.</p>
+            <p className="mt-3 text-xs text-text-secondary">Điểm cao nhất của bạn: <strong>{lesson.best_score}/100</strong> • Cần từ {lesson.pass_score} điểm để qua bài.</p>
           )}
         </div>
 
@@ -596,7 +596,7 @@ function LessonPageContent() {
               {lesson.questions.map((q, idx) => {
                 const r = resultByQuestion.get(q.id);
                 if (!r) return null;
-                const ok = r.score >= 70;
+                const ok = r.score >= result.pass_score;
                 return (
                   <div key={q.id} className={cn('p-5 rounded-2xl border', ok ? 'border-success/30 bg-success-light/20' : 'border-warning/40 bg-warning-light/20')}>
                     <div className="flex items-start gap-2">

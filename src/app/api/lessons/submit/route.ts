@@ -3,7 +3,8 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { recordActivity } from '@/lib/progress';
 import { gradeQuestion, buildReviewSummary } from '@/lib/grading';
-import { getLessonContext, isRoadmapDone, PASS_SCORE } from '@/lib/roadmap';
+import { getLessonContext, isRoadmapDone } from '@/lib/roadmap';
+import { getPassScore } from '@/lib/quizSettings';
 import { getLessonVocab, saveWordsForUser } from '@/lib/lessonVocab';
 import { loadSessionQuestions } from '@/lib/quiz';
 import { recordQuestionResults } from '@/lib/questionBank';
@@ -12,6 +13,7 @@ export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const userId = session.user.id;
+  const PASS_SCORE = await getPassScore();
 
   const body = await req.json();
   const lessonId = body.lesson_id as string;

@@ -14,7 +14,7 @@ const SKILL_LABELS: Record<SkillType, string> = {
 const LEVELS: CEFRLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1'];
 
 interface LessonFull {
-  id: string; is_published: boolean; source: string; order: number; title: string; skill: SkillType;
+  id: string; is_published: boolean; source: string; quiz_mode: string; quiz_size: number | null; order: number; title: string; skill: SkillType;
   duration_minutes: number; xp_reward: number; description: string; topic: string; content: string;
   level: CEFRLevel | null;
   vocab_items: { term: string; definition: string; definition_vi?: string; example?: string }[];
@@ -75,6 +75,8 @@ function AdminLessonDetailContent() {
         topic: lesson.topic,
         content: lesson.content,
         level: lesson.level ?? '',
+        quiz_mode: lesson.quiz_mode,
+        quiz_size: lesson.quiz_size,
         vocab_items: vocabText
           .split('\n')
           .map((l) => l.split('|').map((x) => x.trim()))
@@ -175,6 +177,35 @@ function AdminLessonDetailContent() {
               placeholder="Viết nội dung bài giảng ở đây: từ vựng, ngữ pháp, ví dụ thực tế, hội thoại mẫu..."
               className="w-full p-4 rounded-2xl text-xs sm:text-sm bg-background-secondary/30 border border-[var(--color-border)] focus:border-primary-500 focus:outline-none resize-y leading-relaxed font-mono"
             />
+          </div>
+
+          {/* QUIZ SETUP */}
+          <div className="p-6 rounded-3xl bg-white border border-[var(--color-border)] shadow-soft space-y-3">
+            <h3 className="font-display font-bold text-base text-text-primary">Bài Kiểm Tra Cuối Bài</h3>
+            <p className="text-xs text-text-muted">Cấu hình này áp dụng cho <strong>mọi học viên</strong> làm bài này, không cần chỉnh từng người.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-text-primary mb-1.5">Nguồn câu hỏi</label>
+                <select
+                  value={lesson.quiz_mode}
+                  onChange={(e) => setLesson({ ...lesson, quiz_mode: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl text-sm bg-background-secondary/50 border border-[var(--color-border)] focus:outline-none"
+                >
+                  <option value="auto">Tự động: ngân hàng + câu của bài (đề xuất)</option>
+                  <option value="own_first">Luôn có các câu của bài, bù thêm từ ngân hàng</option>
+                  <option value="own_only">Chỉ dùng các câu của bài (bên dưới)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-text-primary mb-1.5">Số câu (để trống = theo cài đặt chung)</label>
+                <input
+                  type="number" min={1} max={20}
+                  value={lesson.quiz_size ?? ''}
+                  onChange={(e) => setLesson({ ...lesson, quiz_size: e.target.value === '' ? null : Number(e.target.value) })}
+                  className="w-full px-4 py-2.5 rounded-xl text-sm bg-background-secondary/50 border border-[var(--color-border)] focus:outline-none"
+                />
+              </div>
+            </div>
           </div>
 
           {/* VOCAB */}

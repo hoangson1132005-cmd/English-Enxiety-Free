@@ -8,7 +8,7 @@ const LEVEL_ORDER = ['A1', 'A2', 'B1', 'B2', 'C1'];
 
 function serialize(q: {
   id: string; skill: string; topic: string; level: string; type: string; question: string; options: string | null;
-  answer: string; explanation: string; passage: string | null; audioUrl: string | null; source: string;
+  answer: string; explanation: string; passage: string | null; audioUrl: string | null; source: string; isActive: boolean;
   usedCount: number; correctCount: number; createdAt: Date;
 }) {
   return {
@@ -24,6 +24,7 @@ function serialize(q: {
     passage: q.passage ?? undefined,
     audio_url: q.audioUrl ?? undefined,
     source: q.source,
+    is_active: q.isActive,
     used_count: q.usedCount,
     accuracy: q.usedCount > 0 ? Math.round((q.correctCount / q.usedCount) * 100) : null,
     created_at: q.createdAt.toISOString(),
@@ -41,6 +42,9 @@ export async function GET(req: Request) {
     const v = p.get(key);
     if (v && v !== 'all') (where as Record<string, unknown>)[key] = v;
   }
+  const active = p.get('active');
+  if (active === 'yes') where.isActive = true;
+  if (active === 'no') where.isActive = false;
   const topic = p.get('topic');
   if (topic && topic !== 'all') where.topic = topic;
   const q = p.get('q')?.trim();
