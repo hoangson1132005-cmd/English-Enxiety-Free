@@ -96,6 +96,16 @@ npm run dev        # http://localhost:3000
 
 ---
 
+## 🔊 Âm thanh bài nghe
+
+- Mặc định hệ thống **đọc transcript thành tiếng** bằng giọng đọc của trình duyệt (miễn phí, không cần lưu file).
+- Muốn giọng người thật: trong trình sửa câu hỏi (bài nghe), upload file mp3/wav/m4a (tối đa 6MB) hoặc dán đường dẫn audio đã có để dùng lại cho câu khác. File được lưu trong database (`AudioFile`) và chỉ người đã đăng nhập mới nghe được.
+- File Word không chứa audio; sau khi import, admin mở từng câu nghe để gắn audio nếu cần.
+
+## 🔐 Lối vào quản trị
+
+Không có link công khai tới `/admin`. Quản trị viên đăng nhập ở trang đăng nhập thường (tự chuyển sang `/admin`) và thấy mục **Quản trị** trong thanh bên. Lối tắt ẩn: bấm logo 5 lần liên tiếp hoặc nhấn `Alt + Shift + A`. Quyền truy cập luôn được kiểm tra ở server (middleware), lối tắt chỉ để tiện. Đăng nhập sai 5 lần liên tiếp sẽ bị tạm khóa 15 phút (theo email + IP; lưu trong bộ nhớ nên cần chuyển sang Redis nếu chạy nhiều instance).
+
 ## 📄 File Word mẫu để thử import
 
 Thư mục `sample-content/` có sẵn 8 file `.docx` để thử chức năng import bằng AI:

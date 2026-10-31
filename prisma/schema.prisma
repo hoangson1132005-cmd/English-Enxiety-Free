@@ -360,3 +360,13 @@ model LessonAttempt {
 
   @@index([userId, lessonId])
 }
+
+// File âm thanh do admin upload cho câu hỏi nghe. Lưu trong DB để không phụ thuộc ổ đĩa của máy chủ khi deploy.
+model AudioFile {
+  id          String   @id @default(cuid())
+  fileName    String
+  mimeType    String
+  sizeBytes   Int
+  data        Bytes
+  createdAt   DateTime @default(now())
+}

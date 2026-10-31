@@ -10,18 +10,14 @@ import {
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
 import { apiCompleteOnboarding, apiGetProfile } from '@/lib/api';
+import type { Profile } from '@/types';
 import { MAJORS_BY_FACULTY, JOB_INTEREST_OPTIONS, INTEREST_GROUPS, type FacultyGroup, type LearningGoal, type InterestArea, type DailyMinutes, type CEFRLevel } from '@/types';
 import { cn } from '@/lib/utils';
 
-export default function OnboardingPage() {
+function OnboardingForm({ profile }: { profile: Profile }) {
   const router = useRouter();
-  const { profile, setProfile, updateProfile } = useAuthStore();
+  const { updateProfile } = useAuthStore();
   const { addToast } = useUIStore();
-
-  useEffect(() => {
-    if (profile) return;
-    apiGetProfile().then(setProfile).catch(() => {});
-  }, [profile, setProfile]);
 
   const [step, setStep] = useState(1);
   const [goal, setGoal] = useState<LearningGoal>(profile?.goal || 'work');
@@ -433,4 +429,30 @@ export default function OnboardingPage() {
       </div>
     </div>
   );
+}
+
+// Luôn lấy hồ sơ mới nhất từ server trước khi dựng form: giá trị khởi tạo của form phải là dữ liệu thật
+// của người dùng đang đăng nhập, không phải bản cũ lưu trong trình duyệt hay giá trị mặc định
+// (nếu không, form sẽ ghi đè lựa chọn lúc đăng ký bằng giá trị mặc định).
+export default function OnboardingPage() {
+  const { setProfile } = useAuthStore();
+  const [fresh, setFresh] = useState<Profile | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    apiGetProfile()
+      .then((p) => {
+        setProfile(p);
+        setFresh(p);
+      })
+      .catch(() => setFailed(true));
+  }, [setProfile]);
+
+  if (failed) {
+    return <div className="min-h-screen flex items-center justify-center text-sm text-text-muted">Không tải được hồ sơ. Vui lòng tải lại trang.</div>;
+  }
+  if (!fresh) {
+    return <div className="min-h-screen flex items-center justify-center text-sm text-text-muted">Đang tải hồ sơ...</div>;
+  }
+  return <OnboardingForm key={fresh.id} profile={fresh} />;
 }

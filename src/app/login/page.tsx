@@ -11,6 +11,7 @@ import { signIn } from 'next-auth/react';
 import { useUIStore } from '@/store/uiStore';
 import { cn } from '@/lib/utils';
 import { BrandLogo } from '@/components/ui/BrandLogo';
+import { useAdminShortcut } from '@/components/features/auth/useAdminShortcut';
 
 const loginSchema = z.object({
   email: z.string().email('Email không đúng định dạng'),
@@ -22,6 +23,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const router = useRouter();
   const { addToast } = useUIStore();
+  const onLogoClick = useAdminShortcut();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -31,10 +33,7 @@ export default function LoginPage() {
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: 'lananh.nt@edu.vn',
-      password: 'demo1234',
-    },
+    defaultValues: { email: '', password: '' },
   });
 
   const onSubmit = async (data: LoginFormData) => {
@@ -80,11 +79,11 @@ export default function LoginPage() {
       <div className="max-w-md mx-auto w-full">
         {/* Header */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-3 mb-4">
+          <Link href="/" onClick={onLogoClick} className="inline-flex items-center gap-3 mb-4">
             <BrandLogo className="w-12 h-12 rounded-2xl shadow-soft" />
           </Link>
           <h1 className="font-serif font-bold text-3xl text-primary-900 dark:text-white">
-            Đăng Nhập Sinh Viên
+            Đăng Nhập
           </h1>
           <p className="mt-2 text-sm text-text-secondary dark:text-gray-400">
             Nền tảng học tiếng Anh cho mọi ngành nghề
@@ -93,13 +92,6 @@ export default function LoginPage() {
 
         {/* Card Form */}
         <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 sm:p-8 shadow-soft-lg border border-[var(--color-border)]">
-          {/* Quick Demo Hint */}
-          <div className="mb-6 p-3 rounded-2xl bg-cream/50 dark:bg-gray-800 border border-cream-dark/40 text-xs text-text-secondary dark:text-gray-300 space-y-1">
-            <p><strong>Tài khoản Demo sẵn:</strong> Đã điền sẵn tài khoản sinh viên mẫu. Bấm <em>Đăng nhập ngay</em> để trải nghiệm.</p>
-            <p>
-              <strong>Tài khoản Admin:</strong> <code className="bg-white/60 dark:bg-gray-900/60 px-1 rounded">admin@soonolingo.local</code> / <code className="bg-white/60 dark:bg-gray-900/60 px-1 rounded">admin123</code>
-            </p>
-          </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>

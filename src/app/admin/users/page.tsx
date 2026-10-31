@@ -23,6 +23,7 @@ export default function AdminUsersPage() {
   const [facultyFilter, setFacultyFilter] = useState<'all' | FacultyGroup>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'disabled'>('all');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [createdCreds, setCreatedCreds] = useState<{ email: string; password: string } | null>(null);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const [newUser, setNewUser] = useState({ full_name: '', student_id: '', email: '', faculty_group: 'engineering' as FacultyGroup });
 
@@ -82,7 +83,8 @@ export default function AdminUsersPage() {
       body: JSON.stringify(newUser),
     });
     if (res.ok) {
-      const created = await res.json();
+      const { temp_password, ...created } = await res.json();
+      setCreatedCreds({ email: created.email, password: temp_password });
       setUsers((prev) => [created, ...prev]);
       setNewUser({ full_name: '', student_id: '', email: '', faculty_group: 'engineering' });
       setShowAddModal(false);
@@ -255,6 +257,20 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
+      {createdCreds && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-soft-lg border border-[var(--color-border)] space-y-3">
+            <h3 className="font-serif font-bold text-lg text-primary-900">Đã tạo tài khoản</h3>
+            <p className="text-xs text-text-secondary">Hãy gửi thông tin này cho người dùng và yêu cầu đổi mật khẩu. Mật khẩu chỉ hiển thị một lần.</p>
+            <div className="p-3 rounded-2xl bg-cream/50 text-sm space-y-1">
+              <div>Email: <strong>{createdCreds.email}</strong></div>
+              <div>Mật khẩu tạm: <code className="font-bold select-all">{createdCreds.password}</code></div>
+            </div>
+            <button onClick={() => setCreatedCreds(null)} className="w-full px-4 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-hover text-white text-sm font-semibold">Đã lưu, đóng</button>
+          </div>
+        </div>
+      )}
+
       {/* ADD USER MODAL */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -306,7 +322,7 @@ export default function AdminUsersPage() {
                   <option value="other">Khác</option>
                 </select>
               </div>
-              <p className="text-[11px] text-text-muted">Mật khẩu mặc định: <strong>demo1234</strong></p>
+              <p className="text-[11px] text-text-muted">Hệ thống tạo mật khẩu tạm ngẫu nhiên và chỉ hiển thị một lần sau khi tạo.</p>
               <button
                 type="submit"
                 className="w-full mt-2 px-4 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-hover text-white text-sm font-semibold shadow-soft transition-all"

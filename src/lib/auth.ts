@@ -2,6 +2,7 @@ import NextAuth, { type DefaultSession } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
+import { isThrottled, recordFailure, clearFailures } from '@/lib/loginThrottle';
 
 declare module 'next-auth' {
   interface Session {
@@ -24,16 +25,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
-      authorize: async (credentials) => {
+      authorize: async (credentials, request) => {
         const email = typeof credentials?.email === 'string' ? credentials.email : undefined;
         const password = typeof credentials?.password === 'string' ? credentials.password : undefined;
         if (!email || !password) return null;
 
+        const ip = request?.headers?.get('x-forwarded-for')?.split(',')[0]?.trim() || 'local';
+        if (isThrottled(email, ip)) return null; // quá nhiều lần sai: tạm khóa 15 phút
+
         const user = await prisma.user.findUnique({ where: { email } });
-        if (!user || user.status === 'disabled') return null;
+        if (!user || user.status === 'disabled') {
+          recordFailure(email, ip);
+          return null;
+        }
 
         const valid = await bcrypt.compare(password, user.passwordHash);
-        if (!valid) return null;
+        if (!valid) {
+          recordFailure(email, ip);
+          return null;
+        }
+        clearFailures(email, ip);
 
         await prisma.user.update({ where: { id: user.id }, data: { lastActiveAt: new Date() } });
 

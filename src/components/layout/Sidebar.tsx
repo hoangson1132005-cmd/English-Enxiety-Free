@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { signOut } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { motion } from 'framer-motion';
 import {
-  LayoutDashboard, Map, FlipHorizontal, Bot, User, LogOut, ChevronLeft, ChevronRight,
+  LayoutDashboard, Map, FlipHorizontal, Bot, User, LogOut, ChevronLeft, ChevronRight, ShieldCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/store/uiStore';
@@ -24,6 +24,9 @@ export function Sidebar() {
   const pathname = usePathname();
   const { sidebarOpen, toggleSidebar } = useUIStore();
   const { profile, logout } = useAuthStore();
+  const { data: session } = useSession();
+  // Mục Quản trị chỉ hiện với tài khoản admin (người dùng thường không thấy lối vào này)
+  const items = session?.user?.role === 'admin' ? [...navItems, { href: '/admin', label: 'Quản trị', icon: ShieldCheck }] : navItems;
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
 
@@ -63,7 +66,7 @@ export function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
-        {navItems.map((item) => {
+        {items.map((item) => {
           const active = isActive(item.href);
           return (
             <Link key={item.href} href={item.href}>

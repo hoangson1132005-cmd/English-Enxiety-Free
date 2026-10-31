@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   User, ShieldCheck, Sun, Bell, RotateCcw,
@@ -9,15 +9,15 @@ import {
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
-import { apiUpdateProfile } from '@/lib/api';
-import { MAJORS_BY_FACULTY, OTHER_MAJOR_VALUE, type FacultyGroup, type DailyMinutes, type LearningGoal, type EmploymentStatus } from '@/types';
+import { apiUpdateProfile, apiGetProfile } from '@/lib/api';
+import { MAJORS_BY_FACULTY, OTHER_MAJOR_VALUE, type FacultyGroup, type DailyMinutes, type LearningGoal, type EmploymentStatus, type Profile } from '@/types';
 import { cn } from '@/lib/utils';
 
-export default function ProfilePage() {
-  const { profile, updateProfile } = useAuthStore();
+function ProfileForm({ profile }: { profile: Profile }) {
+  const { updateProfile } = useAuthStore();
   const { addToast } = useUIStore();
 
-  const [fullName, setFullName] = useState(profile?.full_name || 'Nguyễn Thị Lan Anh');
+  const [fullName, setFullName] = useState(profile.full_name);
   const [employmentStatus, setEmploymentStatus] = useState<EmploymentStatus>(profile?.employment_status || 'student');
   const [facultyGroup, setFacultyGroup] = useState<FacultyGroup>(profile?.faculty_group || 'engineering');
   const [major, setMajor] = useState(profile?.major || MAJORS_BY_FACULTY.engineering[0]);
@@ -94,7 +94,7 @@ export default function ProfilePage() {
                 </span>
               </div>
               <p className="text-xs text-text-secondary dark:text-gray-400 mt-1">
-                {profile?.email || 'lananh.2151060001@student.uth.edu.vn'}
+                {profile.email}
               </p>
             </div>
           </div>
@@ -351,4 +351,30 @@ export default function ProfilePage() {
       </div>
     </AppLayout>
   );
+}
+
+// Luôn lấy hồ sơ mới nhất từ server trước khi dựng form: giá trị khởi tạo của form phải là dữ liệu thật
+// của người dùng đang đăng nhập, không phải bản cũ lưu trong trình duyệt hay giá trị mặc định
+// (nếu không, form sẽ ghi đè lựa chọn lúc đăng ký bằng giá trị mặc định).
+export default function ProfilePage() {
+  const { setProfile } = useAuthStore();
+  const [fresh, setFresh] = useState<Profile | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    apiGetProfile()
+      .then((p) => {
+        setProfile(p);
+        setFresh(p);
+      })
+      .catch(() => setFailed(true));
+  }, [setProfile]);
+
+  if (failed) {
+    return <div className="min-h-screen flex items-center justify-center text-sm text-text-muted">Không tải được hồ sơ. Vui lòng tải lại trang.</div>;
+  }
+  if (!fresh) {
+    return <div className="min-h-screen flex items-center justify-center text-sm text-text-muted">Đang tải hồ sơ...</div>;
+  }
+  return <ProfileForm key={fresh.id} profile={fresh} />;
 }

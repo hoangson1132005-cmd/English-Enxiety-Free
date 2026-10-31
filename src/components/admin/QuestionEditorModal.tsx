@@ -38,11 +38,30 @@ export function QuestionEditorModal({ title, initial, defaultSkill, defaultTopic
   const initialAnswer = Array.isArray(initial?.answer) ? initial!.answer.join(' | ') : initial?.answer ?? '';
   const [answer, setAnswer] = useState(initialAnswer);
   const [explanation, setExplanation] = useState(initial?.explanation ?? '');
+  const [audioUrl, setAudioUrl] = useState(initial?.audio_url ?? '');
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const options = optionsText.split('\n').map((o) => o.trim()).filter(Boolean);
   const showPassage = skill === 'reading' || skill === 'listening' || !!passage;
+
+  const uploadAudio = async (file: File) => {
+    setUploading(true);
+    setError(null);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const res = await fetch('/api/admin/audio', { method: 'POST', body: form });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Upload thất bại');
+      setAudioUrl(data.url);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +73,7 @@ export function QuestionEditorModal({ title, initial, defaultSkill, defaultTopic
       options: type === 'multiple_choice' ? options : type === 'true_false' ? ['True', 'False'] : undefined,
       answer: answerValue,
       explanation,
+      audio_url: audioUrl,
     });
     setSaving(false);
     if (err) setError(err);
@@ -100,6 +120,34 @@ export function QuestionEditorModal({ title, initial, defaultSkill, defaultTopic
           )}
           {!showPassage && (
             <button type="button" onClick={() => setPassage(' ')} className="text-xs text-primary-700 underline">+ Thêm đoạn văn / transcript cho câu hỏi này</button>
+          )}
+
+          {skill === 'listening' && (
+            <div className="p-3 rounded-2xl bg-teal-50 border border-teal-100 space-y-2">
+              <label className="block text-xs font-semibold text-text-primary">Âm thanh bài nghe (tùy chọn)</label>
+              <p className="text-[11px] text-text-secondary">Nếu không upload, hệ thống tự đọc transcript bằng giọng đọc của trình duyệt. Upload file thật (mp3, wav, m4a, tối đa 6MB) để có giọng người thật.</p>
+              {audioUrl ? (
+                <div className="space-y-2">
+                  <audio controls src={audioUrl} className="w-full" />
+                  <button type="button" onClick={() => setAudioUrl('')} className="text-xs text-error underline">Gỡ file âm thanh</button>
+                </div>
+              ) : (
+                <input
+                  type="file"
+                  accept="audio/*"
+                  disabled={uploading}
+                  onChange={(e) => e.target.files?.[0] && uploadAudio(e.target.files[0])}
+                  className="block w-full text-xs file:mr-3 file:px-3 file:py-2 file:rounded-xl file:border-0 file:bg-primary-600 file:text-white file:text-xs file:font-semibold"
+                />
+              )}
+              {uploading && <p className="text-[11px] text-text-muted">Đang tải lên...</p>}
+              <input
+                value={audioUrl}
+                onChange={(e) => setAudioUrl(e.target.value)}
+                placeholder="hoặc dán đường dẫn audio (vd: /api/audio/... của câu khác để dùng lại)"
+                className="w-full px-3 py-2 rounded-xl text-xs bg-white border border-[var(--color-border)] focus:outline-none"
+              />
+            </div>
           )}
 
           <div>

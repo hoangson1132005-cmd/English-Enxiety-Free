@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useAdminShortcut } from '@/components/features/auth/useAdminShortcut';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -47,6 +48,7 @@ function Logo({ content, className }: { content: LandingContent; className: stri
 }
 
 export function LandingPageClient({ content }: { content: LandingContent }) {
+  const onLogoClick = useAdminShortcut();
   const bullets = [content.whyChooseBullet1, content.whyChooseBullet2, content.whyChooseBullet3].map(splitBullet);
 
   return (
@@ -54,7 +56,7 @@ export function LandingPageClient({ content }: { content: LandingContent }) {
       {/* Top Navbar */}
       <header className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-[#E3F2EF] dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
+          <Link href="/" onClick={onLogoClick} className="flex items-center gap-3">
             <Logo content={content} className="w-10 h-10 rounded-2xl shadow-soft" />
             <div>
               <span className="font-serif font-bold text-xl text-primary-800 dark:text-primary-300 tracking-tight">
@@ -337,7 +339,6 @@ export function LandingPageClient({ content }: { content: LandingContent }) {
             <Link href="/login" className="hover:text-primary-600">Đăng nhập</Link>
             <Link href="/register" className="hover:text-primary-600">Đăng ký</Link>
             <Link href="/dashboard" className="hover:text-primary-600">Dashboard</Link>
-            <Link href="/admin" className="hover:text-primary-600">Quản trị</Link>
           </div>
 
           <div className="text-center sm:text-right text-[11px] text-text-muted">

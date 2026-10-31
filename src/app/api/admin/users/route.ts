@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/adminAuth';
 import { toAdminUserDTO } from '@/lib/serializers';
@@ -24,7 +25,9 @@ export async function POST(req: Request) {
   const existing = await prisma.user.findUnique({ where: { email: body.email } });
   if (existing) return NextResponse.json({ error: 'Email đã tồn tại' }, { status: 409 });
 
-  const passwordHash = await bcrypt.hash('demo1234', 10);
+  // Mật khẩu tạm ngẫu nhiên, chỉ hiển thị một lần cho admin (không dùng mật khẩu mặc định chung).
+  const tempPassword = crypto.randomBytes(6).toString('base64url');
+  const passwordHash = await bcrypt.hash(tempPassword, 10);
 
   const user = await prisma.user.create({
     data: {
@@ -37,5 +40,5 @@ export async function POST(req: Request) {
     },
   });
 
-  return NextResponse.json(toAdminUserDTO(user), { status: 201 });
+  return NextResponse.json({ ...toAdminUserDTO(user), temp_password: tempPassword }, { status: 201 });
 }
