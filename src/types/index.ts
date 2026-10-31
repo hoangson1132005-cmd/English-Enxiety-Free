@@ -44,6 +44,7 @@ export type SkillType = 'listening' | 'reading' | 'writing' | 'speaking' | 'voca
 // --- Placement Test ---
 export interface PlacementTest {
   id: string;
+  kind?: 'placement' | 'level_up';
   title: string;
   description: string;
   duration_minutes: number;
@@ -98,6 +99,8 @@ export interface TestResult {
   ai_feedback: string;
   time_spent_seconds: number;
   faculty_group: FacultyGroup;
+  outcome?: 'level_up' | 'improve';
+  pass_score?: number;
 }
 
 export interface SkillScores {
@@ -389,7 +392,37 @@ export interface LessonDetail {
   description: string;
   topic: string;
   content: string;
+  vocab: LessonVocabItem[];
+  item_status: 'pending' | 'in_progress' | 'completed' | 'suggested' | 'dismissed';
+  best_score: number | null;
+  next_lesson_id: string | null;
+  attempts: { id: string; score: number; passed: boolean; created_at: string }[];
   questions: LessonQuestion[];
+}
+
+export interface LessonVocabItem {
+  term: string;
+  pronunciation?: string;
+  definition: string;
+  definition_vi?: string;
+  example?: string;
+  example_vi?: string;
+}
+
+export interface LessonSubmitResult {
+  score: number;
+  passed: boolean;
+  pass_score: number;
+  xp_earned: number;
+  new_total_xp: number;
+  new_streak: number;
+  results: { question_id: string; score: number; feedback: string; correct_answer: string; given: string }[];
+  review_summary: string;
+  attempt_no: number;
+  previous_best: number | null;
+  words_saved: number;
+  next_lesson_id: string | null;
+  roadmap_done: boolean;
 }
 
 // --- Admin ---
@@ -420,4 +453,49 @@ export interface AdminStats {
   placement_completion_rate: number;
   signup_trend: { day_label: string; count: number }[];
   faculty_distribution: { faculty_group: FacultyGroup; count: number }[];
+}
+
+// --- Lộ trình cá nhân (mỗi học viên một lộ trình riêng) ---
+export type RoadmapItemStatus = 'locked' | 'available' | 'in_progress' | 'completed';
+
+export interface RoadmapItemView {
+  item_id: string;
+  lesson_id: string;
+  title: string;
+  skill: SkillType;
+  duration_minutes: number;
+  xp_reward: number;
+  description: string;
+  topic: string;
+  week: number;
+  reason: string;
+  status: RoadmapItemStatus;
+  best_score: number | null;
+  source: 'ai' | 'admin' | 'suggested';
+}
+
+export interface RoadmapStageView {
+  stage_id: string;
+  title: string;
+  items: RoadmapItemView[];
+}
+
+export interface RoadmapView {
+  roadmap: {
+    id: string;
+    cycle: number;
+    level: CEFRLevel;
+    kind: 'initial' | 'level_up' | 'improve';
+    generated_by: 'ai' | 'heuristic' | 'admin';
+    rationale: string;
+    focus_skills: SkillType[];
+    created_at: string;
+  };
+  user_level: CEFRLevel;
+  progress: { done: number; total: number; percent: number; avg_score: number | null; total_minutes: number };
+  stages: RoadmapStageView[];
+  suggestions: RoadmapItemView[];
+  next_item_id: string | null;
+  all_done: boolean;
+  history: { id: string; cycle: number; kind: string; level: CEFRLevel; outcome: string | null; exam_score: number | null; completed_at: string | null }[];
 }

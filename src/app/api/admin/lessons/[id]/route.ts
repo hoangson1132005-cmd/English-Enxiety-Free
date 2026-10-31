@@ -4,7 +4,7 @@ import { requireAdmin } from '@/lib/adminAuth';
 
 function serializeLessonDetail(lesson: {
   id: string; stageId: string; order: number; title: string; skill: string;
-  durationMinutes: number; xpReward: number; description: string; topic: string; content: string;
+  durationMinutes: number; xpReward: number; description: string; topic: string; content: string; level: string | null; vocabItems: string;
   stage: { title: string };
   questions: { id: string; question: string; skill: string; topic: string; level: string; type: string; options: string | null; answer: string; explanation: string }[];
 }) {
@@ -20,6 +20,8 @@ function serializeLessonDetail(lesson: {
     description: lesson.description,
     topic: lesson.topic,
     content: lesson.content,
+    level: lesson.level,
+    vocab_items: JSON.parse(lesson.vocabItems || '[]'),
     questions: lesson.questions.map((q) => ({
       id: q.id,
       question: q.question,
@@ -62,6 +64,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       ...(body.description !== undefined ? { description: body.description } : {}),
       ...(body.topic !== undefined ? { topic: body.topic } : {}),
       ...(body.content !== undefined ? { content: body.content } : {}),
+      ...(body.level !== undefined ? { level: body.level || null } : {}),
+      ...(body.vocab_items !== undefined ? { vocabItems: JSON.stringify(body.vocab_items) } : {}),
     },
     include: { stage: true, questions: true },
   });

@@ -1,22 +1,21 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Clock, Flag, BookmarkCheck, ArrowRight, ArrowLeft,
   Volume2, Play, Pause, Mic, MicOff, AlertCircle, CheckCircle2,
   Sparkles, Bot, ShieldCheck
 } from 'lucide-react';
-import { mockPlacementTest } from '@/lib/mock/placement';
-import { apiSubmitPlacementTest } from '@/lib/api';
+import { apiSubmitPlacementTest, apiGetPlacementTest } from '@/lib/api';
 import { useUIStore } from '@/store/uiStore';
 import { formatTime, cn } from '@/lib/utils';
-import type { Question, UserAnswer, SkillType } from '@/types';
+import type { Question, UserAnswer, SkillType, PlacementTest } from '@/types';
 
 type TestState = 'intro' | 'testing' | 'analyzing' | 'finished';
 
-export default function PlacementTestPage() {
+function PlacementRunner({ test, testId }: { test: PlacementTest; testId: string | null }) {
   const router = useRouter();
   const { addToast } = useUIStore();
 
@@ -25,7 +24,7 @@ export default function PlacementTestPage() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
   // Time left in seconds (45 mins = 2700s)
-  const [timeLeft, setTimeLeft] = useState(45 * 60);
+  const [timeLeft, setTimeLeft] = useState(test.duration_minutes * 60);
 
   // User answers & flags
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -44,7 +43,7 @@ export default function PlacementTestPage() {
   // Confirm submit modal
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-  const sections = mockPlacementTest.sections;
+  const sections = test.sections;
   const currentSection = sections[currentSectionIndex];
   const currentQuestion = currentSection.questions[currentQuestionIndex];
 
@@ -131,7 +130,8 @@ export default function PlacementTestPage() {
 
       const res = await apiSubmitPlacementTest({
         answers: payloadAnswers,
-        time_spent_seconds: 45 * 60 - timeLeft,
+        time_spent_seconds: test.duration_minutes * 60 - timeLeft,
+        test_id: testId ?? undefined,
       });
 
       router.push(`/placement/result?id=${res.result_id}`);
@@ -167,19 +167,19 @@ export default function PlacementTestPage() {
         <div className="max-w-2xl mx-auto w-full">
           <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 sm:p-10 shadow-soft-lg border border-[var(--color-border)]">
             <div className="text-center mb-6">
-              <span className="text-xs font-bold text-accent uppercase tracking-wider">Đánh giá năng lực chuẩn xác</span>
+              <span className="text-xs font-bold text-accent uppercase tracking-wider">{test.kind === 'level_up' ? 'Kiểm tra tổng kết lộ trình' : 'Đánh giá năng lực chuẩn xác'}</span>
               <h1 className="font-serif font-bold text-2xl sm:text-3xl text-primary-900 dark:text-white mt-1">
-                {mockPlacementTest.title}
+                {test.title}
               </h1>
               <p className="text-xs sm:text-sm text-text-secondary dark:text-gray-400 mt-2">
-                {mockPlacementTest.description}
+                {test.description}
               </p>
             </div>
 
             {/* Test Structure info cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 my-6">
               {[
-                { label: 'Thời lượng', val: '45 Phút', icon: Clock },
+                { label: 'Thời lượng', val: `${test.duration_minutes} Phút`, icon: Clock },
                 { label: 'Tổng số câu', val: `${totalQuestions} Câu hỏi`, icon: BookmarkCheck },
                 { label: 'Khung đánh giá', val: 'A1 – C1 CEFR', icon: Sparkles },
                 { label: 'AI Chấm điểm', val: 'Tức thì', icon: Bot },
@@ -205,7 +205,7 @@ export default function PlacementTestPage() {
                     </span>
                     <span className="font-semibold text-text-primary dark:text-gray-200">{sec.title}</span>
                   </div>
-                  <span className="text-text-muted">{sec.questions.length} câu • {sec.time_limit_minutes} phút</span>
+                  <span className="text-text-muted">{sec.questions.length} câu{sec.time_limit_minutes ? ` • ${sec.time_limit_minutes} phút` : ''}</span>
                 </div>
               ))}
             </div>
@@ -560,5 +560,34 @@ export default function PlacementTestPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function PlacementLoader() {
+  const searchParams = useSearchParams();
+  const testId = searchParams.get('exam');
+  const [test, setTest] = useState<PlacementTest | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    apiGetPlacementTest(testId ?? undefined)
+      .then(setTest)
+      .catch(() => setError('Không tải được đề thi. Vui lòng liên hệ quản trị viên.'));
+  }, [testId]);
+
+  if (error) {
+    return <div className="min-h-screen flex items-center justify-center text-sm text-text-muted px-6 text-center">{error}</div>;
+  }
+  if (!test) {
+    return <div className="min-h-screen flex items-center justify-center text-sm text-text-muted">Đang tải đề thi...</div>;
+  }
+  return <PlacementRunner test={test} testId={testId} />;
+}
+
+export default function PlacementTestPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-sm text-text-muted">Đang tải...</div>}>
+      <PlacementLoader />
+    </Suspense>
   );
 }

@@ -2,8 +2,9 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  Search, UserPlus, Ban, CheckCircle2, Trash2, X, Pencil,
+  Search, UserPlus, Ban, CheckCircle2, Trash2, X, Pencil, Route,
 } from 'lucide-react';
+import Link from 'next/link';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { FACULTY_GROUP_LABELS, MAJORS_BY_FACULTY, JOB_INTEREST_OPTIONS } from '@/types';
 import type { AdminUser, FacultyGroup, CEFRLevel, LogisticsArea } from '@/types';
@@ -204,6 +205,13 @@ export default function AdminUsersPage() {
                     </td>
                     <td className="px-5 py-3">
                       <div className="flex items-center justify-end gap-1.5">
+                        <Link
+                          href={`/admin/users/${u.id}/roadmap`}
+                          title="Xem / chỉnh lộ trình học"
+                          className="p-1.5 rounded-lg text-text-muted hover:text-primary-600 hover:bg-primary-50 transition-colors"
+                        >
+                          <Route className="w-4 h-4" />
+                        </Link>
                         <button
                           onClick={() => setEditingUser(u)}
                           title="Sửa người dùng"

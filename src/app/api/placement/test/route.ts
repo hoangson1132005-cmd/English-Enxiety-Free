@@ -1,23 +1,23 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { resolveTestForUser } from '@/lib/testAccess';
 
-export async function GET() {
+// Trả về đề cho học viên làm (đề đầu vào, hoặc đề tổng kết khi có ?test_id=). Không gửi đáp án xuống trình duyệt.
+export async function GET(req: Request) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const test = await prisma.test.findFirst({
-    where: { isActive: true },
-    include: { sections: { include: { questions: true } } },
-  });
+  const testId = new URL(req.url).searchParams.get('test_id');
+  const test = await resolveTestForUser(session.user.id, testId);
   if (!test) return NextResponse.json({ error: 'Chưa có đề test đang hoạt động' }, { status: 404 });
 
   return NextResponse.json({
     id: test.id,
+    kind: test.kind,
     title: test.title,
     description: test.description,
     duration_minutes: test.durationMinutes,
-    sections: test.sections
+    sections: [...test.sections]
       .sort((a, b) => a.order - b.order)
       .map((s) => ({
         id: s.id,
@@ -33,8 +33,6 @@ export async function GET() {
           type: q.type,
           question: q.question,
           options: q.options ? JSON.parse(q.options) : undefined,
-          answer: JSON.parse(q.answer),
-          explanation: q.explanation,
           audio_url: q.audioUrl ?? undefined,
           passage: q.passage ?? undefined,
         })),

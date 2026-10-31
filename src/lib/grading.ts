@@ -48,3 +48,33 @@ Câu trả lời của học viên: ${studentAnswer}`;
     return { score, feedback: 'Không thể chấm bằng AI lúc này, đã chấm tạm.' };
   }
 }
+
+// Nhận xét "rút kinh nghiệm" sau khi làm bài: tóm tắt lỗi sai và gợi ý cách ôn. Thất bại thì dùng phương án dự phòng.
+export async function buildReviewSummary(
+  lessonTitle: string,
+  mistakes: { question: string; given: string; correct: string; explanation: string }[]
+): Promise<string> {
+  if (!mistakes.length) return 'Bạn trả lời đúng toàn bộ. Hãy tiếp tục với bài kế tiếp!';
+
+  const fallback = `Bạn cần xem lại ${mistakes.length} câu chưa đạt. ${mistakes
+    .slice(0, 3)
+    .map((m) => m.explanation)
+    .filter(Boolean)
+    .join(' ')}`.trim();
+
+  try {
+    const prompt = `Bạn là giáo viên tiếng Anh chuyên ngành logistics. Học viên vừa làm bài "${lessonTitle}" và sai các câu sau. Hãy viết phần "rút kinh nghiệm" bằng tiếng Việt, tối đa 4 câu: chỉ ra điểm kiến thức học viên còn nhầm, và gợi ý 1-2 cách ôn cụ thể. Giọng khích lệ.
+
+${mistakes
+  .map((m, i) => `${i + 1}. Câu hỏi: ${m.question}\n   Học viên trả lời: ${m.given || '(bỏ trống)'}\n   Đáp án đúng/gợi ý: ${m.correct}\n   Giải thích: ${m.explanation}`)
+  .join('\n')}`;
+    const out = await extractStructured<{ summary: string }>(prompt, [], {
+      type: 'object',
+      properties: { summary: { type: 'string' } },
+      required: ['summary'],
+    });
+    return out.summary || fallback;
+  } catch {
+    return fallback;
+  }
+}

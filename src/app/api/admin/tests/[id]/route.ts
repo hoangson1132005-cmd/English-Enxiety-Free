@@ -27,6 +27,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       ...(body.title !== undefined ? { title: body.title } : {}),
       ...(body.description !== undefined ? { description: body.description } : {}),
       ...(body.duration_minutes !== undefined ? { durationMinutes: body.duration_minutes } : {}),
+      ...(body.kind !== undefined ? { kind: body.kind === 'level_up' ? 'level_up' : 'placement' } : {}),
+      ...(body.target_level !== undefined ? { targetLevel: body.kind === 'placement' ? null : body.target_level || null } : {}),
     },
     include: { sections: { include: { questions: true } } },
   });

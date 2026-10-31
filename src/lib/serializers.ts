@@ -30,7 +30,7 @@ export function toProfileDTO(user: PrismaUser): Profile {
 
 interface TestWithSections {
   id: string; title: string; description: string; durationMinutes: number;
-  isActive: boolean; createdAt: Date; createdVia: string; sourceFileName: string | null;
+  isActive: boolean; createdAt: Date; createdVia: string; sourceFileName: string | null; kind: string; targetLevel: string | null;
   sections: {
     id: string; skill: string; title: string; instructions: string; timeLimitMinutes: number | null; order: number;
     questions: { id: string; question: string; skill: string; topic: string; level: string; type: string; options: string | null; answer: string; explanation: string }[];
@@ -46,6 +46,8 @@ export function serializeTest(test: TestWithSections) {
     is_active: test.isActive,
     created_at: test.createdAt.toISOString(),
     created_via: test.createdVia,
+    kind: test.kind,
+    target_level: test.targetLevel ?? undefined,
     source_file_name: test.sourceFileName ?? undefined,
     question_count: test.sections.reduce((sum, s) => sum + s.questions.length, 0),
     sections: test.sections

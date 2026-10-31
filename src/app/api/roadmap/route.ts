@@ -1,76 +1,98 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import type { LessonStatus, StageStatus } from '@/types';
+import { ensureActiveRoadmap, isRoadmapDone } from '@/lib/roadmap';
+import type { RoadmapItemView, RoadmapStageView, SkillType } from '@/types';
 
 export async function GET() {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const userId = session.user.id;
 
-  const [user, stages, progressRows] = await Promise.all([
-    prisma.user.findUniqueOrThrow({ where: { id: session.user.id } }),
-    prisma.stage.findMany({
-      where: { isPublished: true },
-      orderBy: { order: 'asc' },
-      include: { lessons: { orderBy: { order: 'asc' } } },
+  const active = await ensureActiveRoadmap(userId);
+  const [roadmap, user, pastRoadmaps] = await Promise.all([
+    prisma.userRoadmap.findUniqueOrThrow({
+      where: { id: active.id },
+      include: { items: { orderBy: { order: 'asc' }, include: { lesson: { include: { stage: true } } } } },
     }),
-    prisma.userLessonProgress.findMany({ where: { userId: session.user.id } }),
+    prisma.user.findUniqueOrThrow({ where: { id: userId } }),
+    prisma.userRoadmap.findMany({ where: { userId, status: 'completed' }, orderBy: { cycle: 'asc' } }),
   ]);
 
-  const progressByLessonId = new Map(progressRows.map((p) => [p.lessonId, p]));
+  const core = roadmap.items.filter((i) => i.status !== 'suggested' && i.status !== 'dismissed');
+  let nextItemId: string | null = null;
+  let unlocked = true; // bài đầu tiên chưa xong là bài đang mở; các bài sau bị khóa cho đến khi xong bài trước
 
-  let previousCompleted = true; // unlocks the very first lesson of the whole roadmap
-  const stagesOut = stages.map((stage) => {
-    let anyUnlocked = false;
-    let allCompleted = true;
-
-    const lessonsOut = stage.lessons.map((lesson) => {
-      const prog = progressByLessonId.get(lesson.id);
-      const status: LessonStatus = prog ? prog.status : previousCompleted ? 'available' : 'locked';
-      previousCompleted = status === 'completed';
-      if (status !== 'locked') anyUnlocked = true;
-      if (status !== 'completed') allCompleted = false;
-
-      return {
-        id: lesson.id,
-        stage_id: lesson.stageId,
-        order: lesson.order,
-        title: lesson.title,
-        skill: lesson.skill,
-        duration_minutes: lesson.durationMinutes,
-        status,
-        xp_reward: lesson.xpReward,
-        description: lesson.description,
-        topic: lesson.topic,
-      };
-    });
-
-    const stageStatus: StageStatus = allCompleted ? 'completed' : anyUnlocked ? 'in_progress' : 'locked';
-
-    return {
-      id: stage.id,
-      order: stage.order,
-      title: stage.title,
-      description: stage.description,
-      focus_skills: JSON.parse(stage.focusSkills),
-      weeks: JSON.parse(stage.weeks),
-      lessons: lessonsOut,
-      status: stageStatus,
-      has_midterm: stage.hasMidterm,
-      has_final: stage.hasFinal,
-      why_this_stage: stage.whyThisStage ?? undefined,
-    };
+  const toView = (i: (typeof roadmap.items)[number], status: RoadmapItemView['status']): RoadmapItemView => ({
+    item_id: i.id,
+    lesson_id: i.lessonId,
+    title: i.lesson.title,
+    skill: i.lesson.skill as SkillType,
+    duration_minutes: i.lesson.durationMinutes,
+    xp_reward: i.lesson.xpReward,
+    description: i.lesson.description,
+    topic: i.lesson.topic,
+    week: i.week,
+    reason: i.reason,
+    status,
+    best_score: i.bestScore,
+    source: i.source as RoadmapItemView['source'],
   });
 
-  const allWeeks = stages.flatMap((s) => JSON.parse(s.weeks) as number[]);
-  const totalWeeks = allWeeks.length ? Math.max(...allWeeks) : 0;
+  const stages: RoadmapStageView[] = [];
+  for (const i of core) {
+    let status: RoadmapItemView['status'];
+    if (i.status === 'completed') status = 'completed';
+    else if (unlocked) {
+      status = i.status === 'in_progress' ? 'in_progress' : 'available';
+      nextItemId ??= i.id;
+      unlocked = false;
+    } else status = 'locked';
+
+    let group = stages[stages.length - 1];
+    if (!group || group.stage_id !== i.lesson.stageId) {
+      group = { stage_id: i.lesson.stageId, title: i.lesson.stage.title, items: [] };
+      stages.push(group);
+    }
+    group.items.push(toView(i, status));
+  }
+
+  const done = core.filter((i) => i.status === 'completed');
+  const scores = done.map((i) => i.bestScore).filter((s): s is number => s != null);
+  const history = await Promise.all(
+    pastRoadmaps.map(async (r) => {
+      const exam = await prisma.testResult.findFirst({ where: { roadmapId: r.id }, orderBy: { completedAt: 'desc' } });
+      return {
+        id: r.id, cycle: r.cycle, kind: r.kind, level: r.level,
+        outcome: exam?.outcome ?? null, exam_score: exam?.totalScore ?? null,
+        completed_at: r.completedAt?.toISOString() ?? null,
+      };
+    })
+  );
 
   return NextResponse.json({
-    id: 'roadmap_' + user.id,
-    user_id: user.id,
-    cefr_level: user.currentLevel,
-    total_weeks: totalWeeks,
-    created_at: user.createdAt.toISOString(),
-    stages: stagesOut,
+    roadmap: {
+      id: roadmap.id,
+      cycle: roadmap.cycle,
+      level: roadmap.level,
+      kind: roadmap.kind,
+      generated_by: roadmap.generatedBy,
+      rationale: roadmap.rationale,
+      focus_skills: JSON.parse(roadmap.focusSkills),
+      created_at: roadmap.createdAt.toISOString(),
+    },
+    user_level: user.currentLevel,
+    progress: {
+      done: done.length,
+      total: core.length,
+      percent: core.length ? Math.round((done.length / core.length) * 100) : 0,
+      avg_score: scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null,
+      total_minutes: core.reduce((s, i) => s + i.lesson.durationMinutes, 0),
+    },
+    stages,
+    suggestions: roadmap.items.filter((i) => i.status === 'suggested').map((i) => toView(i, 'available')),
+    next_item_id: nextItemId,
+    all_done: isRoadmapDone(roadmap.items),
+    history,
   });
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { PASS_SCORE } from '@/lib/roadmap';
 
 export async function GET(req: Request) {
   const session = await auth();
@@ -32,5 +33,7 @@ export async function GET(req: Request) {
     ai_feedback: result.aiFeedback,
     time_spent_seconds: result.timeSpentSeconds,
     faculty_group: result.facultyGroup,
+    outcome: result.outcome ?? undefined,
+    pass_score: PASS_SCORE,
   });
 }

@@ -28,6 +28,8 @@ function AdminTestDetailContent() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [duration, setDuration] = useState(45);
+  const [kind, setKind] = useState('placement');
+  const [targetLevel, setTargetLevel] = useState('A2');
   const [sections, setSections] = useState<TestSection[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<string | null>(null);
@@ -44,6 +46,8 @@ function AdminTestDetailContent() {
         setTitle(data.title);
         setDescription(data.description);
         setDuration(data.duration_minutes);
+        setKind(data.kind ?? 'placement');
+        setTargetLevel(data.target_level ?? 'A2');
         setSections(data.sections);
       })
       .finally(() => setLoading(false));
@@ -64,7 +68,7 @@ function AdminTestDetailContent() {
     await fetch(`/api/admin/tests/${params.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, description, duration_minutes: duration }),
+      body: JSON.stringify({ title, description, duration_minutes: duration, kind, target_level: targetLevel }),
     });
     setSavedAt(new Date().toLocaleTimeString('vi-VN'));
   };
@@ -142,6 +146,22 @@ function AdminTestDetailContent() {
             <label className="block text-xs font-semibold text-text-primary mb-1.5">Mô tả</label>
             <textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} className="w-full px-4 py-2.5 rounded-xl text-sm bg-background-secondary/50 border border-[var(--color-border)] focus:outline-none focus:border-primary-500 resize-none" />
           </div>
+
+            <div className="">
+              <label className="block text-xs font-semibold text-text-primary mb-1.5">Loại đề</label>
+              <select value={kind} onChange={(e) => setKind(e.target.value)} className="w-full px-4 py-2.5 rounded-xl text-sm bg-background-secondary/50 border border-[var(--color-border)] focus:outline-none">
+                <option value="placement">Đề đầu vào (xếp trình độ)</option>
+                <option value="level_up">Đề tổng kết lộ trình (xét lên level)</option>
+              </select>
+            </div>
+            {kind === 'level_up' && (
+              <div className="">
+                <label className="block text-xs font-semibold text-text-primary mb-1.5">Dành cho học viên đang ở level</label>
+                <select value={targetLevel} onChange={(e) => setTargetLevel(e.target.value)} className="w-full px-4 py-2.5 rounded-xl text-sm bg-background-secondary/50 border border-[var(--color-border)] focus:outline-none">
+                  {['A1', 'A2', 'B1', 'B2', 'C1'].map((l) => <option key={l} value={l}>{l}</option>)}
+                </select>
+              </div>
+            )}
           <div className="flex items-center gap-4">
             <div className="flex-1 max-w-[160px]">
               <label className="block text-xs font-semibold text-text-primary mb-1.5">Thời gian (phút)</label>

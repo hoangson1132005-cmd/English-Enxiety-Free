@@ -12,6 +12,14 @@ import questionsJson from '../src/lib/mock/questions.json';
 
 const prisma = new PrismaClient();
 
+// Level của bài = level xuất hiện nhiều nhất trong các câu hỏi của bài (để AI xếp bài vào lộ trình).
+function dominantLevel(questions: { level: string }[]) {
+  const counts = new Map<string, number>();
+  for (const q of questions) counts.set(q.level, (counts.get(q.level) ?? 0) + 1);
+  const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+  return (top?.[0] ?? null) as never;
+}
+
 async function main() {
   console.log('Seeding database...');
 
@@ -60,6 +68,13 @@ async function main() {
     });
   }
 
+  // Nội dung đã có thì KHÔNG xóa: việc xóa kéo theo mất kết quả test, lộ trình, bộ từ vựng cá nhân của học viên.
+  // Chỉ chạy lại khi cố ý reset dữ liệu mẫu trên môi trường dev: SEED_RESET=1 npm run db:seed
+  if ((await prisma.lesson.count()) > 0 && process.env.SEED_RESET !== '1') {
+    console.log('Đã có nội dung học, bỏ qua seed nội dung (đặt SEED_RESET=1 để reset dữ liệu mẫu).');
+    return;
+  }
+
   // --- Clear previously-seeded content so this script is safely re-runnable
   // (e.g. after pinning explicit ids) without touching User/SiteContent rows.
   await prisma.userVocabProgress.deleteMany();
@@ -105,6 +120,7 @@ async function main() {
           description: lesson.description,
           topic: lesson.topic,
           content: seedContent?.content ?? '',
+          level: dominantLevel(seedContent?.questions ?? []),
         },
       });
 

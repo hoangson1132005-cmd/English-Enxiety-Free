@@ -93,6 +93,35 @@ npm run dev        # http://localhost:3000
 
 ---
 
+## 🧭 Luồng Nội Dung & Lộ Trình Cá Nhân
+
+**Ai thấy gì**
+
+| Thứ | Phạm vi |
+|---|---|
+| Kho nội dung: chặng, bài học, câu hỏi, từ vựng của bài | Dùng chung, do admin quản lý |
+| Lộ trình (danh sách bài, thứ tự, tuần) | **Riêng từng học viên** (`UserRoadmap`) |
+| Tiến độ, điểm, các lần làm bài (`LessonAttempt`) | Riêng từng học viên |
+| Kho từ vựng cá nhân ("Từ vựng từ lộ trình" + bộ tự tạo) | Riêng từng học viên, **giữ nguyên qua mọi lộ trình** |
+
+**Vòng đời một chu kỳ học**
+
+1. Admin upload giáo án (Word/PDF) tại *Nội dung → Import*. AI tách thành chặng, bài, từ vựng, câu hỏi. Nội dung mới ở trạng thái **nháp**; admin xem lại rồi **xuất bản** chặng.
+2. Học viên làm **test đầu vào** → hệ thống xếp trình độ CEFR và AI **chọn + sắp xếp bài từ kho đã xuất bản** thành lộ trình riêng (xét kỹ năng yếu, mục tiêu, số phút học mỗi ngày). AI chỉ chọn bài có sẵn trong kho; nếu AI lỗi thì dùng phương án dự phòng theo giáo trình.
+3. Mỗi bài học có 3 bước: **Học** (nội dung + từ vựng) → **Luyện tập** (từng câu, giao diện theo kỹ năng nghe/đọc/viết/nói) → **Kết quả** (điểm, đáp án đúng, nhận xét rút kinh nghiệm, so sánh với lần trước). Cần **≥ 70 điểm** để qua bài và mở bài kế tiếp; làm lại không giới hạn, XP chỉ tính lần đầu qua bài.
+4. Học xong toàn bộ lộ trình → **bài kiểm tra tổng kết** (đề admin tạo cho từng level, hoặc AI tự tạo từ nội dung đã học; nếu AI lỗi thì lấy mẫu lại câu hỏi trong bài). Đạt ≥ 70: lên level + lộ trình mới. Chưa đạt: lộ trình **cải thiện** tập trung phần yếu, học xong được thi lại.
+
+**Admin điều chỉnh**
+
+- *Người dùng → biểu tượng lộ trình*: xem lộ trình của từng học viên, thêm/bớt/đổi thứ tự bài, hoặc để AI tạo lại (giữ các bài đã xong).
+- Xuất bản chặng mới **không tự chèn** vào lộ trình học viên đang học: hệ thống gửi **đề xuất**, học viên tự thêm hoặc bỏ qua.
+- *Đề test*: chọn loại đề (đầu vào / tổng kết theo level). Mỗi loại, mỗi level có một đề đang kích hoạt.
+- Cần gán level cho bài học cũ: `npx tsx scripts/backfill-lesson-levels.ts`.
+
+> `npm run db:seed` chỉ nạp dữ liệu mẫu khi database chưa có nội dung. Để reset dữ liệu mẫu ở môi trường dev (xóa lộ trình, kết quả, từ vựng cá nhân): `SEED_RESET=1 npm run db:seed`. **Không dùng trên production.**
+
+---
+
 ## 📦 Triển Khai (Production)
 
 ```bash

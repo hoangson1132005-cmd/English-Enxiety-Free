@@ -16,6 +16,8 @@ const QUESTION_TYPES: QuestionType[] = ['multiple_choice', 'fill_blank', 'true_f
 interface LessonFull {
   id: string; stage_id: string; stage_title: string; order: number; title: string; skill: SkillType;
   duration_minutes: number; xp_reward: number; description: string; topic: string; content: string;
+  level: CEFRLevel | null;
+  vocab_items: { term: string; definition: string; definition_vi?: string; example?: string }[];
   questions: QuestionBankItem[];
 }
 
@@ -39,11 +41,18 @@ function AdminLessonDetailContent() {
     question: '', answer: '', explanation: '',
   });
 
+  const [vocabText, setVocabText] = useState('');
+
   const fetchLesson = () => {
     fetch(`/api/admin/lessons/${params.id}`)
       .then((r) => r.json())
       .then((data: LessonFull) => {
         setLesson(data);
+        setVocabText(
+          (data.vocab_items ?? [])
+            .map((v) => [v.term, v.definition_vi ?? '', v.definition ?? '', v.example ?? ''].join(' | '))
+            .join('\n')
+        );
         setNewQ((prev) => ({ ...prev, skill: data.skill, topic: data.topic }));
       })
       .finally(() => setLoading(false));
@@ -70,6 +79,12 @@ function AdminLessonDetailContent() {
         description: lesson.description,
         topic: lesson.topic,
         content: lesson.content,
+        level: lesson.level ?? '',
+        vocab_items: vocabText
+          .split('\n')
+          .map((l) => l.split('|').map((x) => x.trim()))
+          .filter((p) => p[0])
+          .map((p) => ({ term: p[0], definition_vi: p[1] || '', definition: p[2] || p[1] || '', example: p[3] || undefined })),
       }),
     });
     setSavedAt(new Date().toLocaleTimeString('vi-VN'));
@@ -137,6 +152,13 @@ function AdminLessonDetailContent() {
               </div>
             </div>
             <div>
+              <label className="block text-xs font-semibold text-text-primary mb-1.5">Trình độ phù hợp (dùng để AI xếp bài vào lộ trình)</label>
+              <select value={lesson.level ?? ''} onChange={(e) => setLesson({ ...lesson, level: (e.target.value || null) as CEFRLevel | null })} className="w-full px-4 py-2.5 rounded-xl text-sm bg-background-secondary/50 border border-[var(--color-border)] focus:outline-none">
+                <option value="">Chưa xác định</option>
+                {LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
+              </select>
+            </div>
+            <div>
               <label className="block text-xs font-semibold text-text-primary mb-1.5">Chủ đề</label>
               <input value={lesson.topic} onChange={(e) => setLesson({ ...lesson, topic: e.target.value })} className="w-full px-4 py-2.5 rounded-xl text-sm bg-background-secondary/50 border border-[var(--color-border)] focus:outline-none" />
             </div>
@@ -155,6 +177,19 @@ function AdminLessonDetailContent() {
               value={lesson.content}
               onChange={(e) => setLesson({ ...lesson, content: e.target.value })}
               placeholder="Viết nội dung bài giảng ở đây: từ vựng, ngữ pháp, ví dụ thực tế, hội thoại mẫu..."
+              className="w-full p-4 rounded-2xl text-xs sm:text-sm bg-background-secondary/30 border border-[var(--color-border)] focus:border-primary-500 focus:outline-none resize-y leading-relaxed font-mono"
+            />
+          </div>
+
+          {/* VOCAB */}
+          <div className="p-6 rounded-3xl bg-white border border-[var(--color-border)] shadow-soft space-y-3">
+            <h3 className="font-display font-bold text-base text-text-primary">Từ Vựng Trong Bài</h3>
+            <p className="text-xs text-text-muted">Mỗi dòng một từ, dạng: <code>từ | nghĩa tiếng Việt | nghĩa tiếng Anh | ví dụ</code>. Học viên sẽ thấy các từ này trong bài và tự lưu vào kho từ của mình.</p>
+            <textarea
+              rows={8}
+              value={vocabText}
+              onChange={(e) => setVocabText(e.target.value)}
+              placeholder="demurrage | phí lưu container quá hạn | charge for keeping a container beyond free time | The carrier charged us demurrage."
               className="w-full p-4 rounded-2xl text-xs sm:text-sm bg-background-secondary/30 border border-[var(--color-border)] focus:border-primary-500 focus:outline-none resize-y leading-relaxed font-mono"
             />
           </div>

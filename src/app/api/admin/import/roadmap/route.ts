@@ -30,7 +30,23 @@ const SCHEMA = {
                 xp_reward: { type: 'integer' },
                 description: { type: 'string' },
                 topic: { type: 'string' },
+                level: { type: 'string', enum: ['A1', 'A2', 'B1', 'B2', 'C1'], description: 'Trình độ CEFR phù hợp của bài học' },
                 content: { type: 'string', description: 'Nội dung giảng dạy chi tiết, dạng markdown: giải thích từ vựng/ngữ pháp/ví dụ thực tế' },
+                vocabulary: {
+                  type: 'array',
+                  description: 'Các từ/cụm từ quan trọng xuất hiện trong bài (5-12 từ)',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      term: { type: 'string' },
+                      pronunciation: { type: 'string' },
+                      definition: { type: 'string', description: 'Nghĩa tiếng Anh ngắn gọn' },
+                      definition_vi: { type: 'string', description: 'Nghĩa tiếng Việt' },
+                      example: { type: 'string' },
+                    },
+                    required: ['term', 'definition', 'definition_vi'],
+                  },
+                },
                 questions: {
                   type: 'array',
                   description: '3-6 câu hỏi ôn tập cuối bài để kiểm tra lại kiến thức vừa học',
@@ -49,7 +65,7 @@ const SCHEMA = {
                   },
                 },
               },
-              required: ['title', 'skill', 'description', 'topic', 'content', 'questions'],
+              required: ['title', 'skill', 'level', 'description', 'topic', 'content', 'vocabulary', 'questions'],
             },
           },
         },
@@ -62,7 +78,8 @@ const SCHEMA = {
 
 interface ImportedLesson {
   title: string; skill: string; duration_minutes?: number; xp_reward?: number;
-  description: string; topic: string; content: string;
+  description: string; topic: string; content: string; level?: string;
+  vocabulary?: { term: string; pronunciation?: string; definition: string; definition_vi?: string; example?: string }[];
   questions: { question: string; type: string; level: string; topic: string; options?: string[]; answer: string; explanation: string }[];
 }
 interface ImportedStage {
@@ -72,7 +89,7 @@ interface ImportedStage {
 }
 interface ImportedRoadmap { stages: ImportedStage[] }
 
-const PROMPT = `Bạn nhận được một giáo án/lộ trình giảng dạy tiếng Anh chuyên ngành logistics (file Word hoặc PDF). Hãy đọc và cấu trúc hoá thành lộ trình học đúng JSON schema đã cho: stages (các chặng học theo thứ tự thời gian), mỗi stage có title, description, weeks (các tuần học, ví dụ [1,2,3]), focus_skills, has_midterm/has_final nếu giáo án có nhắc tới kiểm tra giữa/cuối chặng, why_this_stage (vì sao chặng này phù hợp, 1-2 câu), và lessons. Mỗi lesson PHẢI có: title, skill, description (mô tả ngắn), topic, content (nội dung giảng dạy ĐẦY ĐỦ dạng markdown — giải thích từ vựng/ngữ pháp/tình huống thực tế, viết chi tiết như một bài giảng thật, không chỉ tóm tắt 1 câu), và questions (3-6 câu hỏi trắc nghiệm/tự luận để ôn lại kiến thức vừa học — bài test cuối bài). Nếu tài liệu không chia rõ chặng/tuần, hãy tự chia hợp lý theo nội dung. Chỉ trả JSON, không thêm chữ nào khác.`;
+const PROMPT = `Bạn nhận được một giáo án/lộ trình giảng dạy tiếng Anh chuyên ngành logistics (file Word hoặc PDF). Hãy đọc và cấu trúc hoá thành lộ trình học đúng JSON schema đã cho: stages (các chặng học theo thứ tự thời gian), mỗi stage có title, description, weeks (các tuần học, ví dụ [1,2,3]), focus_skills, has_midterm/has_final nếu giáo án có nhắc tới kiểm tra giữa/cuối chặng, why_this_stage (vì sao chặng này phù hợp, 1-2 câu), và lessons. Mỗi lesson PHẢI có: title, skill, level (A1-C1 phù hợp bài), description (mô tả ngắn), topic, vocabulary (5-12 từ khóa của bài kèm nghĩa Việt/Anh và ví dụ), content (nội dung giảng dạy ĐẦY ĐỦ dạng markdown — giải thích từ vựng/ngữ pháp/tình huống thực tế, viết chi tiết như một bài giảng thật, không chỉ tóm tắt 1 câu), và questions (3-6 câu hỏi trắc nghiệm/tự luận để ôn lại kiến thức vừa học — bài test cuối bài). Nếu tài liệu không chia rõ chặng/tuần, hãy tự chia hợp lý theo nội dung. Chỉ trả JSON, không thêm chữ nào khác.`;
 
 export async function POST(req: Request) {
   const session = await requireAdmin();
@@ -131,6 +148,8 @@ export async function POST(req: Request) {
           description: lesson.description || '',
           topic: lesson.topic || 'general',
           content: lesson.content || '',
+          level: (['A1', 'A2', 'B1', 'B2', 'C1'].includes(lesson.level ?? '') ? lesson.level : null) as never,
+          vocabItems: JSON.stringify(lesson.vocabulary ?? []),
           questions: {
             create: (lesson.questions ?? []).map((q) => ({
               question: q.question,

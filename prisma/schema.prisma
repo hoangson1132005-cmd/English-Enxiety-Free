@@ -90,6 +90,8 @@ model User {
   dailyProgress         DailyProgress[]
   ownedVocabSets        VocabSet[]
   passwordResetTokens   PasswordResetToken[]
+  roadmaps              UserRoadmap[]
+  lessonAttempts        LessonAttempt[]
 }
 
 model PasswordResetToken {
@@ -113,6 +115,9 @@ model Test {
   createdAt        DateTime      @default(now())
   createdVia       String        @default("manual") // 'manual' | 'ai_import'
   sourceFileName   String?
+  kind             String        @default("placement") // 'placement' | 'level_up'
+  targetLevel      CEFRLevel?    // với level_up: dành cho học viên đang ở level này
+  roadmapId        String?       // với level_up do AI tạo: gắn với lộ trình cụ thể
   sections         TestSection[]
   results          TestResult[]
 }
@@ -174,8 +179,12 @@ model Lesson {
   description      String
   topic            String
   content          String   @default("") // nội dung giảng dạy (markdown) trước phần luyện tập
+  level            CEFRLevel?
+  vocabItems       String   @default("[]") // JSON [{term, pronunciation, definition, definition_vi, example, example_vi}]
   questions        Question[]
   progress         UserLessonProgress[]
+  roadmapItems     UserRoadmapItem[]
+  attempts         LessonAttempt[]
 }
 
 model UserLessonProgress {
@@ -251,6 +260,8 @@ model TestResult {
   aiFeedback         String
   timeSpentSeconds   Int
   facultyGroup       FacultyGroup
+  outcome            String?      // level_up test: 'level_up' | 'improve'
+  roadmapId          String?
 }
 
 model ChatMessage {
@@ -290,4 +301,62 @@ model SiteContent {
   logoImageBase64     String?
   logoMimeType        String?
   updatedAt           DateTime @updatedAt
+}
+
+// Lộ trình học riêng của từng học viên. Mỗi lần "học xong - thi - lên level/cải thiện" là một chu kỳ (cycle).
+model UserRoadmap {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cycle          Int      @default(1)
+  level          CEFRLevel // trình độ lúc bắt đầu chu kỳ
+  kind           String   @default("initial") // 'initial' | 'level_up' | 'improve'
+  status         String   @default("active") // 'active' | 'completed'
+  generatedBy    String   @default("ai") // 'ai' | 'heuristic' | 'admin'
+  rationale      String   @default("")
+  focusSkills    String   @default("[]") // JSON SkillType[]
+  createdAt      DateTime @default(now())
+  completedAt    DateTime?
+  items          UserRoadmapItem[]
+
+  @@index([userId, status])
+}
+
+model UserRoadmapItem {
+  id           String   @id @default(cuid())
+  roadmapId    String
+  roadmap      UserRoadmap @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  lessonId     String
+  lesson       Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  order        Int
+  week         Int      @default(1)
+  reason       String   @default("")
+  source       String   @default("ai") // 'ai' | 'admin' | 'suggested'
+  status       String   @default("pending") // 'pending' | 'in_progress' | 'completed' | 'suggested' | 'dismissed'
+  bestScore    Int?
+  completedAt  DateTime?
+  attempts     LessonAttempt[]
+
+  @@unique([roadmapId, lessonId])
+  @@index([roadmapId, order])
+}
+
+// Mỗi lần làm bài học: lưu đáp án + kết quả chi tiết để học viên xem lại, sửa sai và so sánh tiến bộ.
+model LessonAttempt {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId          String
+  lesson            Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  itemId            String?
+  item              UserRoadmapItem? @relation(fields: [itemId], references: [id], onDelete: SetNull)
+  score             Int
+  passed            Boolean
+  answers           String   // JSON {questionId: answer}
+  results           String   // JSON [{question_id, score, feedback, correct_answer}]
+  reviewSummary     String   @default("")
+  timeSpentSeconds  Int      @default(0)
+  createdAt         DateTime @default(now())
+
+  @@index([userId, lessonId])
 }

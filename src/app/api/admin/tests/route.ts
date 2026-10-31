@@ -29,6 +29,8 @@ export async function POST(req: Request) {
       durationMinutes: body.duration_minutes ?? 45,
       isActive: false,
       createdVia: 'manual',
+      kind: body.kind === 'level_up' ? 'level_up' : 'placement',
+      targetLevel: body.kind === 'level_up' ? (body.target_level ?? 'A2') : null,
     },
     include: { sections: { include: { questions: true } } },
   });

@@ -69,15 +69,36 @@ function PlacementResultContent() {
         <div className="text-center">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-success-light text-success font-semibold text-xs mb-3">
             <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Đã hoàn thành đánh giá đầu vào</span>
+            <span>{result.outcome ? 'Đã hoàn thành bài kiểm tra tổng kết' : 'Đã hoàn thành đánh giá đầu vào'}</span>
           </div>
           <h1 className="font-serif font-bold text-3xl sm:text-4xl text-primary-900 dark:text-white">
-            Báo Cáo Năng Lực Tiếng Anh Logistics
+            {result.outcome ? 'Kết Quả Kiểm Tra Tổng Kết' : 'Báo Cáo Năng Lực Tiếng Anh Logistics'}
           </h1>
           <p className="text-xs sm:text-sm text-text-secondary dark:text-gray-400 mt-2">
             Được phân tích bởi AI Tutor dựa trên Khung tham chiếu Châu Âu (CEFR)
           </p>
         </div>
+
+        {result.outcome && (
+          <div
+            className={`p-5 rounded-3xl border text-center ${
+              result.outcome === 'level_up'
+                ? 'bg-success-light/50 border-success/40'
+                : 'bg-warning-light/50 border-warning/40'
+            }`}
+          >
+            <h2 className="font-serif font-bold text-lg text-primary-900">
+              {result.outcome === 'level_up'
+                ? `Chúc mừng! Bạn đã đạt ${result.total_score}/100 và lên trình độ ${result.cefr_level}`
+                : `Bạn đạt ${result.total_score}/100, cần ${result.pass_score ?? 70} điểm để lên level`}
+            </h2>
+            <p className="text-xs text-text-secondary mt-1.5">
+              {result.outcome === 'level_up'
+                ? 'Một lộ trình mới cho trình độ này đã sẵn sàng. Từ vựng bạn đã lưu vẫn được giữ nguyên.'
+                : 'Đừng lo, hệ thống đã tạo lộ trình cải thiện tập trung vào phần bạn còn yếu. Học xong bạn sẽ được thi lại.'}
+            </p>
+          </div>
+        )}
 
         {/* 3 Thang Điểm Quy Đổi Cạnh Nhau */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -91,7 +112,7 @@ function PlacementResultContent() {
               {result.cefr_level}
             </div>
             <p className="text-xs font-medium text-text-secondary dark:text-gray-300">
-              Intermediate (Trung cấp)
+              {{ A1: 'Beginner (Sơ cấp)', A2: 'Elementary (Cơ bản)', B1: 'Intermediate (Trung cấp)', B2: 'Upper-Intermediate (Trung cao cấp)', C1: 'Advanced (Cao cấp)' }[result.cefr_level]}
             </p>
           </div>
 

@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 interface TestSummary {
   id: string; title: string; description: string; duration_minutes: number;
   is_active: boolean; created_at: string; created_via: string; question_count: number;
+  kind: 'placement' | 'level_up'; target_level?: string;
 }
 
 export default function AdminTestsListPage() {
@@ -20,6 +21,8 @@ export default function AdminTestsListPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [newTitle, setNewTitle] = useState('');
+  const [newKind, setNewKind] = useState('placement');
+  const [newLevel, setNewLevel] = useState('A2');
 
   const fetchTests = () => {
     fetch('/api/admin/tests').then((r) => r.json()).then((data) => { setTests(data); setLoading(false); });
@@ -38,7 +41,7 @@ export default function AdminTestsListPage() {
     const res = await fetch('/api/admin/tests', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: newTitle }),
+      body: JSON.stringify({ title: newTitle, kind: newKind, target_level: newLevel }),
     });
     if (res.ok) {
       const created = await res.json();
@@ -91,6 +94,9 @@ export default function AdminTestsListPage() {
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-text-primary truncate">{t.title}</span>
+                    <span className="text-[10px] font-bold bg-primary-50 text-primary-700 px-2 py-0.5 rounded-full flex-shrink-0">
+                      {t.kind === 'level_up' ? `Tổng kết ${t.target_level ?? ''}` : 'Đầu vào'}
+                    </span>
                     {t.is_active && (
                       <span className="text-[10px] font-bold bg-success-light text-success px-2 py-0.5 rounded-full flex-shrink-0">Đang dùng</span>
                     )}
@@ -146,6 +152,22 @@ export default function AdminTestsListPage() {
                   className="w-full px-4 py-2.5 rounded-xl text-sm bg-background-secondary/50 border border-[var(--color-border)] focus:outline-none focus:border-primary-500"
                 />
               </div>
+
+            <div className="">
+              <label className="block text-xs font-semibold text-text-primary mb-1.5">Loại đề</label>
+              <select value={newKind} onChange={(e) => setNewKind(e.target.value)} className="w-full px-4 py-2.5 rounded-xl text-sm bg-background-secondary/50 border border-[var(--color-border)] focus:outline-none">
+                <option value="placement">Đề đầu vào (xếp trình độ)</option>
+                <option value="level_up">Đề tổng kết lộ trình (xét lên level)</option>
+              </select>
+            </div>
+            {newKind === 'level_up' && (
+              <div className="">
+                <label className="block text-xs font-semibold text-text-primary mb-1.5">Dành cho học viên đang ở level</label>
+                <select value={newLevel} onChange={(e) => setNewLevel(e.target.value)} className="w-full px-4 py-2.5 rounded-xl text-sm bg-background-secondary/50 border border-[var(--color-border)] focus:outline-none">
+                  {['A1', 'A2', 'B1', 'B2', 'C1'].map((l) => <option key={l} value={l}>{l}</option>)}
+                </select>
+              </div>
+            )}
               <div className="flex gap-2 pt-2">
                 <button type="button" onClick={() => setShowCreate(false)} className="flex-1 px-4 py-2.5 rounded-xl border border-[var(--color-border)] text-text-secondary text-sm font-medium">
                   Hủy

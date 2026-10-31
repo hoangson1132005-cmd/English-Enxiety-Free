@@ -1,4 +1,4 @@
-import type { Profile, PlacementTest, TestResult, Roadmap, VocabSet, VocabCard, ChatMessage, WeeklyStats, SkillProgress, QuestionBankItem, LessonDetail } from '@/types';
+import type { Profile, PlacementTest, TestResult, RoadmapView, VocabSet, VocabCard, ChatMessage, WeeklyStats, SkillProgress, QuestionBankItem, LessonDetail, LessonSubmitResult } from '@/types';
 import questionsJson from '../mock/questions.json';
 
 // Simulated network delay
@@ -94,8 +94,8 @@ export async function apiCompleteOnboarding(_userId: string, data: {
 // Placement Test API
 // ============================================================
 
-export async function apiGetPlacementTest(): Promise<PlacementTest> {
-  const res = await fetch('/api/placement/test');
+export async function apiGetPlacementTest(testId?: string): Promise<PlacementTest> {
+  const res = await fetch(`/api/placement/test${testId ? `?test_id=${testId}` : ''}`);
   if (!res.ok) throw new Error('Không lấy được đề test');
   return res.json();
 }
@@ -103,6 +103,7 @@ export async function apiGetPlacementTest(): Promise<PlacementTest> {
 export async function apiSubmitPlacementTest(payload: {
   answers: { question_id: string; answer: string | string[]; time_spent_seconds: number }[];
   time_spent_seconds: number;
+  test_id?: string;
 }): Promise<{ result_id: string }> {
   const res = await fetch('/api/placement/submit', {
     method: 'POST',
@@ -123,10 +124,26 @@ export async function apiGetTestResult(resultId?: string): Promise<TestResult> {
 // Roadmap API
 // ============================================================
 
-export async function apiGetRoadmap(): Promise<Roadmap> {
+export async function apiGetRoadmap(): Promise<RoadmapView> {
   const res = await fetch('/api/roadmap');
   if (!res.ok) throw new Error('Không lấy được lộ trình học');
   return res.json();
+}
+
+export async function apiRespondSuggestion(itemId: string, action: 'accept' | 'dismiss'): Promise<void> {
+  const res = await fetch('/api/roadmap/suggestions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ item_id: itemId, action }),
+  });
+  if (!res.ok) throw new Error('Không cập nhật được đề xuất');
+}
+
+export async function apiStartExam(): Promise<{ test_id: string }> {
+  const res = await fetch('/api/exam/start', { method: 'POST' });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Không mở được bài kiểm tra');
+  return data;
 }
 
 // ============================================================
@@ -135,7 +152,7 @@ export async function apiGetRoadmap(): Promise<Roadmap> {
 
 export async function apiGetLesson(lessonId: string): Promise<LessonDetail> {
   const res = await fetch(`/api/lessons/${lessonId}`);
-  if (!res.ok) throw new Error('Không tìm thấy bài học');
+  if (!res.ok) throw new Error((await res.json().catch(() => null))?.error || 'Không tìm thấy bài học');
   return res.json();
 }
 
@@ -143,16 +160,23 @@ export async function apiSubmitLesson(payload: {
   lesson_id: string;
   answers: { question_id: string; answer: string | string[] }[];
   time_spent_seconds: number;
-}): Promise<{
-  xp_earned: number; new_total_xp: number; new_streak: number; score: number;
-  results: { question_id: string; score: number; feedback: string }[];
-}> {
+}): Promise<LessonSubmitResult> {
   const res = await fetch('/api/lessons/submit', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error('Nộp bài thất bại');
+  return res.json();
+}
+
+export async function apiSaveLessonWords(lessonId: string, terms?: string[]): Promise<{ added: number; total: number }> {
+  const res = await fetch('/api/vocab/save-words', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ lesson_id: lessonId, terms }),
+  });
+  if (!res.ok) throw new Error('Không lưu được từ vựng');
   return res.json();
 }
 
