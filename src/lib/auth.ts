@@ -1,4 +1,4 @@
-import NextAuth, { type DefaultSession } from 'next-auth';
+import NextAuth, { CredentialsSignin, type DefaultSession } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
@@ -16,6 +16,11 @@ declare module 'next-auth' {
   }
 }
 
+// Báo riêng cho giao diện biết tài khoản đang bị tạm khóa vì nhập sai nhiều lần
+class TooManyAttempts extends CredentialsSignin {
+  code = 'too_many_attempts';
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: 'jwt' },
   pages: { signIn: '/login' },
@@ -31,7 +36,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!email || !password) return null;
 
         const ip = request?.headers?.get('x-forwarded-for')?.split(',')[0]?.trim() || 'local';
-        if (isThrottled(email, ip)) return null; // quá nhiều lần sai: tạm khóa 15 phút
+        if (isThrottled(email, ip)) throw new TooManyAttempts(); // quá nhiều lần sai: tạm khóa 15 phút
 
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user || user.status === 'disabled') {

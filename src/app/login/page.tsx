@@ -48,7 +48,10 @@ export default function LoginPage() {
       if (res?.error) {
         addToast({
           title: 'Đăng nhập thất bại',
-          description: 'Vui lòng kiểm tra lại email hoặc mật khẩu.',
+          description:
+            res.code === 'too_many_attempts'
+              ? 'Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau 15 phút.'
+              : 'Vui lòng kiểm tra lại email hoặc mật khẩu.',
           variant: 'error',
         });
         return;
