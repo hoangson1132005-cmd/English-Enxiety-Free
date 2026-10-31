@@ -1,6 +1,6 @@
 import type { Question } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
-import { assembleQuestions, tokenize, type AssembleOptions } from '@/lib/questionBank';
+import { assembleQuestions, drawQuestions, generateIntoBank, tokenize, type AssembleOptions } from '@/lib/questionBank';
 import { getQuizSettings } from '@/lib/quizSettings';
 import type { CEFRLevel, SkillType } from '@/types';
 
@@ -59,6 +59,75 @@ export async function loadSessionQuestions(session: { questionIds: string }) {
   return ids.map((id) => byId.get(id)).filter((q): q is Question => !!q);
 }
 
+
+type LessonRow = Awaited<ReturnType<typeof prisma.lesson.findUniqueOrThrow>>;
+
+// Quy tắc bốc câu cuối bài, dùng chung cho bài kiểm tra thật và bản xem trước của admin.
+function lessonQuizOptions(
+  lesson: LessonRow,
+  settings: Awaited<ReturnType<typeof getQuizSettings>>,
+  userId: string,
+  level: CEFRLevel,
+  field: string
+) {
+  const freeTextLesson = lesson.skill === 'writing' || lesson.skill === 'speaking';
+  let vocab = '';
+  try {
+    vocab = (JSON.parse(lesson.vocabItems) as { term: string }[]).map((v) => v.term).join(', ');
+  } catch {
+    // bỏ qua
+  }
+  return {
+    userId,
+    // Số câu: cấu hình riêng của bài (nếu có) > cài đặt chung
+    count: lesson.quizSize ?? (freeTextLesson ? settings.lessonSizeFreeText : settings.lessonSize),
+    includeBank: lesson.quizMode !== 'own_only',
+    pinLessonQuestions: lesson.quizMode === 'own_first' || lesson.quizMode === 'own_only',
+    level,
+    lessonIds: [lesson.id],
+    topics: [lesson.topic],
+    keywords: tokenize(lesson.title, lesson.topic, lesson.description, vocab),
+    focusSkills: [lesson.skill as SkillType],
+    maxFreeText: freeTextLesson ? 2 : 1,
+    field,
+    topic: lesson.topic,
+    scope: `Bài học "${lesson.title}" (${lesson.description}). Từ khóa: ${vocab || lesson.topic}. Nội dung: ${lesson.content.slice(0, 1200)}`,
+    useAiSelection: false, // câu cuối bài cần nhanh: chỉ lọc theo điểm, AI chỉ bù khi thiếu
+  } satisfies AssembleOptions;
+}
+
+// Admin xem trước bộ câu một học viên (mới, chưa gặp câu nào) sẽ nhận cho bài này. Không gọi AI, không tạo phiên làm bài.
+export async function previewLessonQuiz(lessonId: string, level?: CEFRLevel) {
+  const lesson = await prisma.lesson.findUniqueOrThrow({ where: { id: lessonId } });
+  const settings = await getQuizSettings();
+  const opts = lessonQuizOptions(lesson, settings, 'preview', level ?? (lesson.level as CEFRLevel | null) ?? 'A2', 'tiếng Anh tổng quát');
+  const drawn = await drawQuestions(opts);
+  const relevant = drawn.picked.filter((q) => drawn.relevantIds.has(q.id)).length;
+  const aiNeeded =
+    opts.includeBank === false
+      ? 0
+      : drawn.shortage > 0
+        ? drawn.shortage
+        : Math.max(0, Math.ceil(opts.count * 0.6) - relevant);
+  return { lesson, count: opts.count, level: opts.level, picked: drawn.picked, relevantIds: drawn.relevantIds, ai_needed: aiNeeded, mode: lesson.quizMode };
+}
+
+// Admin tạo sẵn câu hỏi bằng AI cho bài (lưu vào ngân hàng, nguồn "AI tạo") để xem lại trước khi học viên vào học.
+export async function generateQuestionsForLesson(lessonId: string, count?: number) {
+  const preview = await previewLessonQuiz(lessonId);
+  const lesson = preview.lesson;
+  const n = Math.min(15, Math.max(1, count ?? (preview.ai_needed || 4)));
+  const opts = lessonQuizOptions(lesson, await getQuizSettings(), 'preview', preview.level, 'tiếng Anh tổng quát');
+  return generateIntoBank({
+    count: n,
+    level: preview.level,
+    field: opts.field,
+    scope: opts.scope,
+    skills: [lesson.skill as SkillType, 'vocabulary'],
+    topic: lesson.topic,
+  });
+}
+
 // Bài kiểm tra cuối bài: 5-10 câu bốc từ ngân hàng (+ câu gắn với bài), thiếu thì AI bổ sung.
 // Dùng lại phiên đang mở để tải lại trang không đổi câu hỏi; làm lại sau khi nộp sẽ nhận bộ câu mới.
 export async function getOrCreateLessonSession(userId: string, lessonId: string) {
@@ -76,32 +145,9 @@ export async function getOrCreateLessonSession(userId: string, lessonId: string)
     prisma.lesson.findUniqueOrThrow({ where: { id: lessonId } }),
   ]);
   const settings = await getQuizSettings();
-  const freeTextLesson = lesson.skill === 'writing' || lesson.skill === 'speaking';
-  const level = ((lesson.level as CEFRLevel | null) ?? (user.currentLevel as CEFRLevel));
-  let vocab = '';
-  try {
-    vocab = (JSON.parse(lesson.vocabItems) as { term: string }[]).map((v) => v.term).join(', ');
-  } catch {
-    // bỏ qua
-  }
-
-  const questions = await assembleQuestions({
-    userId,
-    // Số câu: cấu hình riêng của bài (nếu có) > cài đặt chung
-    count: lesson.quizSize ?? (freeTextLesson ? settings.lessonSizeFreeText : settings.lessonSize),
-    includeBank: lesson.quizMode !== 'own_only',
-    pinLessonQuestions: lesson.quizMode === 'own_first' || lesson.quizMode === 'own_only',
-    level,
-    lessonIds: [lessonId],
-    topics: [lesson.topic],
-    keywords: tokenize(lesson.title, lesson.topic, lesson.description, vocab),
-    focusSkills: [lesson.skill as SkillType],
-    maxFreeText: freeTextLesson ? 2 : 1,
-    field: learnerField(user),
-    topic: lesson.topic,
-    scope: `Bài học "${lesson.title}" (${lesson.description}). Từ khóa: ${vocab || lesson.topic}. Nội dung: ${lesson.content.slice(0, 1200)}`,
-    useAiSelection: false, // câu cuối bài cần nhanh: chỉ lọc theo điểm, AI chỉ bù khi thiếu
-  } satisfies AssembleOptions);
+  const questions = await assembleQuestions(
+    lessonQuizOptions(lesson, settings, userId, (lesson.level as CEFRLevel | null) ?? (user.currentLevel as CEFRLevel), learnerField(user))
+  );
 
   const session = await createSession(userId, 'lesson', { lessonId }, questions);
   return { session, questions };

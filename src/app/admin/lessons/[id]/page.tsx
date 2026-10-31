@@ -38,6 +38,40 @@ function AdminLessonDetailContent() {
   const [qEditor, setQEditor] = useState<{ q: QuestionBankItem | null } | null>(null);
 
   const [vocabText, setVocabText] = useState('');
+  const [preview, setPreview] = useState<{
+    count: number; level: string; mode: string; ai_needed: number; own_count: number; bank_count: number;
+    questions: { order: number; id: string; question: string; skill: string; level: string; topic: string; origin: string; relevant: boolean; in_bank: boolean }[];
+  } | null>(null);
+  const [previewLevel, setPreviewLevel] = useState('');
+  const [busy, setBusy] = useState<'preview' | 'generate' | null>(null);
+  const [aiMessage, setAiMessage] = useState<string | null>(null);
+
+  const loadPreview = async (level = previewLevel) => {
+    if (!lesson) return;
+    setBusy('preview');
+    const res = await fetch(`/api/admin/lessons/${lesson.id}/preview-quiz${level ? `?level=${level}` : ''}`);
+    if (res.ok) setPreview(await res.json());
+    setBusy(null);
+  };
+
+  const generateQuestions = async () => {
+    if (!lesson) return;
+    setBusy('generate');
+    setAiMessage(null);
+    const res = await fetch(`/api/admin/lessons/${lesson.id}/generate-questions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}',
+    });
+    const data = await res.json();
+    setBusy(null);
+    if (res.ok) {
+      setAiMessage(`AI đã tạo ${data.created.length} câu và lưu vào Ngân hàng câu hỏi (nguồn “AI tạo”). Hãy xem lại ở mục Ngân hàng, câu chưa ổn có thể sửa hoặc tạm ẩn.`);
+      loadPreview();
+    } else {
+      setAiMessage(data.error || 'Không tạo được câu hỏi');
+    }
+  };
 
   const fetchLesson = () => {
     fetch(`/api/admin/lessons/${params.id}`)
@@ -247,8 +281,8 @@ function AdminLessonDetailContent() {
         <div className="p-6 rounded-3xl bg-white border border-[var(--color-border)] shadow-soft space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-display font-bold text-base text-text-primary">Câu Hỏi Ôn Cuối Bài</h3>
-              <p className="text-xs text-text-muted">Học viên làm sau khi đọc nội dung giảng dạy ở trên.</p>
+              <h3 className="font-display font-bold text-base text-text-primary">Câu Hỏi Riêng Của Bài</h3>
+              <p className="text-xs text-text-muted">Đây chỉ là các câu <strong>gắn riêng với bài này</strong>. Khi làm bài kiểm tra, học viên còn nhận thêm câu từ Ngân hàng câu hỏi (và câu AI tạo nếu thiếu), nên bộ câu mỗi người có thể khác nhau.</p>
             </div>
             <button
               onClick={() => setQEditor({ q: null })}
@@ -276,7 +310,63 @@ function AdminLessonDetailContent() {
               </div>
             ))}
             {lesson.questions.length === 0 && (
-              <p className="text-xs text-text-muted text-center py-6">Chưa có câu hỏi ôn cuối bài nào.</p>
+              <p className="text-xs text-text-muted text-center py-6">Chưa có câu hỏi riêng nào cho bài này (học viên vẫn nhận câu từ ngân hàng).</p>
+            )}
+          </div>
+
+          <div className="pt-3 border-t border-[var(--color-border)] space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                disabled={busy !== null}
+                onClick={() => loadPreview()}
+                className="px-4 py-2.5 rounded-xl border border-primary-300 text-primary-700 hover:bg-primary-50 text-xs font-semibold disabled:opacity-50"
+              >
+                {busy === 'preview' ? 'Đang tải...' : 'Xem trước bộ câu học viên sẽ thấy'}
+              </button>
+              <button
+                type="button"
+                disabled={busy !== null}
+                onClick={generateQuestions}
+                className="px-4 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-hover text-white text-xs font-semibold disabled:opacity-50"
+              >
+                {busy === 'generate' ? 'AI đang tạo câu hỏi...' : 'Tạo sẵn câu hỏi bằng AI'}
+              </button>
+              <select
+                value={previewLevel}
+                onChange={(e) => { setPreviewLevel(e.target.value); loadPreview(e.target.value); }}
+                className="px-3 py-2 rounded-xl text-xs bg-background-secondary/50 border border-[var(--color-border)]"
+                title="Xem theo trình độ học viên"
+              >
+                <option value="">Trình độ của bài</option>
+                {LEVELS.map((l) => <option key={l} value={l}>Học viên {l}</option>)}
+              </select>
+            </div>
+            {aiMessage && <div className="p-3 rounded-xl bg-cream/50 text-xs text-text-secondary">{aiMessage}</div>}
+
+            {preview && (
+              <div className="rounded-2xl border border-[var(--color-border)] bg-background-secondary/20 p-4 space-y-2">
+                <p className="text-xs text-text-secondary">
+                  Một học viên mới ({preview.level}) sẽ nhận <strong>{preview.questions.length}/{preview.count} câu</strong>:
+                  {' '}{preview.own_count} câu riêng của bài, {preview.bank_count} câu từ ngân hàng
+                  {preview.ai_needed > 0 && <> và <strong className="text-accent">AI sẽ tạo thêm khoảng {preview.ai_needed} câu</strong> khi học viên đầu tiên mở bài (bấm “Tạo sẵn” để duyệt trước)</>}.
+                  {' '}Mỗi học viên và mỗi lần làm lại có thể nhận bộ khác.
+                </p>
+                <ol className="space-y-1">
+                  {preview.questions.map((q) => (
+                    <li key={q.id} className="text-xs flex gap-2 items-start">
+                      <span className="text-text-muted w-5">{q.order}.</span>
+                      <span className="flex-1 min-w-0">
+                        <span className="block text-text-primary truncate">{q.question}</span>
+                        <span className="text-[10px] text-text-muted">
+                          {q.level} · {q.topic} · {q.origin === 'lesson' ? 'câu riêng của bài' : q.origin === 'ai' ? 'ngân hàng (AI tạo)' : 'ngân hàng'}
+                          {!q.relevant && q.origin !== 'lesson' ? ' · ít liên quan đến bài' : ''}
+                        </span>
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
             )}
           </div>
         </div>
