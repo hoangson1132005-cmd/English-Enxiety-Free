@@ -14,6 +14,22 @@ const LEVELS: CEFRLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1'];
 const SKILL_ORDER: SkillType[] = ['vocabulary', 'reading', 'listening', 'writing', 'speaking'];
 const AI_SHORTLIST_FACTOR = 2.5;
 
+const STOPWORDS = new Set([
+  'the', 'and', 'for', 'with', 'that', 'this', 'from', 'your', 'you', 'are', 'was', 'have', 'has', 'will', 'what', 'which',
+  'about', 'into', 'bài', 'học', 'của', 'và', 'các', 'cho', 'trong', 'một', 'những', 'được', 'kiểm', 'tra', 'từ', 'vựng',
+]);
+
+// Tách chuỗi thành các từ khóa có nghĩa (bỏ từ ngắn và từ phổ biến) để so khớp độ liên quan.
+export function tokenize(...texts: (string | undefined | null)[]) {
+  const out = new Set<string>();
+  for (const t of texts) {
+    for (const w of (t ?? '').toLowerCase().split(/[^\p{L}\p{N}]+/u)) {
+      if (w.length >= 4 && !STOPWORDS.has(w)) out.add(w);
+    }
+  }
+  return [...out];
+}
+
 function levelIndex(level: string) {
   return LEVELS.indexOf(level as CEFRLevel);
 }
@@ -24,6 +40,7 @@ export interface DrawOptions {
   level: CEFRLevel;
   lessonIds?: string[]; // câu gắn với các bài này cũng được dùng làm nguồn
   topics?: string[];
+  keywords?: string[]; // từ khóa nội dung của bài/chặng (tên bài, mô tả, từ vựng) để chấm độ liên quan
   focusSkills?: SkillType[]; // kỹ năng của bài/chặng
   weakSkills?: SkillType[]; // kỹ năng học viên còn yếu
   skillMix?: Partial<Record<SkillType, number>>; // tỷ trọng mong muốn (tổng ~1)
@@ -32,7 +49,7 @@ export interface DrawOptions {
 
 // Bốc câu hỏi từ ngân hàng (+ câu gắn với các bài liên quan), ưu tiên: đúng cấp độ, đúng chủ đề, đúng kỹ năng,
 // chưa từng gặp. Trả về cả số câu còn thiếu để nơi gọi bù bằng AI.
-export async function drawQuestions(opts: DrawOptions): Promise<{ picked: Question[]; shortage: number; ranked: Question[] }> {
+export async function drawQuestions(opts: DrawOptions): Promise<{ picked: Question[]; shortage: number; ranked: Question[]; relevantIds: Set<string> }> {
   const li = Math.max(0, levelIndex(opts.level));
   const nearLevels = LEVELS.filter((_, i) => Math.abs(i - li) <= 1);
 
@@ -50,14 +67,29 @@ export async function drawQuestions(opts: DrawOptions): Promise<{ picked: Questi
   );
   const topics = new Set((opts.topics ?? []).map((t) => t.toLowerCase()));
   const lessonSet = new Set(opts.lessonIds ?? []);
+  const keywordSet = new Set(opts.keywords ?? []);
 
+  const relevantIds = new Set<string>(); // câu thật sự liên quan (đúng chủ đề / có từ khóa của bài / gắn với bài)
   const scored = candidates.map((q) => {
     const dist = Math.abs(levelIndex(q.level) - li);
     let score = dist === 0 ? 3 : dist === 1 ? 1 : -2;
-    if (topics.has(q.topic.toLowerCase())) score += 2;
+    if (topics.has(q.topic.toLowerCase())) {
+      score += 2;
+      relevantIds.add(q.id);
+    }
+    if (keywordSet.size) {
+      const hay = `${q.question} ${q.topic} ${q.options ?? ''} ${q.explanation} ${q.passage ?? ''}`.toLowerCase();
+      let hits = 0;
+      for (const k of keywordSet) if (hay.includes(k)) hits += 1;
+      score += Math.min(4, hits * 1.5); // câu nhắc đúng từ khóa của bài được ưu tiên rõ rệt
+      if (hits > 0) relevantIds.add(q.id);
+    }
     if (opts.focusSkills?.includes(q.skill as SkillType)) score += 2;
     if (opts.weakSkills?.includes(q.skill as SkillType)) score += 1.5;
-    if (q.lessonId && lessonSet.has(q.lessonId)) score += 1;
+    if (q.lessonId && lessonSet.has(q.lessonId)) {
+      score += 1;
+      relevantIds.add(q.id);
+    }
     if (seen.has(q.id)) score -= 5; // ưu tiên câu mới; chỉ lặp lại khi hết câu khác
     score += Math.random() * 1.5; // đề mỗi lần hơi khác nhau
     return { q, score };
@@ -90,7 +122,7 @@ export async function drawQuestions(opts: DrawOptions): Promise<{ picked: Questi
     }
   }
 
-  return { picked, shortage: Math.max(0, opts.count - picked.length), ranked: scored.map((s) => s.q) };
+  return { picked, shortage: Math.max(0, opts.count - picked.length), ranked: scored.map((s) => s.q), relevantIds };
 }
 
 const AI_SELECT_SCHEMA = {
@@ -243,8 +275,25 @@ export async function assembleQuestions(opts: AssembleOptions): Promise<Question
       topic: opts.topic,
     });
     picked = [...picked, ...generated].slice(0, opts.count);
-  } else if (opts.useAiSelection) {
-    picked = await aiRefineSelection(ranked, picked, opts.count, { level: opts.level, scope: opts.scope, field: opts.field });
+  } else {
+    // Đủ số câu nhưng quá nửa là câu lạc đề (ngân hàng chưa có nhiều câu về nội dung này): AI sinh thêm câu đúng chủ đề,
+    // lưu vào ngân hàng và thay cho các câu lạc đề.
+    const relevant = picked.filter((q) => drawn.relevantIds.has(q.id));
+    const need = opts.keywords?.length ? Math.ceil(opts.count * 0.6) - relevant.length : 0;
+    let addedGenerated = false;
+    if (need > 0) {
+      const generated = await generateIntoBank({
+        count: need, level: opts.level, field: opts.field, scope: opts.scope, skills: opts.focusSkills ?? ['vocabulary', 'reading'], topic: opts.topic,
+      });
+      if (generated.length) {
+        const offTopic = picked.filter((q) => !drawn.relevantIds.has(q.id));
+        picked = [...relevant, ...generated, ...offTopic].slice(0, opts.count);
+        addedGenerated = true;
+      }
+    }
+    if (opts.useAiSelection && !addedGenerated) {
+      picked = await aiRefineSelection(ranked, picked, opts.count, { level: opts.level, scope: opts.scope, field: opts.field });
+    }
   }
 
   // Sắp xếp để cùng kỹ năng / cùng đoạn văn nằm cạnh nhau, dễ làm bài.

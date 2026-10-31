@@ -64,7 +64,15 @@ export async function POST(req: Request) {
       timeSpentSeconds,
     },
   });
-  await prisma.quizSession.update({ where: { id: quiz.id }, data: { status: 'submitted', submittedAt: new Date() } });
+  await prisma.quizSession.update({
+    where: { id: quiz.id },
+    data: {
+      status: 'submitted',
+      submittedAt: new Date(),
+      score,
+      results: JSON.stringify(results.map((r) => ({ question_id: r.question_id, score: r.score }))),
+    },
+  });
   await recordQuestionResults(userId, results.map((r) => ({ questionId: r.question_id, score: r.score })));
 
   await prisma.userRoadmapItem.update({

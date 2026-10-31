@@ -379,6 +379,8 @@ model QuizSession {
   phase        Int?
   questionIds  String    // JSON string[] theo thứ tự hiển thị
   status       String    @default("open") // 'open' | 'submitted'
+  score        Int?      // điểm khi đã nộp
+  results      String?   // JSON [{question_id, score}] khi đã nộp, để admin xem lại
   createdAt    DateTime  @default(now())
   submittedAt  DateTime?
 

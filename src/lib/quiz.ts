@@ -1,7 +1,7 @@
 import type { Question } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import {
-  assembleQuestions, FINAL_EXAM_SIZE, LESSON_QUIZ_SIZE, LESSON_QUIZ_SIZE_FREE_TEXT, STAGE_QUIZ_SIZE, type AssembleOptions,
+  assembleQuestions, tokenize, FINAL_EXAM_SIZE, LESSON_QUIZ_SIZE, LESSON_QUIZ_SIZE_FREE_TEXT, STAGE_QUIZ_SIZE, type AssembleOptions,
 } from '@/lib/questionBank';
 import type { CEFRLevel, SkillType } from '@/types';
 
@@ -15,6 +15,14 @@ function learnerField(user: LearnerRow) {
     // dữ liệu hỏng: bỏ qua
   }
   return [user.major, ...interests].filter(Boolean).join(', ') || 'tiếng Anh tổng quát';
+}
+
+function vocabTerms(vocabItemsJson: string) {
+  try {
+    return (JSON.parse(vocabItemsJson) as { term: string }[]).map((v) => v.term).join(' ');
+  } catch {
+    return '';
+  }
 }
 
 async function weakSkillsOf(userId: string): Promise<SkillType[]> {
@@ -83,6 +91,7 @@ export async function getOrCreateLessonSession(userId: string, lessonId: string)
     level,
     lessonIds: [lessonId],
     topics: [lesson.topic],
+    keywords: tokenize(lesson.title, lesson.topic, lesson.description, vocab),
     focusSkills: [lesson.skill as SkillType],
     maxFreeText: freeTextLesson ? 2 : 1,
     field: learnerField(user),
@@ -120,6 +129,7 @@ export async function createStageSession(userId: string, roadmapId: string, phas
     level: user.currentLevel as CEFRLevel,
     lessonIds: lessons.map((l) => l.id),
     topics: [...new Set(lessons.map((l) => l.topic))],
+    keywords: tokenize(...lessons.flatMap((l) => [l.title, l.topic, l.description, vocabTerms(l.vocabItems)])),
     focusSkills: [...new Set(lessons.map((l) => l.skill as SkillType))],
     weakSkills: await weakSkillsOf(userId),
     maxFreeText: 2,
@@ -156,6 +166,7 @@ export async function createFinalSession(userId: string, roadmapId: string) {
     level: user.currentLevel as CEFRLevel,
     lessonIds: lessons.map((l) => l.id),
     topics: [...new Set(lessons.map((l) => l.topic))],
+    keywords: tokenize(...lessons.flatMap((l) => [l.title, l.topic, l.description, vocabTerms(l.vocabItems)])),
     focusSkills: [...new Set(lessons.map((l) => l.skill as SkillType))],
     weakSkills: await weakSkillsOf(userId),
     skillMix: { vocabulary: 0.3, reading: 0.25, listening: 0.2, writing: 0.1, speaking: 0.05 },

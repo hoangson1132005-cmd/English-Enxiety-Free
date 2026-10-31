@@ -45,6 +45,16 @@ export default function QuestionBankPage() {
   const [query, setQuery] = useState('');
 
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [usage, setUsage] = useState<{ total_sessions: number; sessions: { id: string; scope: string; user: string; status: string; created_at: string }[] } | null>(null);
+  const toggleExpand = (id: string) => {
+    if (expanded === id) {
+      setExpanded(null);
+      return;
+    }
+    setExpanded(id);
+    setUsage(null);
+    fetch(`/api/admin/questions/${id}/usage`).then((r) => r.json()).then(setUsage);
+  };
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [editor, setEditor] = useState<{ q: BankItem | null } | null>(null);
   const [showImport, setShowImport] = useState(false);
@@ -275,7 +285,7 @@ export default function QuestionBankPage() {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center justify-end gap-1">
-                            <button onClick={() => setExpanded(expanded === q.id ? null : q.id)} className="p-1.5 rounded-lg text-text-muted hover:text-primary-600 hover:bg-primary-50">
+                            <button onClick={() => toggleExpand(q.id)} className="p-1.5 rounded-lg text-text-muted hover:text-primary-600 hover:bg-primary-50">
                               {expanded === q.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                             </button>
                             <button onClick={() => setEditor({ q })} className="p-1.5 rounded-lg text-text-muted hover:text-primary-600 hover:bg-primary-50"><Pencil className="w-4 h-4" /></button>
@@ -290,6 +300,19 @@ export default function QuestionBankPage() {
                             {q.options && <p><strong>Lựa chọn:</strong> {q.options.join(' | ')}</p>}
                             <p><strong>Đáp án:</strong> {Array.isArray(q.answer) ? q.answer.join(', ') : q.answer}</p>
                             <p><strong>Giải thích:</strong> {q.explanation || '—'}</p>
+                            <div className="pt-2 border-t border-[var(--color-border)]">
+                              <strong>Đã được bốc vào:</strong>{' '}
+                              {!usage ? 'đang tải...' : usage.total_sessions === 0 ? 'chưa lượt kiểm tra nào.' : `${usage.total_sessions} lượt kiểm tra (10 lượt gần nhất):`}
+                              {usage && usage.sessions.length > 0 && (
+                                <ul className="mt-1 space-y-0.5">
+                                  {usage.sessions.map((s) => (
+                                    <li key={s.id}>
+                                      {s.scope} · {s.user} · {s.status === 'submitted' ? 'đã nộp' : 'đang làm'} · {new Date(s.created_at).toLocaleDateString('vi-VN')}
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       )}

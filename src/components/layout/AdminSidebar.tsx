@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, Library, ClipboardList, BarChart3,
-  ShieldCheck, ArrowLeftRight, Image as ImageIcon, HelpCircle,
+  ShieldCheck, ArrowLeftRight, Image as ImageIcon, HelpCircle, History,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -13,6 +13,7 @@ const adminNavItems = [
   { href: '/admin/users', label: 'Người dùng', icon: Users },
   { href: '/admin/content', label: 'Bài học', icon: Library, extraMatch: '/admin/lessons' },
   { href: '/admin/question-bank', label: 'Ngân hàng câu hỏi', icon: HelpCircle },
+  { href: '/admin/quiz-sessions', label: 'Lịch sử bốc câu', icon: History },
   { href: '/admin/tests', label: 'Đề test', icon: ClipboardList },
   { href: '/admin/landing', label: 'Landing Page', icon: ImageIcon },
   { href: '/admin/reports', label: 'Báo cáo', icon: BarChart3 },

@@ -151,7 +151,15 @@ export async function POST(req: Request) {
   });
 
   if (quizId) {
-    await prisma.quizSession.update({ where: { id: quizId }, data: { status: 'submitted', submittedAt: new Date() } });
+    await prisma.quizSession.update({
+      where: { id: quizId },
+      data: {
+        status: 'submitted',
+        submittedAt: new Date(),
+        score: totalScore,
+        results: JSON.stringify(perQuestion.map((r) => ({ question_id: r.questionId, score: r.score }))),
+      },
+    });
   }
   await recordQuestionResults(userId, perQuestion);
 
