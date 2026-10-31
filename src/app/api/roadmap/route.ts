@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { ensureActiveRoadmap, isRoadmapDone } from '@/lib/roadmap';
+import { computeItemLocks, ensureActiveRoadmap, isRoadmapDone } from '@/lib/roadmap';
 import { getPassScore } from '@/lib/quizSettings';
 import type { Phase } from '@/lib/roadmap';
 import type { RoadmapItemView, RoadmapStageView, SkillType } from '@/types';
@@ -23,7 +23,7 @@ export async function GET() {
 
   const core = roadmap.items.filter((i) => i.status !== 'suggested' && i.status !== 'dismissed');
   let nextItemId: string | null = null;
-  let unlocked = true; // bài đầu tiên chưa xong là bài đang mở; các bài sau bị khóa cho đến khi xong bài trước
+  const locks = computeItemLocks(core); // bài đầu tiên chưa xong là bài đang mở; bài giáo viên giao riêng luôn mở
 
   const toView = (i: (typeof roadmap.items)[number], status: RoadmapItemView['status']): RoadmapItemView => ({
     item_id: i.id,
@@ -68,10 +68,9 @@ export async function GET() {
   for (const i of core) {
     let status: RoadmapItemView['status'];
     if (i.status === 'completed') status = 'completed';
-    else if (unlocked) {
+    else if (!locks.get(i.id)) {
       status = i.status === 'in_progress' ? 'in_progress' : 'available';
       nextItemId ??= i.id;
-      unlocked = false;
     } else status = 'locked';
 
     const key = legacy ? `src:${i.lesson.source}` : `phase:${i.phase}`;

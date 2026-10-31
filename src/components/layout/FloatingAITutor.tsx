@@ -1,5 +1,6 @@
 'use client';
 
+import { Markdown } from '@/components/ui/Markdown';
 import React, { useState, useRef, useEffect } from 'react';
 import { useUIStore } from '@/store/uiStore';
 import { apiSendMessage, apiGetChatHistory } from '@/lib/api';
@@ -163,13 +164,14 @@ export function FloatingAITutor() {
 
                 <div
                   className={cn(
-                    'p-3.5 rounded-2xl text-xs md:text-sm leading-relaxed whitespace-pre-wrap shadow-sm',
+                    'p-3.5 rounded-2xl text-xs md:text-sm leading-relaxed shadow-sm min-w-0 max-w-full',
+                    msg.role === 'user' && 'whitespace-pre-wrap',
                     msg.role === 'user'
                       ? 'bg-primary-600 text-white rounded-tr-none'
                       : 'bg-background-secondary dark:bg-gray-800 text-text-primary dark:text-gray-200 rounded-tl-none border border-[var(--color-border)]'
                   )}
                 >
-                  {msg.content}
+                  {msg.role === 'user' ? msg.content : <Markdown>{msg.content}</Markdown>}
                 </div>
               </div>
             ))}

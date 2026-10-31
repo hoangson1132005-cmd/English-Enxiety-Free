@@ -447,6 +447,22 @@ export async function suggestLessonsToLearners(lessonIds: string[]) {
   return created;
 }
 
+// Bài nào đang bị khóa: các bài theo thứ tự, chỉ mở bài đầu tiên chưa xong; bài còn lại chờ. Riêng bài do giáo viên giao
+// riêng cho học viên (source = 'admin') luôn mở và không chặn các bài khác.
+export function computeItemLocks(core: { id: string; status: string; source: string }[]) {
+  const locked = new Map<string, boolean>();
+  let gateOpen = true;
+  for (const i of core) {
+    if (i.status === 'completed' || i.source === 'admin') {
+      locked.set(i.id, false);
+      continue;
+    }
+    locked.set(i.id, !gateOpen);
+    gateOpen = false;
+  }
+  return locked;
+}
+
 // Trạng thái của một bài học trong lộ trình đang học của học viên (kèm bài kế tiếp).
 export async function getLessonContext(userId: string, lessonId: string) {
   const roadmap = await ensureActiveRoadmap(userId);
@@ -456,7 +472,7 @@ export async function getLessonContext(userId: string, lessonId: string) {
   if (!item) return { roadmap, item: null, locked: false, nextItem: null as (typeof items)[number] | null, items };
 
   const idx = core.findIndex((i) => i.id === item.id);
-  const locked = idx > 0 && core.slice(0, idx).some((i) => i.status !== 'completed') && item.status !== 'completed';
+  const locked = computeItemLocks(core).get(item.id) ?? false;
   const nextItem = idx >= 0 ? core.slice(idx + 1).find((i) => i.status !== 'completed') ?? null : null;
   return { roadmap, item, locked, nextItem, items };
 }

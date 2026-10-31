@@ -228,6 +228,7 @@ function Content() {
 
         <div className="p-6 rounded-3xl bg-white border border-[var(--color-border)] shadow-soft space-y-3">
           <h3 className="font-display font-bold text-base text-text-primary">Thêm bài học cho học viên này</h3>
+          <p className="text-xs text-text-muted">Bài bạn thêm cho học viên luôn <strong>mở sẵn</strong> để học ngay, không phải chờ hoàn thành các bài trước và không chặn các bài khác.</p>
           <div className="flex flex-wrap gap-2">
             <select value={pick} onChange={(e) => setPick(e.target.value)} className="flex-1 min-w-[16rem] px-4 py-2.5 rounded-xl text-sm bg-background-secondary/50 border border-[var(--color-border)] focus:outline-none">
               <option value="">Chọn bài trong kho nội dung...</option>

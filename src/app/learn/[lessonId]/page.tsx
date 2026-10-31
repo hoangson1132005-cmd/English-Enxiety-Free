@@ -1,5 +1,6 @@
 'use client';
 
+import { Markdown } from '@/components/ui/Markdown';
 import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -31,20 +32,6 @@ const SKILL_HINTS: Record<SkillType, string> = {
 
 type Phase = 'learn' | 'practice' | 'result';
 
-function renderLiteMarkdown(text: string) {
-  return text.split('\n').map((line, i) => {
-    if (!line.trim()) return <div key={i} className="h-2" />;
-    const inline = (s: string) =>
-      s.split(/(\*\*[^*]+\*\*)/g).map((part, j) =>
-        part.startsWith('**') && part.endsWith('**') ? <strong key={j}>{part.slice(2, -2)}</strong> : part
-      );
-    const heading = line.match(/^#{1,4}\s+(.*)$/);
-    if (heading) return <h4 key={i} className="font-bold text-text-primary dark:text-white mt-3 mb-1">{inline(heading[1])}</h4>;
-    const bullet = line.match(/^\s*[-*•]\s+(.*)$/);
-    if (bullet) return <p key={i} className="mb-1 pl-4 relative before:content-['•'] before:absolute before:left-1">{inline(bullet[1])}</p>;
-    return <p key={i} className="mb-1.5">{inline(line)}</p>;
-  });
-}
 
 function speak(text: string, rate = 1) {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
@@ -425,7 +412,7 @@ function LessonPageContent() {
             {lesson.content && (
               <div className="p-6 rounded-3xl bg-white dark:bg-gray-900 border border-[var(--color-border)] shadow-soft">
                 <h3 className="font-display font-bold text-base text-text-primary dark:text-white mb-3">Nội Dung Bài Học</h3>
-                <div className="text-xs sm:text-sm text-text-secondary dark:text-gray-300 leading-relaxed">{renderLiteMarkdown(lesson.content)}</div>
+                <div className="text-xs sm:text-sm text-text-secondary dark:text-gray-300 leading-relaxed"><Markdown>{lesson.content}</Markdown></div>
               </div>
             )}
 
@@ -588,7 +575,7 @@ function LessonPageContent() {
               <Lightbulb className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
               <div>
                 <h4 className="font-bold text-sm text-text-primary dark:text-white">Nhận xét & rút kinh nghiệm</h4>
-                <p className="text-xs sm:text-sm text-text-secondary dark:text-gray-300 mt-1 leading-relaxed whitespace-pre-wrap">{result.review_summary}</p>
+                <Markdown className="text-xs sm:text-sm text-text-secondary dark:text-gray-300 mt-1">{result.review_summary}</Markdown>
               </div>
             </div>
 
