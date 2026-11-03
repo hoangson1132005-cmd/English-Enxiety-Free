@@ -1,0 +1,100 @@
+# Triển khai thật: app + PostgreSQL + Caddy (HTTPS tự động).
+# Chỉ Caddy mở cổng ra internet (80/443). Database nằm trong mạng nội bộ, không ai ngoài ứng dụng truy cập được.
+name: eaf
+
+x-database-url: &database-url postgresql://uth:${POSTGRES_PASSWORD:?Hãy đặt POSTGRES_PASSWORD trong .env}@db:5432/uth_english?schema=public
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: uth
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: uth_english
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U uth -d uth_english"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [internal]
+
+  # Chạy một lần mỗi lần cập nhật: áp dụng thay đổi cấu trúc database
+  migrate:
+    build:
+      context: .
+      target: tools
+    environment:
+      DATABASE_URL: *database-url
+    command: ["npx", "prisma", "migrate", "deploy"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+    networks: [internal]
+
+  app:
+    build:
+      context: .
+      target: runner
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: *database-url
+      AUTH_TRUST_HOST: "true"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    # internal: nói chuyện với database; web: ra internet (Gemini, Gmail) và nhận lưu lượng từ Caddy
+    networks: [internal, web]
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:?Hãy đặt DOMAIN trong .env}
+      ACME_EMAIL: ${ACME_EMAIL:-}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+    networks: [web]
+
+  # Công cụ quản trị (không chạy mặc định): docker compose -f docker-compose.prod.yml run --rm tools <lệnh>
+  tools:
+    profiles: ["tools"]
+    build:
+      context: .
+      target: tools
+    env_file: .env
+    environment:
+      DATABASE_URL: *database-url
+    networks: [internal]
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:
+
+networks:
+  internal:
+    internal: true # không có đường ra internet: database bị cô lập hoàn toàn
+  web:

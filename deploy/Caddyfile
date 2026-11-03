@@ -1,0 +1,31 @@
+# Caddy: tự xin và gia hạn chứng chỉ HTTPS (Let's Encrypt), chuyển hướng HTTP sang HTTPS, thêm tiêu đề bảo mật.
+{
+	# Email nhận thông báo từ Let's Encrypt (không bắt buộc)
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	# Giới hạn kích thước request (file import tối đa vài MB, audio tối đa 6MB)
+	request_body {
+		max_size 12MB
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		# Micro cần cho bài Nói; camera và vị trí không dùng
+		Permissions-Policy "camera=(), geolocation=(), microphone=(self)"
+		-Server
+	}
+
+	reverse_proxy app:3000 {
+		# Bài import AI lớn có thể mất vài phút
+		transport http {
+			response_header_timeout 300s
+		}
+	}
+}
